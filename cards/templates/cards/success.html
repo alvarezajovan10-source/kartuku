@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Kartu siap dibagikan{% endblock %}
+
+{% block content %}
+  <h1>Pembayaran diterima 🎉</h1>
+  <p class="lede">Kartumu sudah aktif. Bagikan link ini — bisa dibuka berkali-kali, kapan saja.</p>
+
+  <div class="card">
+    <label for="share-link">Link kartu</label>
+    <div class="linkbox">
+      <input type="text" id="share-link" readonly
+             value="{{ request.scheme }}://{{ request.get_host }}{{ card.public_url }}">
+      <button class="btn" type="button" id="copy">Salin</button>
+    </div>
+    <p class="hint" style="margin-top:12px;">Simpan link ini. Kami tidak mengirimnya lewat email.</p>
+  </div>
+
+  <a class="btn ghost" href="{{ card.public_url }}">Lihat kartunya</a>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById("copy").addEventListener("click", async function () {
+  const input = document.getElementById("share-link");
+  input.select();
+  try {
+    await navigator.clipboard.writeText(input.value);
+    this.textContent = "Tersalin";
+  } catch (err) {
+    document.execCommand("copy");
+    this.textContent = "Tersalin";
+  }
+});
+</script>
+{% endblock %}

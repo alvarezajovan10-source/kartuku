@@ -1,0 +1,75 @@
+{% load card_extras %}{% comment %}
+Isi kartu "Kanvas". Berkas yang sama dipakai untuk kartu asli dan untuk iframe
+editor — bedanya hanya atribut `data-edit` / `data-frame` yang muncul saat
+`editing`, dan itulah yang membuat elemen bisa diklik di editor.
+{% endcomment %}
+<div class="kv" id="kv-root" style="{{ card.style_css }}">
+  <div class="kv-sheet">
+
+    <p class="kv-eyebrow">
+      {% if card.category == "birthday" %}Selamat Ulang Tahun
+      {% elif card.category == "anniversary" %}Selamat Anniversary
+      {% elif card.category == "proposal" %}Untukmu, yang kutunggu
+      {% else %}Untukmu{% endif %}
+    </p>
+
+    <h1 class="kv-title"{% if editing %} data-edit="recipient" data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</h1>
+
+    <div class="kv-rule" aria-hidden="true">
+      <span></span>
+      <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z"/></svg>
+      <span></span>
+    </div>
+
+    {% if editing or card.message %}
+      <p class="kv-message{% if not card.message %} kv-empty{% endif %}"
+         {% if editing %}data-edit="message" data-placeholder="Tulis pesanmu di sini..."{% endif %}>{{ card.message|default:"Tulis pesanmu di sini..." }}</p>
+    {% endif %}
+
+    {% if card.frames %}
+      <div class="kv-frames shape-{{ card.style_clean.photo_shape }}">
+        {% for frame in card.frames %}
+          {% with photo=frame_photos|get:frame.key %}
+          <figure class="kv-photo{% if editing and not photo %} is-empty{% endif %}"
+                  {% if editing %}data-frame="{{ frame.key }}"{% endif %}>
+            {% if photo %}
+              <img src="{{ photo.image.url }}" alt="" loading="lazy">
+              {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+            {% else %}
+              <span class="kv-frame-empty"></span>
+            {% endif %}
+          </figure>
+          {% endwith %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if editing or gallery_photos %}
+      <div class="kv-photos shape-{{ card.style_clean.photo_shape }}" data-photos
+           {% if editing %}data-edit="gallery"{% endif %}>
+        {% for photo in gallery_photos %}
+          <figure class="kv-photo">
+            <img src="{{ photo.image.url }}" alt="" loading="lazy">
+            {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+          </figure>
+        {% empty %}
+          {% if editing %}<p class="kv-hint">Klik untuk menambah foto</p>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if card.youtube_video_id %}
+      <div class="kv-video">
+        <iframe src="{{ card.youtube_embed_url }}"
+                title="Lagu untukmu" loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+                allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+    {% endif %}
+
+    {% if editing or card.sender_name %}
+      <p class="kv-signature"{% if editing %} data-edit="sender" data-placeholder="Namamu"{% endif %}>— {{ card.sender_name|default:"Namamu" }}</p>
+    {% endif %}
+
+  </div>
+</div>

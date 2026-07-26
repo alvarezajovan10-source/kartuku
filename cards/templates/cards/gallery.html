@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Template {{ category_label }} — Kartuku{% endblock %}
+
+{% block body %}
+<section class="section">
+  <nav class="crumbs">
+    <a href="{% url 'cards:landing' %}">Beranda</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ category_label }}</span>
+  </nav>
+
+  <div class="section-head">
+    <p class="eyebrow">Template {{ category_label }}</p>
+    <h2 class="display">Pilih yang paling terasa</h2>
+    <p class="section-lede">
+      {{ blurb }} Lihat dulu contohnya, baru pakai. Semua template
+      Rp{{ price|floatformat:0 }}.
+    </p>
+  </div>
+
+  <div class="tpl-grid">
+    {% for entry in entries %}
+      <article class="tpl-card">
+        <a class="tpl-art" href="{% url 'cards:preview' entry.template.slug %}"
+           style="--accent: {{ entry.accent }}">
+          {% if entry.thumb %}
+            <img src="{% static entry.thumb %}" alt="Contoh template {{ entry.template.name }}" loading="lazy">
+          {% else %}
+            <span class="tpl-fallback">{{ entry.template.name }}</span>
+          {% endif %}
+          <span class="tpl-peek">Lihat contoh</span>
+        </a>
+        <div class="tpl-body">
+          <h3>{{ entry.template.name }}</h3>
+          <div class="tpl-actions">
+            <a class="btn btn-outline btn-sm" href="{% url 'cards:preview' entry.template.slug %}">Preview</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'cards:editor' entry.template.slug %}">Pakai Ini</a>
+          </div>
+        </div>
+      </article>
+    {% empty %}
+      <p class="hint">
+        Belum ada template untuk kategori ini. Tambahkan lewat
+        <a href="/admin/cards/template/">admin</a>.
+      </p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

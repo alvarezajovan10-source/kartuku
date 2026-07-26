@@ -1,0 +1,8 @@
+Django==5.2.*
+djangorestframework==3.16.*
+django-environ==0.12.*
+psycopg[binary]==3.2.*
+Pillow==11.*
+django-storages[s3]==1.14.*
+boto3==1.35.*
+gunicorn==23.*

@@ -1,0 +1,156 @@
+/* Kartu "Kanvas".
+   Semua yang bisa diatur user dibaca dari CSS custom property (--title-font,
+   --message-color, dst.) yang di-set server lewat cards.styles.css_variables().
+   Editor cukup menimpa variabel yang sama untuk preview seketika. */
+
+.kv {
+  --bg: #FAF2E4;
+  --accent: #9E1B32;
+  --title-font: 'Pinyon Script', cursive;
+  --title-color: #7A1526;
+  --title-size: 1;
+  --title-align: center;
+  --message-font: 'Caveat', cursive;
+  --message-color: #4A2530;
+  --message-size: 1;
+  --message-align: left;
+  --signature-font: 'Caveat', cursive;
+  --signature-color: #8A1F2E;
+  --signature-size: 1;
+  --signature-align: right;
+
+  background: var(--bg);
+  min-height: 100%;
+  padding: 40px 20px 64px;
+  display: flex;
+  justify-content: center;
+}
+
+.kv-sheet {
+  width: 100%;
+  max-width: 620px;
+}
+
+.kv-eyebrow {
+  margin: 0 0 10px;
+  text-align: var(--title-align);
+  font-family: var(--message-font);
+  font-size: 1.05rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: .85;
+}
+
+.kv-title {
+  margin: 0;
+  font-family: var(--title-font);
+  color: var(--title-color);
+  text-align: var(--title-align);
+  font-size: calc(3.2rem * var(--title-size));
+  line-height: 1.1;
+  font-weight: 400;
+  overflow-wrap: break-word;
+}
+
+.kv-rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px auto 26px;
+  max-width: 260px;
+  color: var(--accent);
+}
+.kv-rule span { flex: 1; height: 1px; background: currentColor; opacity: .4; }
+.kv-rule svg { width: 18px; height: 18px; fill: currentColor; opacity: .75; }
+
+.kv-message {
+  margin: 0 0 30px;
+  font-family: var(--message-font);
+  color: var(--message-color);
+  text-align: var(--message-align);
+  font-size: calc(1.35rem * var(--message-size));
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.kv-message.kv-empty { opacity: .45; font-style: italic; }
+
+.kv-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 30px;
+}
+.kv-photo { margin: 0; }
+.kv-photo img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+  background: rgba(0, 0, 0, .06);
+}
+.kv-photo figcaption {
+  font-family: var(--message-font);
+  font-size: 1rem;
+  color: var(--message-color);
+  opacity: .8;
+  text-align: center;
+  margin-top: 6px;
+  overflow-wrap: break-word;
+}
+
+.shape-rounded .kv-photo img { border-radius: 12px; }
+.shape-square .kv-photo img { border-radius: 0; }
+.shape-circle .kv-photo img { border-radius: 50%; }
+.shape-polaroid .kv-photo {
+  background: #fff;
+  padding: 8px 8px 6px;
+  border-radius: 2px;
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .5);
+}
+.shape-polaroid .kv-photo img { border-radius: 0; }
+
+.kv-video {
+  position: relative;
+  padding-top: 56.25%;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, .18);
+}
+.kv-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* Pengganti iframe di panel preview editor — memuat YouTube di sana
+   memperlambat editor tanpa memberi informasi tambahan. */
+.kv-video-stub {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, .85);
+  background: rgba(30, 20, 24, .75);
+  font-family: var(--message-font);
+  font-size: .95rem;
+  text-align: center;
+  padding: 12px;
+}
+.kv-video-stub svg { width: 34px; height: 34px; fill: currentColor; opacity: .8; }
+
+.kv-signature {
+  margin: 0;
+  font-family: var(--signature-font);
+  color: var(--signature-color);
+  text-align: var(--signature-align);
+  font-size: calc(1.5rem * var(--signature-size));
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 520px) {
+  .kv { padding: 28px 16px 48px; }
+  .kv-title { font-size: calc(2.4rem * var(--title-size)); }
+  .kv-message { font-size: calc(1.2rem * var(--message-size)); }
+}

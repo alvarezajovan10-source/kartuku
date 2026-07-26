@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Pembayaran QRIS{% endblock %}
+
+{% block content %}
+  <h1>Scan untuk bayar</h1>
+  <p class="lede">Pakai GoPay, OVO, DANA, ShopeePay, atau m-banking apa pun yang mendukung QRIS.</p>
+
+  <div class="card qr">
+    <div class="price">Rp{{ price|floatformat:0 }}</div>
+    <div id="qr-area" style="margin: 20px 0;">
+      <p class="hint">Menyiapkan kode QR…</p>
+    </div>
+    <p class="status-line" id="status-line">Menunggu pembayaran…</p>
+    <button class="btn ghost" id="retry" hidden>Buat QR baru</button>
+  </div>
+
+  <p class="hint">
+    Jangan tutup halaman ini sampai pembayaran terkonfirmasi. Kalau tertutup,
+    kartumu tetap tersimpan.
+  </p>
+
+  {% if user.is_staff %}
+    <div class="owner-box">
+      <p><strong>Mode pemilik</strong> — kamu login sebagai admin, jadi boleh
+      melewati pembayaran untuk mencoba template.</p>
+      <form method="post" action="{% url 'cards:mark_paid' card.id %}">
+        {% csrf_token %}
+        <button class="btn btn-outline btn-sm" type="submit">Aktifkan tanpa bayar</button>
+      </form>
+      <p class="hint">Kartu ini akan ditandai <code>gratis</code>, tidak dihitung sebagai penjualan.</p>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const cardId = "{{ card.id }}";
+  const payUrl = "{% url 'cards:api_pay' card.id %}";
+  const statusUrl = "{% url 'cards:api_status' card.id %}";
+  const csrfToken = "{{ csrf_token }}";
+
+  const qrArea = document.getElementById("qr-area");
+  const statusLine = document.getElementById("status-line");
+  const retryBtn = document.getElementById("retry");
+
+  let pollTimer = null;
+
+  function showError(message) {
+    qrArea.innerHTML = '<p class="hint">' + message + "</p>";
+    retryBtn.hidden = false;
+  }
+
+  async function createCharge() {
+    retryBtn.hidden = true;
+    qrArea.innerHTML = '<p class="hint">Menyiapkan kode QR…</p>';
+    try {
+      const response = await fetch(payUrl, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken },
+      });
+      const data = await response.json();
+
+      if (data.redirect) { window.location = data.redirect; return; }
+      if (!response.ok) { showError(data.detail || "Gagal membuat QR."); return; }
+
+      if (data.qr_image_url) {
+        qrArea.innerHTML = '<img alt="Kode QRIS" src="' + data.qr_image_url + '">';
+      } else {
+        showError("Midtrans tidak mengirim gambar QR.");
+        return;
+      }
+      startPolling();
+    } catch (err) {
+      showError("Koneksi bermasalah. Coba lagi.");
+    }
+  }
+
+  async function poll() {
+    try {
+      const response = await fetch(statusUrl);
+      const data = await response.json();
+      if (data.status === "paid") {
+        clearInterval(pollTimer);
+        statusLine.textContent = "Pembayaran diterima. Mengalihkan…";
+        window.location = "{% url 'cards:success' card.id %}";
+      } else if (data.status === "expired") {
+        clearInterval(pollTimer);
+        statusLine.textContent = "QR sudah kedaluwarsa.";
+        showError("Kode QR kedaluwarsa.");
+      }
+    } catch (err) {
+      /* jaringan sesaat bermasalah — coba lagi di tick berikutnya */
+    }
+  }
+
+  function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(poll, 4000);
+  }
+
+  retryBtn.addEventListener("click", createCharge);
+  createCharge();
+})();
+</script>
+{% endblock %}

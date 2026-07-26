@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Tidak bisa dibuka{% endblock %}
+
+{% block content %}
+  <h1>Halaman pembayaran ini bukan milikmu</h1>
+  <p class="lede">
+    Halaman bayar hanya bisa dibuka dari browser yang membuat kartunya.
+    Kalau ini kartumu tapi kamu ganti perangkat, buat kartu baru.
+  </p>
+  <a class="btn" href="{% url 'cards:landing' %}">Kembali ke beranda</a>
+{% endblock %}

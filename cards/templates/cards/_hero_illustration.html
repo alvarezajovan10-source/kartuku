@@ -1,0 +1,64 @@
+{% comment %}
+Ilustrasi pengganti selama foto asli belum ada.
+Taruh foto di `static/img/hero.jpg` untuk menggantikannya secara otomatis.
+{% endcomment %}
+<svg class="hero-svg" viewBox="0 0 620 520" role="img"
+     aria-label="Ilustrasi kartu ucapan di dalam amplop dengan bunga dan hati">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdfb"/><stop offset="1" stop-color="#f7ece4"/>
+    </linearGradient>
+    <linearGradient id="flapG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0dcc9"/><stop offset="1" stop-color="#e4c9b2"/>
+    </linearGradient>
+    <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6e5d6"/><stop offset="1" stop-color="#ecd3bd"/>
+    </linearGradient>
+    <linearGradient id="ribbonG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f2c9c2"/><stop offset="1" stop-color="#e3a79f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- hati melayang -->
+  <g fill="#efb9b3" opacity=".75">
+    <path d="M92 96c-5-5.6-13.6-4.4-16 2.4-2.2 6 2.8 11.6 8 15.6l8 6 8-6c5.2-4 10.2-9.6 8-15.6-2.4-6.8-11-8-16-2.4z"/>
+    <path d="M540 70c-3.6-4-9.8-3.2-11.6 1.7-1.6 4.3 2 8.4 5.8 11.3l5.8 4.3 5.8-4.3c3.8-2.9 7.4-7 5.8-11.3-1.8-4.9-8-5.7-11.6-1.7z" opacity=".6"/>
+    <path d="M576 214c-3-3.4-8.2-2.7-9.7 1.4-1.3 3.6 1.7 7 4.8 9.4l4.9 3.6 4.9-3.6c3.1-2.4 6.1-5.8 4.8-9.4-1.5-4.1-6.7-4.8-9.7-1.4z" opacity=".5"/>
+    <path d="M64 300c-3-3.4-8.2-2.7-9.7 1.4-1.3 3.6 1.7 7 4.8 9.4l4.9 3.6 4.9-3.6c3.1-2.4 6.1-5.8 4.8-9.4-1.5-4.1-6.7-4.8-9.7-1.4z" opacity=".45"/>
+  </g>
+
+  <!-- amplop: badan belakang + tutup -->
+  <path d="M120 250 L310 150 L500 250 L500 430 Q500 442 488 442 L132 442 Q120 442 120 430 Z" fill="url(#bodyG)"/>
+  <path d="M120 250 L310 150 L500 250 L310 300 Z" fill="url(#flapG)"/>
+
+  <!-- kartu keluar dari amplop -->
+  <g>
+    <rect x="196" y="152" width="228" height="238" rx="8" fill="url(#paper)" stroke="#e7d6c6" stroke-width="1.5"/>
+    <text x="310" y="216" text-anchor="middle" font-family="'Dancing Script', cursive" font-size="30" fill="#8a6f61">You mean</text>
+    <line x1="238" y1="238" x2="382" y2="238" stroke="#e2cdbc" stroke-width="1"/>
+    <text x="310" y="278" text-anchor="middle" font-family="'Dancing Script', cursive" font-size="40" fill="#6e564a">the world</text>
+    <line x1="238" y1="298" x2="382" y2="298" stroke="#e2cdbc" stroke-width="1"/>
+    <text x="298" y="338" text-anchor="middle" font-family="'Dancing Script', cursive" font-size="30" fill="#8a6f61">to me</text>
+    <path d="M336 332c-2.6-2.9-7-2.3-8.3 1.2-1.1 3.1 1.4 6 4.1 8l4.2 3.1 4.2-3.1c2.7-2 5.2-4.9 4.1-8-1.3-3.5-5.7-4.1-8.3-1.2z" fill="#d98a86"/>
+  </g>
+
+  <!-- bunga di sisi kiri kartu -->
+  <g>
+    <path d="M214 214 C206 244 204 288 212 330" stroke="#b9c2a4" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M232 226 C230 258 232 296 240 330" stroke="#b9c2a4" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <g fill="#e9a49c">
+      <circle cx="212" cy="208" r="15"/><circle cx="196" cy="222" r="11"/>
+      <circle cx="230" cy="220" r="10"/><circle cx="206" cy="236" r="9"/>
+    </g>
+    <circle cx="212" cy="212" r="5.5" fill="#f6d9cf"/>
+    <g fill="#f2c4bd" opacity=".9">
+      <circle cx="238" cy="246" r="7"/><circle cx="222" cy="264" r="5.5"/><circle cx="244" cy="276" r="6"/>
+    </g>
+  </g>
+
+  <!-- pita -->
+  <path d="M96 452 C190 402 250 486 330 452 C412 418 470 486 560 430"
+        stroke="url(#ribbonG)" stroke-width="13" fill="none" stroke-linecap="round" opacity=".85"/>
+  <path d="M470 430 c-26-26-6-62 22-46 10 6 14 20 12 34 14-10 30-8 34 4 8 22-26 40-52 26"
+        stroke="#e3a79f" stroke-width="9" fill="none" stroke-linecap="round" opacity=".8"/>
+</svg>

@@ -1,0 +1,77 @@
+{% load static %}<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Kartuku — Kartu Ucapan Digital{% endblock %}</title>
+  <meta name="description" content="Buat kartu ucapan digital dengan foto, pesan, dan video YouTube. Rp15.000, bayar QRIS, langsung dapat link untuk dibagikan.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="{% url 'cards:landing' %}">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M4 12 L20 4 L36 12 L36 34 A2 2 0 0 1 34 36 L6 36 A2 2 0 0 1 4 34 Z" fill="#f3d9d6"/>
+        <path d="M4 12 L20 24 L36 12 L36 15 L20 27 L4 15 Z" fill="#c9736e"/>
+        <path d="M20 22c-1.6-1.8-4.4-1.4-5.2.8-.7 1.9.9 3.7 2.6 5 .9.7 1.9 1.4 2.6 2 .7-.6 1.7-1.3 2.6-2 1.7-1.3 3.3-3.1 2.6-5-.8-2.2-3.6-2.6-5.2-.8z" fill="#d98a86"/>
+      </svg>
+      <span class="brand-text">
+        <strong>KARTUKU</strong>
+        <em>Kartu Ucapan Digital</em>
+      </span>
+    </a>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>
+    <label for="nav-toggle" class="nav-burger" aria-label="Buka menu">
+      <span></span><span></span><span></span>
+    </label>
+
+    <nav class="site-nav">
+      <a href="{% url 'cards:landing' %}#template">Template</a>
+      <a href="{% url 'cards:landing' %}#cara-kerja">Cara Kerja</a>
+      <a href="{% url 'cards:landing' %}#harga">Harga</a>
+      <a href="{% url 'cards:landing' %}#testimoni">Testimoni</a>
+      <a href="{% url 'cards:landing' %}#faq">FAQ</a>
+    </nav>
+
+    <a class="btn btn-primary btn-sm header-cta" href="{% url 'cards:landing' %}#template">Buat Kartu</a>
+  </div>
+</header>
+
+{% block body %}
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+{% endblock %}
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <strong class="footer-brand">KARTUKU</strong>
+      <p>Kartu ucapan digital untuk momen yang layak dikenang.</p>
+    </div>
+    <p class="footer-note">
+      Pembayaran QRIS diproses lewat Midtrans. Kartu aktif setelah pembayaran terkonfirmasi.
+    </p>
+  </div>
+</footer>
+
+<script>
+// Tutup menu burger setelah link diklik. Link anchor tidak memicu reload,
+// jadi tanpa ini menu tetap terbuka menutupi konten di HP.
+(function () {
+  var toggle = document.getElementById("nav-toggle");
+  document.querySelectorAll(".site-nav a").forEach(function (link) {
+    link.addEventListener("click", function () { toggle.checked = false; });
+  });
+})();
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

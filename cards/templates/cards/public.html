@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Untuk {{ card.recipient_name|default:"kamu" }}{% endblock %}
+
+{% block content %}
+  <h1>Untuk {{ card.recipient_name|default:"kamu" }}</h1>
+
+  {% if card.message %}
+    <div class="card">
+      <p class="message">{{ card.message }}</p>
+    </div>
+  {% endif %}
+
+  {% if photos %}
+    <div class="photos">
+      {% for photo in photos %}
+        <img src="{{ photo.image.url }}" alt="Foto kenangan" loading="lazy">
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if card.youtube_video_id %}
+    <div class="video">
+      <iframe src="{{ card.youtube_embed_url }}"
+              title="Lagu untukmu"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+              allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+  {% endif %}
+
+  {% if card.sender_name %}
+    <p class="from">— {{ card.sender_name }}</p>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}{% include "cards/_preview_bar.html" %}{% endblock %}

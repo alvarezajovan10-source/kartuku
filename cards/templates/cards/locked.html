@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Kartu belum aktif{% endblock %}
+
+{% block content %}
+  <h1>Kartu ini belum aktif</h1>
+  <p class="lede">Isinya terbuka setelah pembayaran terkonfirmasi.</p>
+  {% if is_owner %}
+    <a class="btn" href="{% url 'cards:pay' card.id %}">Lanjutkan pembayaran</a>
+  {% else %}
+    <a class="btn ghost" href="{% url 'cards:landing' %}">Buat kartu sendiri</a>
+  {% endif %}
+{% endblock %}

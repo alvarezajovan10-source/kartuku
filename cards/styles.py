@@ -50,6 +50,7 @@ ALIGNMENTS = ("left", "center", "right")
 PHOTO_FITS = ("cover", "contain")
 
 SIZE_MIN, SIZE_MAX = 0.5, 3.0
+ZOOM_MIN, ZOOM_MAX = 1.0, 4.0
 SPACING_MIN, SPACING_MAX = -0.05, 0.6
 LINE_MIN, LINE_MAX = 0.8, 2.6
 
@@ -84,6 +85,12 @@ def _num(value, lo, hi, fallback=None):
         return round(min(max(float(value), lo), hi), 3)
     except (TypeError, ValueError):
         return fallback
+
+
+def _fmt(value):
+    """1.0 → "1", 1.50 → "1.5". Supaya CSS-nya bersih dan mudah dibaca."""
+    text = f"{float(value):g}"
+    return text
 
 
 def _color_or_none(value):
@@ -135,6 +142,16 @@ def sanitize_element(raw):
     if radius is not None:
         clean["radius"] = radius
 
+    # Crop = geser + perbesar di dalam bingkai. Foto aslinya tidak diubah,
+    # jadi user bisa mengatur ulang kapan saja tanpa mengunggah lagi.
+    zoom = _num(raw.get("zoom"), ZOOM_MIN, ZOOM_MAX)
+    if zoom is not None:
+        clean["zoom"] = zoom
+    for axis in ("ox", "oy"):
+        pos = _num(raw.get(axis), 0, 100)
+        if pos is not None:
+            clean[axis] = pos
+
     return clean
 
 
@@ -173,7 +190,7 @@ def element_css(conf):
     if "font" in conf:
         parts.append(f"--f:{FONTS[conf['font']][2]}")
     if "size" in conf:
-        parts.append(f"--fs:{conf['size']}")
+        parts.append(f"--fs:{_fmt(conf['size'])}")
     if "color" in conf:
         parts.append(f"--c:{conf['color']}")
     if "align" in conf:
@@ -183,13 +200,19 @@ def element_css(conf):
     if conf.get("italic"):
         parts.append("--fi:italic")
     if "spacing" in conf:
-        parts.append(f"--ls:{conf['spacing']}em")
+        parts.append(f"--ls:{_fmt(conf['spacing'])}em")
     if "line" in conf:
-        parts.append(f"--lh:{conf['line']}")
+        parts.append(f"--lh:{_fmt(conf['line'])}")
     if "fit" in conf:
         parts.append(f"--fit:{conf['fit']}")
     if "radius" in conf:
-        parts.append(f"--br:{conf['radius']}px")
+        parts.append(f"--br:{_fmt(conf['radius'])}px")
+    if "zoom" in conf:
+        parts.append(f"--zoom:{_fmt(conf['zoom'])}")
+    if "ox" in conf:
+        parts.append(f"--ox:{_fmt(conf['ox'])}%")
+    if "oy" in conf:
+        parts.append(f"--oy:{_fmt(conf['oy'])}%")
     return ";".join(parts)
 
 

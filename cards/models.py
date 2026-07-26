@@ -189,5 +189,10 @@ class GiftPhoto(models.Model):
         verbose_name_plural = "Foto Kartu"
         ordering = ["order", "id"]
 
+    @property
+    def element_key(self):
+        """Kunci elemen untuk foto galeri, supaya bisa diklik & di-crop sendiri."""
+        return f"photo_{self.pk}"
+
     def __str__(self):
         return f"Foto #{self.order} — {self.card_id}"

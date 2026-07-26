@@ -321,6 +321,17 @@ def editor(request, template_slug):
             }
         )
 
+    # Tiap foto galeri jadi elemen sendiri supaya bisa diklik & di-crop.
+    for photo in card.gallery_photos() if card else []:
+        element_specs.append(
+            {
+                "key": photo.element_key,
+                "label": "Foto kenangan",
+                "type": "photo",
+                "photo": _photo_payload(photo),
+            }
+        )
+
     field_values = {
         "recipient": form["recipient_name"].value() or "",
         "sender": form["sender_name"].value() or "",

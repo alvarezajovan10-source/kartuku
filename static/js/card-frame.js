@@ -84,6 +84,9 @@
       window.show(data.value);
     }
 
+    // Editor memasang ulang sorotan setelah preview dimuat ulang.
+    if (data.type === "select") highlight(data.key);
+
     if (data.type === "reload") window.location.reload();
   });
 

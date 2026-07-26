@@ -70,8 +70,8 @@
 
   /* ================= HERO (greeting) ================= */
   #hero{background:var(--c-scene_bg, #7A1526)}
-  .photo-bg{position:absolute;inset:0;background:linear-gradient(160deg,#c33a4d,#7a1526);opacity:.55}
-  .photo-bg.has-photo{background-size:cover;background-position:center;opacity:.62}
+  .photo-bg{position:absolute;inset:0;overflow:hidden;background:linear-gradient(160deg,#c33a4d,#7a1526);opacity:.55}
+  .photo-bg.has-photo{background-size:calc(100% * var(--zoom,1)) auto;background-position:var(--ox,50%) var(--oy,50%);background-repeat:no-repeat;opacity:.62}
   .photo-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,transparent,rgba(60,10,20,.7))}
   #hero .inner{position:relative;z-index:2;max-width:560px}
   #hero .greet{font-size:clamp(2.2rem,9vw,4.4rem);color:var(--tcream);margin-bottom:14px;text-shadow:0 4px 24px rgba(0,0,0,.35)}
@@ -129,7 +129,7 @@
   /* polaroid */
   .polaroid{background:#fff;padding:7px 7px 22px;border-radius:2px;box-shadow:0 10px 24px -12px var(--shadow);width:96px}
   .polaroid .ph{aspect-ratio:1;background:linear-gradient(150deg,#f3d9c4,#e7b9c2);border-radius:1px;display:grid;place-items:center;color:#b06a78;font-size:.7rem;overflow:hidden}
-  .polaroid .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .polaroid .ph img{width:100%;height:100%;object-fit:var(--fit,cover);object-position:var(--ox,50%) var(--oy,50%);transform:scale(var(--zoom,1));border-radius:var(--br,0);display:block}
   .polaroid .cap{font-family:'Caveat',cursive;font-size:.95rem;color:#7a4550;text-align:center;margin-top:4px;min-height:1.2em;overflow-wrap:break-word}
   .r1{transform:rotate(-6deg)}.r2{transform:rotate(3deg)}.r3{transform:rotate(-2deg)}.r4{transform:rotate(5deg)}
 
@@ -400,7 +400,7 @@
   <h3 class="scene-head script"{% el card editing "gallery_head" %}>{% t card "gallery_head" %}</h3>
   <div class="board" data-photos{% if editing %} data-edit="gallery"{% endif %}>
     {% for photo in gallery_photos %}
-      <div class="polaroid r{% cycle '1' '2' '3' '4' '2' '1' %}">
+      <div class="polaroid r{% cycle '1' '2' '3' '4' '2' '1' %}"{% frame card editing photo.element_key %}>
         <div class="ph"><img src="{{ photo.image.url }}" alt="" loading="lazy"></div>
         <p class="cap">{{ photo.caption }}</p>
       </div>

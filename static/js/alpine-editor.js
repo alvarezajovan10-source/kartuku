@@ -39,6 +39,8 @@ window.cardEditor = function () {
     currentScene: "",
     busy: false,
     error: "",
+    dragging: false,
+    dragFrom: null,
     fontOpen: false,
     colorOpen: false,
     moreOpen: false,
@@ -108,7 +110,10 @@ window.cardEditor = function () {
         if (data.type === "ready") {
           self.scenes = data.scenes || [];
           if (!self.currentScene) self.currentScene = self.scenes[0] || "";
-          self.pushColors();
+          // Preview baru saja dimuat dari server, jadi hanya berisi data yang
+          // SUDAH tersimpan. Editan yang masih di memori dipasang ulang di
+          // sini — tanpa ini, mengunggah foto akan menghapus tampilan editan.
+          self.replay();
         }
         if (data.type === "select") {
           self.sel = data.key;
@@ -133,6 +138,23 @@ window.cardEditor = function () {
     },
     pushColors: function () {
       this.post({ type: "colors", colors: this.style.colors });
+    },
+
+    replay: function () {
+      var self = this;
+      this.pushColors();
+      Object.keys(this.style.elements).forEach(function (key) {
+        self.post({ type: "style", key: key, css: elementCss(self.style.elements[key]) });
+      });
+      Object.keys(this.fields).forEach(function (key) {
+        if (self.fields[key]) self.post({ type: "text", key: key, value: self.fields[key] });
+      });
+      Object.keys(this.texts).forEach(function (key) {
+        self.post({ type: "text", key: key, value: self.texts[key] });
+      });
+      // Kembali ke babak yang sedang dilihat, bukan lompat ke sampul.
+      if (this.currentScene) this.post({ type: "scene", value: this.currentScene });
+      if (this.sel) this.post({ type: "select", key: this.sel });
     },
 
     /* ── Sunting ──────────────────────────────────────────────────────── */
@@ -163,6 +185,57 @@ window.cardEditor = function () {
     resetElement: function () {
       delete this.style.elements[this.sel];
       this.pushStyle();
+    },
+
+    /* ── Crop: geser & perbesar di dalam bingkai ──────────────────────
+       Foto aslinya tidak disentuh; yang disimpan cuma posisi & perbesaran,
+       jadi user bisa mengatur ulang kapan saja tanpa unggah ulang. */
+    cropStart: function (event) {
+      this.dragging = true;
+      this.dragFrom = {
+        x: event.clientX,
+        y: event.clientY,
+        ox: this.st.ox === undefined ? 50 : this.st.ox,
+        oy: this.st.oy === undefined ? 50 : this.st.oy,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+
+    cropMove: function (event) {
+      if (!this.dragging) return;
+      var box = event.currentTarget.getBoundingClientRect();
+      // Makin besar zoom, makin kecil geseran per pixel — terasa wajar.
+      var reach = Math.max((this.st.zoom || 1) - 1, 0.35);
+      var dx = ((event.clientX - this.dragFrom.x) / box.width) * (100 / reach);
+      var dy = ((event.clientY - this.dragFrom.y) / box.height) * (100 / reach);
+      var current = this.style.elements[this.sel] || {};
+      current.ox = Math.min(Math.max(this.dragFrom.ox - dx, 0), 100);
+      current.oy = Math.min(Math.max(this.dragFrom.oy - dy, 0), 100);
+      this.style.elements[this.sel] = current;
+      this.pushStyle();
+    },
+
+    cropEnd: function () { this.dragging = false; },
+
+    resetCrop: function () {
+      var current = this.style.elements[this.sel] || {};
+      delete current.zoom;
+      delete current.ox;
+      delete current.oy;
+      this.style.elements[this.sel] = current;
+      this.pushStyle();
+    },
+
+    cropStyle: function () {
+      if (!this.photo) return "";
+      return (
+        "background-image:url(" + this.photo.url + ");" +
+        "background-size:" + ((this.st.zoom || 1) * 100) + "% auto;" +
+        "background-position:" +
+        (this.st.ox === undefined ? 50 : this.st.ox) + "% " +
+        (this.st.oy === undefined ? 50 : this.st.oy) + "%;" +
+        "background-repeat:no-repeat"
+      );
     },
 
     setSurface: function (key, value) {

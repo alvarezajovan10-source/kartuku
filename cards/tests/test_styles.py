@@ -285,3 +285,56 @@ class PhotoLimitTests(TestCase):
         from django.conf import settings
 
         self.assertEqual(settings.MAX_PHOTOS_PER_CARD, 30)
+
+
+class CropTests(TestCase):
+    """Crop = geser + perbesar. Foto asli tidak diubah, jadi bisa diatur ulang."""
+
+    def test_zoom_and_position_kept(self):
+        clean = styles.sanitize_element({"zoom": 2.5, "ox": 30, "oy": 70})
+        self.assertEqual(clean["zoom"], 2.5)
+        self.assertEqual(clean["ox"], 30)
+        self.assertEqual(clean["oy"], 70)
+
+    def test_zoom_clamped(self):
+        self.assertEqual(styles.sanitize_element({"zoom": 99})["zoom"], styles.ZOOM_MAX)
+        self.assertEqual(styles.sanitize_element({"zoom": 0})["zoom"], styles.ZOOM_MIN)
+
+    def test_position_clamped_to_percent(self):
+        self.assertEqual(styles.sanitize_element({"ox": -50})["ox"], 0)
+        self.assertEqual(styles.sanitize_element({"oy": 500})["oy"], 100)
+
+    def test_injection_via_crop_rejected(self):
+        clean = styles.sanitize_element({"zoom": "2;} body{display:none", "ox": "50%"})
+        self.assertNotIn("zoom", clean)
+        self.assertNotIn("ox", clean)
+
+    def test_crop_reaches_css(self):
+        css = styles.element_css({"zoom": 1.5, "ox": 25, "oy": 75})
+        self.assertIn("--zoom:1.5", css)
+        self.assertIn("--ox:25%", css)
+        self.assertIn("--oy:75%", css)
+
+
+class GalleryPhotoElementTests(TestCase):
+    """Tiap foto galeri punya kunci elemen sendiri supaya bisa di-crop terpisah."""
+
+    def setUp(self):
+        self.template = Template.objects.create(
+            slug="amplop-merah",
+            name="Amplop Merah",
+            category=CardType.BIRTHDAY,
+            config={"renderer": "birthday"},
+        )
+
+    def test_element_key_matches_allowed_pattern(self):
+        from cards.models import GiftPhoto
+
+        card = GiftCard.objects.create(
+            template=self.template, category=CardType.BIRTHDAY
+        )
+        photo = GiftPhoto.objects.create(card=card, image="cards/x.jpg")
+        self.assertTrue(styles.ELEMENT_KEY.match(photo.element_key))
+        # Kunci ini dipakai sebagai kunci gaya, jadi harus lolos pembersih.
+        clean = styles.sanitize_style({"elements": {photo.element_key: {"zoom": 2}}})
+        self.assertIn(photo.element_key, clean["elements"])

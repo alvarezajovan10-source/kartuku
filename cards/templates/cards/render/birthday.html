@@ -1,5 +1,5 @@
 {% load static card_extras %}<!DOCTYPE html>
-<html lang="id">
+<html lang="id" style="{{ card.colors_css }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Caveat:wght@500;600;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+{% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
 <style>
   :root{
     --red:#9E1B32;
@@ -179,6 +180,31 @@
   .board .polaroid .cap{font-size:1.05rem}
   .stitch{width:120px;color:var(--rose);opacity:.7;margin-top:10px}
 
+  /* ─── Lapisan gaya pilihan user ───────────────────────────────────────
+     Selector sama dengan aturan di atas, ditaruh belakangan supaya menang.
+     Tiap nilai punya fallback = desain asli template, jadi kalau user belum
+     mengubah apa-apa, tampilannya persis seperti aslinya. */
+  #cover h1{font-family:var(--f,'Pinyon Script',cursive);font-size:calc(3.6rem*var(--fs,1));color:var(--c,var(--c-cover_ink,#9E1B32));text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1)}
+  .tap-hint{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1.15rem*var(--fs,1));color:var(--c,var(--c-cover_ink,#7A1526));text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,italic);letter-spacing:var(--ls,normal);line-height:var(--lh,1.5)}
+  #hero .greet{font-family:var(--f,'Pinyon Script',cursive);font-size:calc(clamp(2.2rem,9vw,4.4rem)*var(--fs,1));color:var(--c,var(--c-scene_ink,#FBF4E6));text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1.1)}
+  .e-recipient,.e-sender{font-family:var(--f,inherit);font-size:calc(1em*var(--fs,1));color:var(--c,inherit);font-weight:var(--fw,inherit);font-style:var(--fi,inherit);letter-spacing:var(--ls,inherit)}
+  #hero .sub{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1.25rem*var(--fs,1));color:var(--c,#f6d9dd);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,italic);letter-spacing:var(--ls,normal);line-height:var(--lh,1.5)}
+  #hero .btn-gold{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1.05rem*var(--fs,1));font-weight:var(--fw,600);font-style:var(--fi,normal);letter-spacing:var(--ls,.06em)}
+  #hub .hub-title{font-family:var(--f,'Pinyon Script',cursive);font-size:calc(3.4rem*var(--fs,1));color:var(--c,var(--c-scene_ink,#FBF4E6));text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1)}
+  #hub .hub-sub{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1.1rem*var(--fs,1));color:var(--c,#f4cdd2);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,italic);letter-spacing:var(--ls,normal);line-height:var(--lh,1.5)}
+  .gift .lbl{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1.05rem*var(--fs,1));color:var(--c,inherit);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,.02em)}
+  .scene-head{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(2.6rem*var(--fs,1));color:var(--c,var(--c-scene_ink,#FBF4E6));text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1.15)}
+  .letter .to{font-family:var(--f,'Caveat',cursive);font-size:calc(1.5rem*var(--fs,1));color:var(--c,#8A1F2E);text-align:var(--al,left);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1.4)}
+  .letter .body{font-family:var(--f,'Caveat',cursive);font-size:calc(1.35rem*var(--fs,1));color:var(--c,#4a2530);text-align:var(--al,left);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1.55);white-space:pre-wrap;overflow-wrap:break-word}
+  .letter .from{font-family:var(--f,'Caveat',cursive);font-size:calc(1.5rem*var(--fs,1));color:var(--c,#8A1F2E);text-align:var(--al,right);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal)}
+  #flower .flower-name{font-family:var(--f,'Pinyon Script',cursive);font-size:calc(2.4rem*var(--fs,1));color:var(--c,#f6d9dd);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1.1)}
+  #flower .flower-sub{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1rem*var(--fs,1));color:var(--c,inherit);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,italic);letter-spacing:var(--ls,normal)}
+  .note{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1.02rem*var(--fs,1));color:var(--c,#7A1526);text-align:var(--al,left);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal);line-height:var(--lh,1.5)}
+  #cake .cake-hint{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1rem*var(--fs,1));color:var(--c,inherit);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,italic);letter-spacing:var(--ls,normal)}
+  .wish{font-family:var(--f,'Pinyon Script',cursive);font-size:calc(2.2rem*var(--fs,1));color:var(--c,#f6d9dd);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,normal);letter-spacing:var(--ls,normal)}
+  #song .caption{font-family:var(--f,'Cormorant Garamond',serif);font-size:calc(1rem*var(--fs,1));color:var(--c,inherit);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,italic);letter-spacing:var(--ls,normal)}
+  .polaroid .cap{font-family:var(--f,'Caveat',cursive);font-size:calc(.95rem*var(--fs,1));color:var(--c,#7a4550);text-align:var(--al,center)}
+
   @media (max-width:420px){
     #cover h1,#hub .hub-title,#gallery .scene-head,#cake .scene-head,#message .scene-head{font-size:2.5rem}
     .gift{width:100px}.gift .ico{width:70px;height:70px}
@@ -196,11 +222,11 @@
 <body{% if editing %} class="is-editing"{% endif %}>
 
 <!-- ======================= COVER ======================= -->
-<section class="scene on-cream active" id="cover">
+<section class="scene on-cream active" id="cover"{% bg card editing "cover_bg" %}>
   <svg class="doodle d-bl" viewBox="0 0 60 60"><path d="M30 55c-6-14-2-30 0-40M18 10c4 4 8 4 12 0M30 8c4 5 9 5 13 1M14 24l6-4M46 22l-6-3M20 40l-7 3M42 40l7 4"/></svg>
   <svg class="doodle d-br" viewBox="0 0 60 60"><ellipse cx="22" cy="20" rx="12" ry="15"/><ellipse cx="40" cy="24" rx="10" ry="13"/><path d="M22 35c-2 8-3 12-6 20M40 37c1 7 3 11 5 18M22 35l18 2"/></svg>
   <div class="card-shell">
-    <h1 class="script"{% ed editing "cover_title" %}>{% t card "cover_title" %}</h1>
+    <h1 class="script"{% el card editing "cover_title" %}>{% t card "cover_title" %}</h1>
     <div class="envelope" id="envelope">
       <svg viewBox="0 0 300 200" aria-hidden="true">
         <rect x="6" y="20" width="288" height="170" rx="10" fill="#9E1B32"/>
@@ -216,55 +242,55 @@
         </svg>
       </button>
     </div>
-    <p class="tap-hint"{% ed editing "cover_hint" %}>{% t card "cover_hint" %}</p>
+    <p class="tap-hint"{% el card editing "cover_hint" %}>{% t card "cover_hint" %}</p>
   </div>
 </section>
 
 <!-- ======================= HERO / GREETING ======================= -->
-<section class="scene" id="hero">
+<section class="scene" id="hero"{% bg card editing "scene_bg" %}>
   {% with hero=frame_photos|get:"hero" %}
     <div class="photo-bg{% if hero %} has-photo{% endif %}{% if editing and not hero %} is-empty{% endif %}"
          {% if hero %}style="background-image:url('{{ hero.image.url }}')"{% endif %}
-         {% frame_attr editing "hero" %}></div>
+         {% frame card editing "hero" %}></div>
   {% endwith %}
   <div class="inner">
-    <h1 class="greet script">Selamat Ulang Tahun, <span{% if editing %} data-edit="recipient" data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span>!</h1>
-    <p class="sub"{% ed editing "hero_sub" %}>{% t card "hero_sub" %}</p>
-    <button class="btn btn-gold" data-go="hub"{% ed editing "hero_button" %}>{% t card "hero_button" %}</button>
+    <h1 class="greet script">Selamat Ulang Tahun, <span class="e-recipient"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span>!</h1>
+    <p class="sub"{% el card editing "hero_sub" %}>{% t card "hero_sub" %}</p>
+    <button class="btn btn-gold" data-go="hub"{% el card editing "hero_button" %}>{% t card "hero_button" %}</button>
   </div>
 </section>
 
 <!-- ======================= HUB ======================= -->
-<section class="scene on-red" id="hub">
-  <h2 class="hub-title script"{% ed editing "hub_title" %}>{% t card "hub_title" %}</h2>
-  <p class="hub-sub"{% ed editing "hub_sub" %}>{% t card "hub_sub" %}</p>
+<section class="scene on-red" id="hub"{% bg card editing "scene_bg" %}>
+  <h2 class="hub-title script"{% el card editing "hub_title" %}>{% t card "hub_title" %}</h2>
+  <p class="hub-sub"{% el card editing "hub_sub" %}>{% t card "hub_sub" %}</p>
   <div class="gifts">
     {% if editing or card.message %}
     <button class="gift" data-go="message">
       <svg class="ico" viewBox="0 0 82 82" aria-hidden="true"><rect x="8" y="20" width="66" height="46" rx="6" fill="#fff"/><path d="M8 24 L41 50 L74 24" fill="none" stroke="#e0c3c9" stroke-width="2.5"/><circle cx="41" cy="43" r="8" fill="#9E1B32"/></svg>
-      <span class="lbl"{% ed editing "gift_message" %}>{% t card "gift_message" %}</span>
+      <span class="lbl"{% el card editing "gift_message" %}>{% t card "gift_message" %}</span>
     </button>
     {% endif %}
     {% if editing or card.favorite_flower or affirmations %}
     <button class="gift" data-go="flower">
       <svg class="ico" viewBox="0 0 82 82" aria-hidden="true"><path d="M41 44 L30 70 h22 Z" fill="#f0e2c6"/><circle cx="34" cy="30" r="9" fill="#f2b8c2"/><circle cx="48" cy="30" r="9" fill="#f7d774"/><circle cx="41" cy="20" r="9" fill="#eba7b1"/><path d="M41 44 L41 30" stroke="#7ba86a" stroke-width="2.5"/></svg>
-      <span class="lbl"{% ed editing "gift_flower" %}>{% t card "gift_flower" %}</span>
+      <span class="lbl"{% el card editing "gift_flower" %}>{% t card "gift_flower" %}</span>
     </button>
     {% endif %}
     <button class="gift" data-go="cake">
       <svg class="ico" viewBox="0 0 82 82" aria-hidden="true"><rect x="18" y="44" width="46" height="24" rx="4" fill="#fbeee0"/><rect x="18" y="52" width="46" height="7" fill="#e78ea0"/><rect x="39" y="26" width="4" height="16" fill="#f7d774"/><circle cx="41" cy="22" r="4" fill="#ff8a5b"/></svg>
-      <span class="lbl"{% ed editing "gift_cake" %}>{% t card "gift_cake" %}</span>
+      <span class="lbl"{% el card editing "gift_cake" %}>{% t card "gift_cake" %}</span>
     </button>
     {% if editing or card.youtube_video_id %}
     <button class="gift" data-go="song">
       <svg class="ico" viewBox="0 0 82 82" aria-hidden="true"><circle cx="41" cy="41" r="30" fill="#1e1618"/><circle cx="41" cy="41" r="10" fill="#9E1B32"/><circle cx="41" cy="41" r="3" fill="#faf2e4"/></svg>
-      <span class="lbl"{% ed editing "gift_song" %}>{% t card "gift_song" %}</span>
+      <span class="lbl"{% el card editing "gift_song" %}>{% t card "gift_song" %}</span>
     </button>
     {% endif %}
     {% if editing or photos %}
     <button class="gift" data-go="gallery">
       <svg class="ico" viewBox="0 0 82 82" aria-hidden="true"><rect x="16" y="18" width="30" height="34" rx="2" fill="#fff" transform="rotate(-8 31 35)"/><rect x="36" y="24" width="30" height="34" rx="2" fill="#fff" transform="rotate(6 51 41)"/><rect x="41" y="30" width="20" height="20" fill="#eeb9c2"/></svg>
-      <span class="lbl"{% ed editing "gift_gallery" %}>{% t card "gift_gallery" %}</span>
+      <span class="lbl"{% el card editing "gift_gallery" %}>{% t card "gift_gallery" %}</span>
     </button>
     {% endif %}
   </div>
@@ -272,20 +298,20 @@
 
 <!-- ======================= MESSAGE ======================= -->
 {% if editing or card.message %}
-<section class="scene on-red" id="message">
+<section class="scene on-red" id="message"{% bg card editing "scene_bg" %}>
   <button class="back" data-go="hub">← kembali</button>
   <div class="stage">
-    <h3 class="scene-head script"{% ed editing "letter_head" %}>{% t card "letter_head" %}</h3>
-    <div class="letter">
-      <p class="to">Untuk <span{% if editing %} data-edit="recipient" data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span>,</p>
-      <p class="body"{% if editing %} data-edit="message" data-placeholder="Tulis pesanmu di sini..."{% endif %}>{{ card.message|default:"Tulis pesanmu di sini..." }}</p>
-      <p class="from">— <span{% if editing %} data-edit="sender" data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</span></p>
+    <h3 class="scene-head script"{% el card editing "letter_head" %}>{% t card "letter_head" %}</h3>
+    <div class="letter"{% bg card editing "paper" %}>
+      <p class="to">Untuk <span class="e-recipient"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span>,</p>
+      <p class="body"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis pesanmu di sini..."{% endif %}>{{ card.message|default:"Tulis pesanmu di sini..." }}</p>
+      <p class="from">— <span class="e-sender"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</span></p>
     </div>
     <div class="polastrip">
       {% for frame in card.frames %}
         {% with photo=frame_photos|get:frame.key %}
         <div class="polaroid r{{ forloop.counter }}{% if editing and not photo %} is-empty{% endif %}"
-             {% if editing %}data-frame="{{ frame.key }}"{% endif %}>
+             {% frame card editing frame.key %}>
           <div class="ph">
             {% if photo %}<img src="{{ photo.image.url }}" alt="" loading="lazy">{% endif %}
           </div>
@@ -300,11 +326,11 @@
 
 <!-- ======================= FLOWER ======================= -->
 {% if editing or card.favorite_flower or affirmations %}
-<section class="scene on-red" id="flower">
+<section class="scene on-red" id="flower"{% bg card editing "scene_bg" %}>
   <button class="back" data-go="hub">← kembali</button>
-  <h3 class="scene-head"{% ed editing "flower_head" %}>{% t card "flower_head" %}</h3>
-  <p class="flower-name"{% if editing %} data-edit="favorite_flower" data-placeholder="Nama bunga"{% endif %}>{{ card.favorite_flower|default:"Nama bunga" }}</p>
-  <p class="flower-sub"{% ed editing "flower_sub" %}>{% t card "flower_sub" %}</p>
+  <h3 class="scene-head"{% el card editing "flower_head" %}>{% t card "flower_head" %}</h3>
+  <p class="flower-name"{% el card editing "favorite_flower" %}{% if editing %} data-placeholder="Nama bunga"{% endif %}>{{ card.favorite_flower|default:"Nama bunga" }}</p>
+  <p class="flower-sub"{% el card editing "flower_sub" %}>{% t card "flower_sub" %}</p>
   <svg class="bouquet" viewBox="0 0 150 150" aria-hidden="true">
     <path d="M75 90 L55 145 h40 Z" fill="#efe0c2"/>
     <path d="M75 90 L75 60 M75 82 L60 66 M75 82 L92 66" stroke="#7ba86a" stroke-width="3" fill="none"/>
@@ -315,7 +341,7 @@
     </g>
   </svg>
   {% if affirmations %}
-  <div class="notes"{% if editing %} data-edit="affirmations"{% endif %}>
+  <div class="notes"{% el card editing "affirmations" %}>
     {% for note in affirmations %}
       <div class="note" style="--rot:{% cycle '-3deg' '2deg' '-2deg' '3deg' %}">{{ note }}</div>
     {% endfor %}
@@ -325,10 +351,10 @@
 {% endif %}
 
 <!-- ======================= CAKE ======================= -->
-<section class="scene on-red" id="cake">
+<section class="scene on-red" id="cake"{% bg card editing "scene_bg" %}>
   <button class="back" data-go="hub">← kembali</button>
-  <h3 class="scene-head script"{% ed editing "cake_head" %}>{% t card "cake_head" %}</h3>
-  <p class="cake-hint"{% ed editing "cake_hint" %}>{% t card "cake_hint" %}</p>
+  <h3 class="scene-head script"{% el card editing "cake_head" %}>{% t card "cake_head" %}</h3>
+  <p class="cake-hint"{% el card editing "cake_hint" %}>{% t card "cake_hint" %}</p>
   <div class="cake-wrap" id="cakeWrap">
     <svg viewBox="0 0 210 200" aria-hidden="true">
       <ellipse cx="105" cy="182" rx="80" ry="10" fill="rgba(0,0,0,.25)"/>
@@ -346,14 +372,14 @@
       </g>
     </svg>
   </div>
-  <p class="wish script" id="wish"{% ed editing "cake_wish" %}>{% t card "cake_wish" %}</p>
+  <p class="wish script" id="wish"{% el card editing "cake_wish" %}>{% t card "cake_wish" %}</p>
 </section>
 
 <!-- ======================= SONG ======================= -->
 {% if editing or card.youtube_video_id %}
-<section class="scene on-red" id="song">
+<section class="scene on-red" id="song"{% bg card editing "scene_bg" %}>
   <button class="back" data-go="hub">← kembali</button>
-  <h3 class="scene-head script"{% ed editing "song_head" %}>{% t card "song_head" %}</h3>
+  <h3 class="scene-head script"{% el card editing "song_head" %}>{% t card "song_head" %}</h3>
   <div class="player">
     <div class="vinyl" aria-hidden="true"></div>
     <div class="yt">
@@ -363,15 +389,15 @@
               allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </div>
   </div>
-  <p class="caption"{% ed editing "song_caption" %}>{% t card "song_caption" %}</p>
+  <p class="caption"{% el card editing "song_caption" %}>{% t card "song_caption" %}</p>
 </section>
 {% endif %}
 
 <!-- ======================= GALLERY ======================= -->
 {% if editing or photos %}
-<section class="scene on-red" id="gallery">
+<section class="scene on-red" id="gallery"{% bg card editing "scene_bg" %}>
   <button class="back" data-go="hub">← kembali</button>
-  <h3 class="scene-head script"{% ed editing "gallery_head" %}>{% t card "gallery_head" %}</h3>
+  <h3 class="scene-head script"{% el card editing "gallery_head" %}>{% t card "gallery_head" %}</h3>
   <div class="board" data-photos{% if editing %} data-edit="gallery"{% endif %}>
     {% for photo in gallery_photos %}
       <div class="polaroid r{% cycle '1' '2' '3' '4' '2' '1' %}">

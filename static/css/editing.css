@@ -1,27 +1,30 @@
 /* Hanya dimuat di dalam iframe editor — tidak pernah ikut ke kartu asli. */
 
-[data-edit] {
+[data-edit], [data-frame] {
   cursor: pointer;
-  outline: 1.5px dashed rgba(127, 127, 127, .45);
-  outline-offset: 5px;
-  border-radius: 3px;
-  transition: outline-color .15s, background .15s;
-  min-height: 1em;
+  outline: 1px dashed rgba(140, 140, 140, .45);
+  outline-offset: 4px;
+  border-radius: 2px;
+  transition: outline-color .12s, background .12s;
+  min-height: .8em;
 }
-[data-edit]:hover { outline-color: #dd9791; background: rgba(221, 151, 145, .1); }
-[data-edit].is-selected {
-  outline: 2px solid #dd9791;
+[data-edit]:hover, [data-frame]:hover {
+  outline-color: #dd9791;
   background: rgba(221, 151, 145, .12);
 }
-[data-edit].is-blank { opacity: .45; font-style: italic; }
+[data-edit].is-selected, [data-frame].is-selected {
+  outline: 2px solid #dd9791;
+  outline-offset: 4px;
+  background: rgba(221, 151, 145, .14);
+}
+[data-edit].is-blank { opacity: .5; font-style: italic; }
+
+/* Latar: garis tepi saja, di dalam, supaya tidak menutupi isi */
+[data-surface] { cursor: pointer; }
+[data-surface].is-selected { outline: 2px solid #dd9791; outline-offset: -3px; }
 
 /* Bingkai foto kosong */
-[data-frame] {
-  position: relative;
-  cursor: pointer;
-  outline: 1.5px dashed rgba(127, 127, 127, .5);
-  outline-offset: 3px;
-}
+[data-frame].is-empty { position: relative; }
 [data-frame].is-empty::after {
   content: "+ foto";
   position: absolute;
@@ -29,14 +32,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(120, 100, 100, .18);
+  background: rgba(110, 92, 92, .3);
   color: #fff;
   font-family: ui-sans-serif, -apple-system, sans-serif;
-  font-size: .8rem;
-  letter-spacing: .06em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+  border-radius: inherit;
+  pointer-events: none;
 }
-[data-frame].is-selected { outline: 2px solid #dd9791; }
 
-/* Kartu berbabak: di editor semua babak tetap bisa di-scroll, bukan layar penuh */
+/* Kartu berbabak: di editor boleh di-scroll, bukan layar penuh terkunci */
 body.is-editing { overflow: auto !important; }

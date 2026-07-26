@@ -7,173 +7,220 @@ from cards import styles
 from cards.models import CardType, GiftCard, Template
 
 
-class SanitizeStyleTests(TestCase):
-    """Gaya dari user masuk ke CSS, jadi tidak ada nilai mentah yang lolos."""
+class SanitizeElementTests(TestCase):
+    """Gaya elemen masuk ke CSS kartu, jadi tidak ada nilai mentah yang lolos."""
 
-    def test_defaults_when_empty(self):
-        clean = styles.sanitize_style({})
-        self.assertEqual(clean, styles.DEFAULT_STYLE)
+    def test_empty_when_nothing_set(self):
+        # Penting: kunci yang tidak diisi DIBUANG, bukan diberi bawaan —
+        # itulah yang membuat desain asli template tetap utuh.
+        self.assertEqual(styles.sanitize_element({}), {})
 
-    def test_garbage_input_falls_back(self):
-        for junk in [None, "bukan dict", 42, [], {"title": "bukan dict"}]:
+    def test_garbage_input_returns_empty(self):
+        for junk in [None, "bukan dict", 42, []]:
             with self.subTest(junk=junk):
-                clean = styles.sanitize_style(junk)
-                self.assertEqual(clean["title"], styles.DEFAULT_STYLE["title"])
+                self.assertEqual(styles.sanitize_element(junk), {})
 
-    def test_css_injection_via_color_is_rejected(self):
-        evil = {
-            "bg": "red; background-image: url(https://jahat.example/x.png)",
-            "title": {"color": "#fff; position:fixed; top:0"},
-        }
-        clean = styles.sanitize_style(evil)
-        self.assertEqual(clean["bg"], styles.DEFAULT_STYLE["bg"])
-        self.assertEqual(clean["title"]["color"], styles.DEFAULT_STYLE["title"]["color"])
+    def test_valid_values_kept(self):
+        clean = styles.sanitize_element(
+            {"font": "playfair", "size": 1.4, "color": "#112233",
+             "align": "left", "bold": True, "italic": True,
+             "spacing": 0.1, "line": 1.6}
+        )
+        self.assertEqual(clean["font"], "playfair")
+        self.assertEqual(clean["size"], 1.4)
+        self.assertEqual(clean["color"], "#112233")
+        self.assertEqual(clean["align"], "left")
+        self.assertTrue(clean["bold"])
+        self.assertTrue(clean["italic"])
 
-    def test_unknown_font_key_is_rejected(self):
-        clean = styles.sanitize_style({"title": {"font": "../../etc/passwd"}})
-        self.assertEqual(clean["title"]["font"], styles.DEFAULT_STYLE["title"]["font"])
+    def test_css_injection_via_color_rejected(self):
+        clean = styles.sanitize_element({"color": "#fff; position:fixed; top:0"})
+        self.assertNotIn("color", clean)
 
-    def test_size_is_clamped(self):
-        self.assertEqual(styles.sanitize_style({"title": {"size": 99}})["title"]["size"], styles.SIZE_MAX)
-        self.assertEqual(styles.sanitize_style({"title": {"size": -5}})["title"]["size"], styles.SIZE_MIN)
-        self.assertEqual(styles.sanitize_style({"title": {"size": "abc"}})["title"]["size"], 1.0)
+    def test_unknown_font_rejected(self):
+        self.assertNotIn("font", styles.sanitize_element({"font": "../../etc/passwd"}))
+
+    def test_size_clamped(self):
+        self.assertEqual(styles.sanitize_element({"size": 99})["size"], styles.SIZE_MAX)
+        self.assertEqual(styles.sanitize_element({"size": -5})["size"], styles.SIZE_MIN)
+        self.assertNotIn("size", styles.sanitize_element({"size": "abc"}))
 
     def test_align_must_be_known(self):
-        clean = styles.sanitize_style({"title": {"align": "justify; content:'x'"}})
-        self.assertEqual(clean["title"]["align"], "center")
+        self.assertNotIn("align", styles.sanitize_element({"align": "justify;x:1"}))
 
-    def test_valid_input_is_kept(self):
+    def test_bold_only_accepts_true(self):
+        self.assertNotIn("bold", styles.sanitize_element({"bold": "yes"}))
+        self.assertNotIn("bold", styles.sanitize_element({"bold": False}))
+
+    def test_element_css_emits_only_what_is_set(self):
+        css = styles.element_css({"size": 1.2})
+        self.assertEqual(css, "--fs:1.2")
+
+    def test_element_css_rejects_injected_values(self):
+        css = styles.element_css({"color": "red;} body{display:none}", "size": 1.1})
+        self.assertNotIn("display", css)
+        self.assertEqual(css, "--fs:1.1")
+
+
+class SanitizeStyleTests(TestCase):
+    def test_element_keys_must_match_pattern(self):
+        for key in ["Cover", "1bad", "a-b; x", "../x", "a" * 40]:
+            with self.subTest(key=key):
+                clean = styles.sanitize_style({"elements": {key: {"size": 1.2}}})
+                self.assertEqual(clean["elements"], {})
+
+    def test_good_key_kept(self):
+        clean = styles.sanitize_style({"elements": {"cover_title": {"size": 1.2}}})
+        self.assertEqual(clean["elements"], {"cover_title": {"size": 1.2}})
+
+    def test_element_count_capped(self):
+        many = {f"k{i}": {"size": 1.1} for i in range(200)}
+        clean = styles.sanitize_style({"elements": many})
+        self.assertLessEqual(len(clean["elements"]), styles.MAX_ELEMENTS)
+
+    def test_colors_validated(self):
         clean = styles.sanitize_style(
-            {"title": {"font": "sans", "color": "#ABCDEF", "size": 1.25, "align": "left"}}
+            {"colors": {"scene_bg": "#AABBCC", "bad key": "#AABBCC", "x": "merah"}}
         )
+        self.assertEqual(clean["colors"], {"scene_bg": "#AABBCC"})
+
+    def test_colors_css(self):
         self.assertEqual(
-            clean["title"],
-            {"font": "sans", "color": "#ABCDEF", "size": 1.25, "align": "left"},
+            styles.colors_css({"scene_bg": "#AABBCC"}), "--c-scene_bg:#AABBCC"
         )
 
-    def test_css_variables_contain_no_semicolon_from_user(self):
-        css = styles.css_variables({"bg": "#fff; evil: 1", "title": {"color": "#000"}})
-        # Nilai jahat tidak muncul; jumlah deklarasi tetap sesuai jumlah kunci.
-        self.assertNotIn("evil", css)
-        self.assertIn("--bg:#FAF2E4", css)
 
-    def test_every_font_has_label_and_css(self):
-        for key in styles.FONTS:
-            self.assertIn(key, styles.FONT_LABELS)
-            self.assertTrue(styles.FONTS[key][1])
+class FontCatalogTests(TestCase):
+    def test_catalog_covers_every_font(self):
+        listed = {f["key"] for group in styles.font_catalog() for f in group["fonts"]}
+        self.assertEqual(listed, set(styles.FONTS))
+
+    def test_card_loads_only_fonts_it_uses(self):
+        url = styles.google_fonts_url(["playfair"])
+        self.assertIn("Playfair+Display", url)
+        self.assertNotIn("Great+Vibes", url)
+
+    def test_no_fonts_means_no_request(self):
+        self.assertEqual(styles.google_fonts_url([]), "")
+
+    def test_editor_url_has_all_fonts(self):
+        url = styles.google_fonts_url()
+        self.assertEqual(url.count("family="), len(styles.FONTS))
 
 
-class EditorStyleFlowTests(TestCase):
+class EditorFlowTests(TestCase):
     def setUp(self):
         self.template = Template.objects.create(
-            slug="kanvas-klasik",
-            name="Kanvas Klasik",
+            slug="amplop-merah",
+            name="Amplop Merah",
             category=CardType.BIRTHDAY,
-            config={"renderer": "kanvas"},
+            config={
+                "renderer": "birthday",
+                "texts": [
+                    {"key": "cover_title", "label": "Judul", "default": "Happy Birthday!"}
+                ],
+                "surfaces": [
+                    {"key": "scene_bg", "label": "Latar", "default": "#9E1B32"}
+                ],
+                "frames": [{"key": "p1", "label": "Polaroid"}],
+            },
         )
         self.url = reverse("cards:editor", args=[self.template.slug])
 
-    def post(self, style_json):
-        return self.client.post(
-            self.url,
-            {
-                "recipient_name": "Nadia",
-                "sender_name": "Raka",
-                "message": "halo",
-                "youtube_url": "",
-                "favorite_flower": "",
-                "affirmations": "",
-                "style_json": style_json,
-            },
-        )
-
-    def test_style_is_saved_from_editor(self):
-        chosen = {
-            "title": {"font": "sans", "color": "#112233", "size": 1.4, "align": "left"},
-            "bg": "#FFEEDD",
+    def post(self, **extra):
+        payload = {
+            "recipient_name": "Nadia",
+            "sender_name": "Raka",
+            "message": "halo",
+            "youtube_url": "",
+            "favorite_flower": "",
+            "affirmations": "",
+            "style_json": "{}",
+            "texts_json": "{}",
         }
-        self.post(json.dumps(chosen))
-        card = GiftCard.objects.get()
-        self.assertEqual(card.style["title"]["font"], "sans")
-        self.assertEqual(card.style["title"]["color"], "#112233")
-        self.assertEqual(card.style["bg"], "#FFEEDD")
+        payload.update(extra)
+        return self.client.post(self.url, payload)
 
-    def test_malicious_style_does_not_reach_database(self):
-        self.post(json.dumps({"bg": "#fff;} body{display:none}"}))
-        card = GiftCard.objects.get()
-        self.assertEqual(card.style["bg"], styles.DEFAULT_STYLE["bg"])
-
-    def test_broken_json_does_not_break_the_form(self):
-        response = self.post("{bukan json")
-        self.assertEqual(response.status_code, 302)  # tetap lanjut ke halaman bayar
-        card = GiftCard.objects.get()
-        self.assertEqual(card.style, styles.DEFAULT_STYLE)
-
-    def test_missing_style_field_uses_defaults(self):
-        self.client.post(
-            self.url,
-            {"recipient_name": "A", "sender_name": "B", "message": "c",
-             "youtube_url": "", "favorite_flower": "", "affirmations": ""},
+    def test_element_style_saved(self):
+        self.post(
+            style_json=json.dumps(
+                {"elements": {"cover_title": {"font": "playfair", "size": 1.5}}}
+            )
         )
         card = GiftCard.objects.get()
-        self.assertEqual(card.style, styles.DEFAULT_STYLE)
+        self.assertEqual(card.style["elements"]["cover_title"]["font"], "playfair")
 
-    def test_editor_page_ships_valid_init_json(self):
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="editor-init"')
-        body = response.content.decode()
-        start = body.index('id="editor-init" type="application/json">') + len(
-            'id="editor-init" type="application/json">'
+    def test_malicious_style_never_reaches_database(self):
+        self.post(
+            style_json=json.dumps(
+                {"elements": {"cover_title": {"color": "#fff;} body{display:none}"}}}
+            )
         )
-        end = body.index("</script>", start)
-        data = json.loads(body[start:end])  # gagal kalau escaping-nya salah
-        self.assertIn("fonts", data)
-        self.assertIn("style", data)
-        self.assertEqual(data["maxPhotos"], 30)
+        card = GiftCard.objects.get()
+        self.assertEqual(card.style["elements"], {})
 
-    def test_card_page_renders_chosen_style(self):
-        self.post(json.dumps({"title": {"font": "sans", "color": "#112233"}}))
+    def test_broken_json_does_not_break_form(self):
+        response = self.post(style_json="{rusak")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(GiftCard.objects.get().style, {"elements": {}, "colors": {}})
+
+    def test_style_reaches_the_card(self):
+        self.post(
+            style_json=json.dumps(
+                {"elements": {"cover_title": {"color": "#112233", "bold": True}}}
+            )
+        )
         card = GiftCard.objects.get()
         card.status = GiftCard.Status.PAID
         card.save()
         response = self.client.get(reverse("cards:public", args=[card.id]))
-        self.assertTemplateUsed(response, "cards/render/kanvas.html")
-        self.assertContains(response, "--title-color:#112233")
+        self.assertContains(response, "--c:#112233")
+        self.assertContains(response, "--fw:700")
 
+    def test_surface_color_reaches_the_card(self):
+        self.post(style_json=json.dumps({"colors": {"scene_bg": "#123456"}}))
+        card = GiftCard.objects.get()
+        card.status = GiftCard.Status.PAID
+        card.save()
+        response = self.client.get(reverse("cards:public", args=[card.id]))
+        self.assertContains(response, "--c-scene_bg:#123456")
 
-class PhotoLimitTests(TestCase):
-    def test_limit_is_thirty(self):
-        from django.conf import settings
+    def test_card_page_requests_only_used_font(self):
+        self.post(
+            style_json=json.dumps({"elements": {"cover_title": {"font": "lobster"}}})
+        )
+        card = GiftCard.objects.get()
+        card.status = GiftCard.Status.PAID
+        card.save()
+        response = self.client.get(reverse("cards:public", args=[card.id]))
+        self.assertContains(response, "Lobster")
+        self.assertNotContains(response, "Great+Vibes")
 
-        self.assertEqual(settings.MAX_PHOTOS_PER_CARD, 30)
+    def test_editor_ships_valid_init_json(self):
+        response = self.client.get(self.url)
+        body = response.content.decode()
+        start = body.index('id="editor-init" type="application/json">') + len(
+            'id="editor-init" type="application/json">'
+        )
+        data = json.loads(body[start : body.index("</script>", start)])
+        keys = {e["key"] for e in data["elements"]}
+        # Kolom data, teks template, bingkai foto, dan permukaan warna
+        # semuanya jadi elemen yang bisa dipilih di editor.
+        self.assertIn("recipient", keys)
+        self.assertIn("cover_title", keys)
+        self.assertIn("p1", keys)
+        self.assertIn("scene_bg", keys)
+        self.assertTrue(data["fontCatalog"])
 
-
-class SurfaceColorTests(TestCase):
-    """Warna permukaan jadi bagian nama CSS var, jadi kuncinya harus ketat."""
-
-    def test_valid_colors_kept(self):
-        clean = styles.sanitize_style({"colors": {"cover_bg": "#AABBCC"}})
-        self.assertEqual(clean["colors"], {"cover_bg": "#AABBCC"})
-
-    def test_bad_key_rejected(self):
-        for key in ["cover-bg; x:1", "Cover_BG", "a" * 40, "../x", "bg}"]:
-            with self.subTest(key=key):
-                clean = styles.sanitize_style({"colors": {key: "#AABBCC"}})
-                self.assertEqual(clean["colors"], {})
-
-    def test_bad_value_rejected(self):
-        clean = styles.sanitize_style({"colors": {"cover_bg": "red;position:fixed"}})
-        self.assertEqual(clean["colors"], {})
-
-    def test_color_count_capped(self):
-        many = {f"k{i}": "#000000" for i in range(50)}
-        clean = styles.sanitize_style({"colors": many})
-        self.assertLessEqual(len(clean["colors"]), styles.MAX_COLORS)
-
-    def test_colors_reach_css(self):
-        css = styles.css_variables({"colors": {"cover_bg": "#AABBCC"}})
-        self.assertIn("--c-cover_bg:#AABBCC", css)
+    def test_every_element_type_is_known(self):
+        response = self.client.get(self.url)
+        body = response.content.decode()
+        start = body.index('id="editor-init" type="application/json">') + len(
+            'id="editor-init" type="application/json">'
+        )
+        data = json.loads(body[start : body.index("</script>", start)])
+        for element in data["elements"]:
+            self.assertIn(element["type"], {"field", "text", "photo", "surface"})
 
 
 class FreeTextTests(TestCase):
@@ -188,7 +235,6 @@ class FreeTextTests(TestCase):
                 "renderer": "birthday",
                 "texts": [
                     {"key": "cover_title", "label": "Judul", "default": "Happy Birthday!"},
-                    {"key": "hub_title", "label": "Hub", "default": "Ini untukmu"},
                 ],
             },
         )
@@ -198,39 +244,30 @@ class FreeTextTests(TestCase):
         return self.client.post(
             self.url,
             {
-                "recipient_name": "Nadia",
-                "sender_name": "Raka",
-                "message": "halo",
-                "youtube_url": "",
-                "favorite_flower": "",
-                "affirmations": "",
-                "style_json": "{}",
-                "texts_json": texts_json,
+                "recipient_name": "Nadia", "sender_name": "Raka", "message": "halo",
+                "youtube_url": "", "favorite_flower": "", "affirmations": "",
+                "style_json": "{}", "texts_json": texts_json,
             },
         )
 
     def test_default_used_when_not_overridden(self):
         self.post("{}")
-        card = GiftCard.objects.get()
-        self.assertEqual(card.text("cover_title"), "Happy Birthday!")
+        self.assertEqual(GiftCard.objects.get().text("cover_title"), "Happy Birthday!")
 
-    def test_override_is_saved_and_rendered(self):
+    def test_override_saved_and_rendered(self):
         self.post(json.dumps({"cover_title": "Selamat Ulang Tahun Sayang"}))
         card = GiftCard.objects.get()
-        self.assertEqual(card.text("cover_title"), "Selamat Ulang Tahun Sayang")
-
         card.status = GiftCard.Status.PAID
         card.save()
         response = self.client.get(reverse("cards:public", args=[card.id]))
         self.assertContains(response, "Selamat Ulang Tahun Sayang")
         self.assertNotContains(response, "Happy Birthday!")
 
-    def test_unknown_key_is_dropped(self):
+    def test_unknown_key_dropped(self):
         self.post(json.dumps({"kunci_asing": "x", "cover_title": "ok"}))
-        card = GiftCard.objects.get()
-        self.assertEqual(card.texts, {"cover_title": "ok"})
+        self.assertEqual(GiftCard.objects.get().texts, {"cover_title": "ok"})
 
-    def test_html_in_text_is_escaped_not_executed(self):
+    def test_html_escaped_not_executed(self):
         self.post(json.dumps({"cover_title": "<script>alert(1)</script>"}))
         card = GiftCard.objects.get()
         card.status = GiftCard.Status.PAID
@@ -238,22 +275,13 @@ class FreeTextTests(TestCase):
         response = self.client.get(reverse("cards:public", args=[card.id]))
         self.assertNotContains(response, "<script>alert(1)</script>")
 
-    def test_very_long_text_is_trimmed(self):
+    def test_very_long_text_trimmed(self):
         self.post(json.dumps({"cover_title": "x" * 5000}))
-        card = GiftCard.objects.get()
-        self.assertLessEqual(len(card.texts["cover_title"]), 300)
+        self.assertLessEqual(len(GiftCard.objects.get().texts["cover_title"]), 300)
 
-    def test_broken_json_does_not_break_form(self):
-        response = self.post("{rusak")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(GiftCard.objects.get().texts, {})
 
-    def test_editor_lists_all_editable_texts(self):
-        response = self.client.get(self.url)
-        body = response.content.decode()
-        start = body.index('id="editor-init" type="application/json">') + len(
-            'id="editor-init" type="application/json">'
-        )
-        data = json.loads(body[start : body.index("</script>", start)])
-        self.assertEqual(len(data["texts"]), 2)
-        self.assertEqual(data["textValues"]["cover_title"], "Happy Birthday!")
+class PhotoLimitTests(TestCase):
+    def test_limit_is_thirty(self):
+        from django.conf import settings
+
+        self.assertEqual(settings.MAX_PHOTOS_PER_CARD, 30)

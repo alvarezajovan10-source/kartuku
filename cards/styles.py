@@ -1,159 +1,231 @@
-"""Katalog gaya yang boleh dipilih user, plus pembersihnya.
+"""Katalog font & pembersih gaya.
 
-Nilai dari editor berakhir di dalam CSS kartu. Karena itu TIDAK ADA nilai mentah
-dari user yang pernah dipakai langsung: semuanya dicocokkan dengan daftar putih
-di sini, dan yang tidak cocok diganti nilai bawaan. Ini yang menahan orang
-menyuntikkan CSS lewat kolom warna atau font.
+Nilai dari editor berakhir di dalam CSS kartu, jadi TIDAK ADA nilai mentah dari
+user yang dipakai langsung: semuanya dicocokkan dengan daftar putih di sini.
+Yang tidak cocok dibuang, bukan diperbaiki diam-diam.
+
+Model gayanya per ELEMEN, bukan per slot tetap. Setiap elemen yang ditandai
+template punya gaya sendiri, dan nilai yang tidak diisi berarti "pakai bawaan
+template" — karena itu var CSS-nya tidak diemit sama sekali.
 """
 
 import re
 
-# key → (nama Google Fonts, css font-family)
+# key → (nama Google Fonts, spesifikasi bobot untuk URL, css font-family, kelompok)
 FONTS = {
-    "serif": ("Cormorant Garamond", "'Cormorant Garamond', Georgia, serif"),
-    "sans": ("Inter", "'Inter', system-ui, -apple-system, sans-serif"),
-    "script": ("Dancing Script", "'Dancing Script', cursive"),
-    "hand": ("Caveat", "'Caveat', cursive"),
-    "formal": ("Pinyon Script", "'Pinyon Script', cursive"),
-    "modern": ("Playfair Display", "'Playfair Display', Georgia, serif"),
+    # — Serif klasik —
+    "cormorant": ("Cormorant Garamond", "wght@400;600;700", "'Cormorant Garamond', Georgia, serif", "Serif"),
+    "playfair": ("Playfair Display", "wght@400;600;700", "'Playfair Display', Georgia, serif", "Serif"),
+    "lora": ("Lora", "wght@400;600;700", "'Lora', Georgia, serif", "Serif"),
+    "baskerville": ("Libre Baskerville", "wght@400;700", "'Libre Baskerville', Georgia, serif", "Serif"),
+    "garamond": ("EB Garamond", "wght@400;600;700", "'EB Garamond', Georgia, serif", "Serif"),
+    "prata": ("Prata", "", "'Prata', Georgia, serif", "Serif"),
+    # — Sans —
+    "inter": ("Inter", "wght@400;600;700", "'Inter', system-ui, sans-serif", "Sans"),
+    "poppins": ("Poppins", "wght@400;600;700", "'Poppins', system-ui, sans-serif", "Sans"),
+    "montserrat": ("Montserrat", "wght@400;600;700", "'Montserrat', system-ui, sans-serif", "Sans"),
+    "raleway": ("Raleway", "wght@400;600;700", "'Raleway', system-ui, sans-serif", "Sans"),
+    "nunito": ("Nunito", "wght@400;600;700", "'Nunito', system-ui, sans-serif", "Sans"),
+    "worksans": ("Work Sans", "wght@400;600;700", "'Work Sans', system-ui, sans-serif", "Sans"),
+    # — Tulisan tangan —
+    "caveat": ("Caveat", "wght@400;600;700", "'Caveat', cursive", "Tulisan tangan"),
+    "dancing": ("Dancing Script", "wght@400;600;700", "'Dancing Script', cursive", "Tulisan tangan"),
+    "satisfy": ("Satisfy", "", "'Satisfy', cursive", "Tulisan tangan"),
+    "sacramento": ("Sacramento", "", "'Sacramento', cursive", "Tulisan tangan"),
+    "shadows": ("Shadows Into Light", "", "'Shadows Into Light', cursive", "Tulisan tangan"),
+    # — Kaligrafi —
+    "pinyon": ("Pinyon Script", "", "'Pinyon Script', cursive", "Kaligrafi"),
+    "greatvibes": ("Great Vibes", "", "'Great Vibes', cursive", "Kaligrafi"),
+    "parisienne": ("Parisienne", "", "'Parisienne', cursive", "Kaligrafi"),
+    "allura": ("Allura", "", "'Allura', cursive", "Kaligrafi"),
+    # — Tegas —
+    "bebas": ("Bebas Neue", "", "'Bebas Neue', Impact, sans-serif", "Tegas"),
+    "abril": ("Abril Fatface", "", "'Abril Fatface', Georgia, serif", "Tegas"),
+    "lobster": ("Lobster", "", "'Lobster', cursive", "Tegas"),
 }
 
-FONT_LABELS = {
-    "serif": "Klasik",
-    "sans": "Bersih",
-    "script": "Manis",
-    "hand": "Tulisan tangan",
-    "formal": "Formal",
-    "modern": "Elegan",
-}
+FONT_GROUPS = ["Serif", "Sans", "Tulisan tangan", "Kaligrafi", "Tegas"]
 
 ALIGNMENTS = ("left", "center", "right")
-PHOTO_SHAPES = ("rounded", "square", "circle", "polaroid")
+PHOTO_FITS = ("cover", "contain")
 
-# Blok teks yang bisa diatur user.
-SLOTS = ("title", "message", "signature")
-SLOT_LABELS = {
-    "title": "Judul",
-    "message": "Pesan",
-    "signature": "Tanda tangan",
-}
-
-SIZE_MIN, SIZE_MAX = 0.7, 1.8
+SIZE_MIN, SIZE_MAX = 0.5, 3.0
+SPACING_MIN, SPACING_MAX = -0.05, 0.6
+LINE_MIN, LINE_MAX = 0.8, 2.6
 
 HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
-# Kunci warna bebas dari template. Pola ketat karena kunci ini jadi bagian
-# nama CSS custom property (--c-<kunci>).
-COLOR_KEY = re.compile(r"^[a-z0-9_]{1,32}$")
-MAX_COLORS = 24
-
-DEFAULT_STYLE = {
-    "title": {"font": "formal", "color": "#7A1526", "size": 1.0, "align": "center"},
-    "message": {"font": "hand", "color": "#4A2530", "size": 1.0, "align": "left"},
-    "signature": {"font": "hand", "color": "#8A1F2E", "size": 1.0, "align": "right"},
-    "bg": "#FAF2E4",
-    "accent": "#9E1B32",
-    "photo_shape": "rounded",
-    "colors": {},
-}
+# Kunci elemen ikut jadi nama atribut & kunci JSON — pola ketat.
+ELEMENT_KEY = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
+MAX_ELEMENTS = 80
 
 # Palet siap pakai supaya user tidak harus meracik warna sendiri.
 PALETTES = [
-    {"name": "Merah Klasik", "bg": "#FAF2E4", "accent": "#9E1B32", "ink": "#7A1526"},
-    {"name": "Pastel Manis", "bg": "#FDF3F5", "accent": "#D98A9E", "ink": "#7C4A57"},
-    {"name": "Senja", "bg": "#FCEFE6", "accent": "#C9724A", "ink": "#6B3B27"},
-    {"name": "Laut Tenang", "bg": "#EEF4F6", "accent": "#4E7C8C", "ink": "#2F4A54"},
-    {"name": "Malam", "bg": "#20191C", "accent": "#C9A24C", "ink": "#F3E7DC"},
-    {"name": "Taman", "bg": "#F1F5EC", "accent": "#6E8C5A", "ink": "#3C4A32"},
+    {"name": "Merah Klasik", "bg": "#9E1B32", "ink": "#FBF4E6"},
+    {"name": "Pastel Manis", "bg": "#F3C9D4", "ink": "#6E3B48"},
+    {"name": "Senja", "bg": "#C9724A", "ink": "#FFF3E9"},
+    {"name": "Laut Tenang", "bg": "#4E7C8C", "ink": "#F0F7F9"},
+    {"name": "Malam", "bg": "#20191C", "ink": "#F3E7DC"},
+    {"name": "Taman", "bg": "#6E8C5A", "ink": "#F4F8EF"},
+    {"name": "Gading", "bg": "#FAF2E4", "ink": "#5A4634"},
+    {"name": "Lavender", "bg": "#8D7BA5", "ink": "#F7F3FA"},
+]
+
+# Warna cepat untuk pemilih warna teks.
+SWATCHES = [
+    "#FFFFFF", "#F5EDE2", "#E8C9A0", "#C9A24C",
+    "#E78EA0", "#C9736E", "#9E1B32", "#7A1526",
+    "#8D7BA5", "#4E7C8C", "#6E8C5A", "#3B2F2A",
+    "#7C6A60", "#B9AFA6", "#2B2320", "#000000",
 ]
 
 
-def _clamp_size(value):
+def _num(value, lo, hi, fallback=None):
     try:
-        number = float(value)
+        return round(min(max(float(value), lo), hi), 3)
     except (TypeError, ValueError):
-        return 1.0
-    return round(min(max(number, SIZE_MIN), SIZE_MAX), 2)
+        return fallback
 
 
-def _color(value, fallback):
+def _color_or_none(value):
     value = str(value or "")
-    return value if HEX_COLOR.match(value) else fallback
+    return value if HEX_COLOR.match(value) else None
 
 
-def _pick(value, allowed, fallback):
-    return value if value in allowed else fallback
+def sanitize_element(raw):
+    """Gaya satu elemen. Kunci yang tidak diisi DIBUANG, bukan diberi bawaan.
 
-
-def sanitize_style(raw):
-    """Kembalikan struktur gaya yang lengkap & aman, apa pun isi `raw`.
-
-    Selalu mengembalikan semua kunci, jadi template tidak perlu menjaga-jaga.
+    Itu penting: tidak ada nilai = pakai bawaan template, dan var CSS-nya tidak
+    diemit sama sekali sehingga desain asli template tetap utuh.
     """
     if not isinstance(raw, dict):
-        raw = {}
+        return {}
 
     clean = {}
-    for slot in SLOTS:
-        incoming = raw.get(slot)
-        if not isinstance(incoming, dict):
-            incoming = {}
-        default = DEFAULT_STYLE[slot]
-        clean[slot] = {
-            "font": _pick(incoming.get("font"), FONTS, default["font"]),
-            "color": _color(incoming.get("color"), default["color"]),
-            "size": _clamp_size(incoming.get("size", default["size"])),
-            "align": _pick(incoming.get("align"), ALIGNMENTS, default["align"]),
-        }
+    if raw.get("font") in FONTS:
+        clean["font"] = raw["font"]
 
-    clean["bg"] = _color(raw.get("bg"), DEFAULT_STYLE["bg"])
-    clean["accent"] = _color(raw.get("accent"), DEFAULT_STYLE["accent"])
-    clean["photo_shape"] = _pick(
-        raw.get("photo_shape"), PHOTO_SHAPES, DEFAULT_STYLE["photo_shape"]
-    )
+    size = _num(raw.get("size"), SIZE_MIN, SIZE_MAX)
+    if size is not None:
+        clean["size"] = size
 
-    # Warna permukaan yang ditentukan template (latar tiap babak, dsb.).
-    colors = raw.get("colors")
-    clean["colors"] = {}
-    if isinstance(colors, dict):
-        for key, value in list(colors.items())[:MAX_COLORS]:
-            if COLOR_KEY.match(str(key)) and HEX_COLOR.match(str(value)):
-                clean["colors"][str(key)] = str(value)
+    color = _color_or_none(raw.get("color"))
+    if color:
+        clean["color"] = color
+
+    if raw.get("align") in ALIGNMENTS:
+        clean["align"] = raw["align"]
+
+    if raw.get("bold") is True:
+        clean["bold"] = True
+    if raw.get("italic") is True:
+        clean["italic"] = True
+
+    spacing = _num(raw.get("spacing"), SPACING_MIN, SPACING_MAX)
+    if spacing is not None:
+        clean["spacing"] = spacing
+
+    line = _num(raw.get("line"), LINE_MIN, LINE_MAX)
+    if line is not None:
+        clean["line"] = line
+
+    if raw.get("fit") in PHOTO_FITS:
+        clean["fit"] = raw["fit"]
+
+    radius = _num(raw.get("radius"), 0, 50)
+    if radius is not None:
+        clean["radius"] = radius
 
     return clean
 
 
-def css_variables(style):
-    """Ubah gaya bersih jadi deklarasi CSS custom property.
+def sanitize_style(raw):
+    """Seluruh gaya kartu: {"elements": {key: {...}}, "colors": {key: "#hex"}}."""
+    if not isinstance(raw, dict):
+        raw = {}
 
-    Aman ditaruh di atribut `style` karena tiap nilai sudah lolos daftar putih.
-    """
-    style = sanitize_style(style)
-    parts = [
-        f"--bg:{style['bg']}",
-        f"--accent:{style['accent']}",
-    ]
-    for key, value in style["colors"].items():
-        parts.append(f"--c-{key}:{value}")
-    for slot in SLOTS:
-        conf = style[slot]
-        parts += [
-            f"--{slot}-font:{FONTS[conf['font']][1]}",
-            f"--{slot}-color:{conf['color']}",
-            f"--{slot}-size:{conf['size']}",
-            f"--{slot}-align:{conf['align']}",
-        ]
+    elements = {}
+    incoming = raw.get("elements")
+    if isinstance(incoming, dict):
+        for key, conf in list(incoming.items())[:MAX_ELEMENTS]:
+            if not ELEMENT_KEY.match(str(key)):
+                continue
+            cleaned = sanitize_element(conf)
+            if cleaned:
+                elements[str(key)] = cleaned
+
+    colors = {}
+    incoming_colors = raw.get("colors")
+    if isinstance(incoming_colors, dict):
+        for key, value in list(incoming_colors.items())[:MAX_ELEMENTS]:
+            color = _color_or_none(value)
+            if ELEMENT_KEY.match(str(key)) and color:
+                colors[str(key)] = color
+
+    return {"elements": elements, "colors": colors}
+
+
+# Nama var sengaja pendek & lokal ke elemen, jadi CSS template cukup menulis
+# var(--f, <bawaan>) tanpa perlu tahu kunci elemennya.
+def element_css(conf):
+    """Deklarasi CSS untuk satu elemen. String kosong kalau tidak ada yang diatur."""
+    conf = sanitize_element(conf)
+    parts = []
+    if "font" in conf:
+        parts.append(f"--f:{FONTS[conf['font']][2]}")
+    if "size" in conf:
+        parts.append(f"--fs:{conf['size']}")
+    if "color" in conf:
+        parts.append(f"--c:{conf['color']}")
+    if "align" in conf:
+        parts.append(f"--al:{conf['align']}")
+    if conf.get("bold"):
+        parts.append("--fw:700")
+    if conf.get("italic"):
+        parts.append("--fi:italic")
+    if "spacing" in conf:
+        parts.append(f"--ls:{conf['spacing']}em")
+    if "line" in conf:
+        parts.append(f"--lh:{conf['line']}")
+    if "fit" in conf:
+        parts.append(f"--fit:{conf['fit']}")
+    if "radius" in conf:
+        parts.append(f"--br:{conf['radius']}px")
     return ";".join(parts)
 
 
-def google_fonts_url():
-    """Satu URL Google Fonts berisi semua font di katalog."""
-    families = "&".join(
-        "family=" + FONTS[key][0].replace(" ", "+") + ":wght@400;500;600;700"
-        for key in FONTS
-    )
-    return f"https://fonts.googleapis.com/css2?{families}&display=swap"
+def colors_css(colors):
+    """Warna permukaan sebagai var global: --c-<kunci>."""
+    parts = [f"--c-{key}:{value}" for key, value in (colors or {}).items()]
+    return ";".join(parts)
 
 
-def font_choices():
-    """Untuk dropdown di editor: [(key, label, css font-family), ...]"""
-    return [(key, FONT_LABELS[key], FONTS[key][1]) for key in FONTS]
+def google_fonts_url(font_keys=None):
+    """URL Google Fonts. Tanpa argumen = seluruh katalog (dipakai editor).
+
+    Halaman kartu asli hanya memuat font yang benar-benar dipakai, supaya
+    kartunya cepat dibuka di HP penerima.
+    """
+    keys = list(FONTS) if font_keys is None else [k for k in font_keys if k in FONTS]
+    if not keys:
+        return ""
+    families = []
+    for key in keys:
+        name, weights, _css, _group = FONTS[key]
+        family = name.replace(" ", "+")
+        families.append(f"family={family}:{weights}" if weights else f"family={family}")
+    return "https://fonts.googleapis.com/css2?" + "&".join(families) + "&display=swap"
+
+
+def font_catalog():
+    """Untuk pemilih font di editor, dikelompokkan."""
+    return [
+        {
+            "group": group,
+            "fonts": [
+                {"key": key, "name": FONTS[key][0], "css": FONTS[key][2]}
+                for key in FONTS
+                if FONTS[key][3] == group
+            ],
+        }
+        for group in FONT_GROUPS
+    ]

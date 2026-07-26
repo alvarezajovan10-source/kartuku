@@ -107,16 +107,25 @@ class GiftCard(models.Model):
         return [line for line in lines if line][: self.MAX_AFFIRMATIONS]
 
     def style_clean(self):
-        """Gaya yang sudah lolos daftar putih. Selalu lengkap."""
+        """Gaya yang sudah lolos daftar putih."""
         from .styles import sanitize_style
 
         return sanitize_style(self.style)
 
-    def style_css(self):
-        """Deklarasi CSS custom property untuk atribut `style` di template."""
-        from .styles import css_variables
+    def colors_css(self):
+        """Var warna permukaan untuk elemen pembungkus kartu."""
+        from .styles import colors_css
 
-        return css_variables(self.style)
+        return colors_css(self.style_clean()["colors"])
+
+    def fonts_used(self):
+        """Kunci font yang benar-benar dipakai kartu ini.
+
+        Halaman kartu hanya memuat font ini, bukan seluruh katalog — 20+ font
+        akan memperlambat kartu di HP penerima tanpa guna.
+        """
+        elements = self.style_clean()["elements"]
+        return sorted({conf["font"] for conf in elements.values() if "font" in conf})
 
     def renderer(self):
         """Nama template render kartu final, dari `Template.config["renderer"]`."""
@@ -136,6 +145,14 @@ class GiftCard(models.Model):
         if isinstance(override, str) and override.strip():
             return override
         return self.text_defaults().get(key, "")
+
+    def element_specs(self):
+        """Elemen yang bisa disunting: [{"key","label","type"}, ...].
+
+        type: "text" (teks + gaya), "photo" (bingkai foto), "surface" (warna).
+        """
+        raw = (self.template.config or {}).get("elements", [])
+        return [e for e in raw if isinstance(e, dict) and e.get("key")]
 
     def surface_specs(self):
         """Permukaan berwarna yang boleh diganti: [{"key","label","default"}, ...]."""

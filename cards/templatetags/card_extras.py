@@ -1,14 +1,19 @@
 """Tag untuk template render kartu.
 
-Dua alat utama:
-  {% t card "cover_title" %}     → isi teks (pilihan user, atau bawaan template)
-  {% ed editing "cover_title" %} → atribut data-edit, hanya saat mode edit
+Penulis template cukup tahu tiga tag:
 
-Dengan ini penulis template tidak perlu tahu apa pun soal cara penyimpanan.
+  {% el card editing "cover_title" %}  → atribut elemen (data-edit + gaya user)
+  {% t  card "cover_title" %}          → isi teksnya
+  {% bg card editing "cover_bg" %}     → atribut permukaan/latar yang bisa diklik
+
+Sisanya (penyimpanan, pembersihan, editor) tidak perlu dipikirkan.
 """
 
 from django import template
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+
+from cards import styles
 
 register = template.Library()
 
@@ -22,31 +27,43 @@ def get(mapping, key):
 
 
 @register.simple_tag
+def el(card, editing, key):
+    """Atribut untuk satu elemen: penanda edit + gaya pilihan user.
+
+    Gaya diemit sebagai var lokal (--f, --fs, --c, ...) sehingga CSS template
+    cukup menulis var(--f, <bawaan>) dan desain aslinya tetap utuh kalau user
+    belum mengubah apa-apa.
+    """
+    css = styles.element_css((card.style or {}).get("elements", {}).get(key, {}))
+    out = ""
+    if editing:
+        out += format_html(' data-edit="{}"', key)
+    if css:
+        out += format_html(' style="{}"', css)
+    return mark_safe(out)
+
+
+@register.simple_tag
+def bg(card, editing, key):
+    """Atribut untuk permukaan yang bisa diklik (latar babak, kertas surat, dll)."""
+    if not editing:
+        return ""
+    return format_html(' data-surface="{}"', key)
+
+
+@register.simple_tag
 def t(card, key):
-    """Isi teks untuk sebuah kunci. Di-escape otomatis oleh Django."""
+    """Isi teks: pilihan user kalau ada, kalau tidak bawaan template."""
     return card.text(key)
 
 
 @register.simple_tag
-def ed(editing, key):
-    """`data-edit="<key>"` saat mode edit, kosong saat kartu asli.
-
-    format_html meng-escape key, jadi kunci aneh tidak bisa menyuntik atribut.
-    """
-    if not editing:
-        return ""
-    return format_html(' data-edit="{}"', key)
-
-
-@register.simple_tag
-def frame_attr(editing, key):
-    """`data-frame="<key>"` saat mode edit."""
-    if not editing:
-        return ""
-    return format_html(' data-frame="{}"', key)
-
-
-@register.simple_tag
-def surface(card, key, fallback):
-    """Warna permukaan: pilihan user kalau ada, kalau tidak bawaan template."""
-    return card.style_clean()["colors"].get(key, fallback)
+def frame(card, editing, key):
+    """Atribut bingkai foto: penanda edit + gaya (bentuk sudut, cara mengisi)."""
+    css = styles.element_css((card.style or {}).get("elements", {}).get(key, {}))
+    out = ""
+    if editing:
+        out += format_html(' data-frame="{}"', key)
+    if css:
+        out += format_html(' style="{}"', css)
+    return mark_safe(out)

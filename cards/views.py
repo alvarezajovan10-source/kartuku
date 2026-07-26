@@ -27,6 +27,15 @@ OWNED_CARDS_KEY = "owned_cards"
 # UUID boneka untuk membangun pola URL yang nanti diisi JS.
 PLACEHOLDER_UUID = "00000000-0000-0000-0000-000000000000"
 
+# Elemen yang isinya berasal dari kolom database, bukan teks bawaan template.
+FIELD_ELEMENTS = [
+    ("recipient", "Nama penerima", "line"),
+    ("message", "Pesan", "multiline"),
+    ("sender", "Nama pengirim", "line"),
+    ("favorite_flower", "Nama bunga", "line"),
+    ("affirmations", "Kalimat manis", "multiline"),
+]
+
 
 def _mark_owned(request, card):
     owned = request.session.setdefault(OWNED_CARDS_KEY, [])
@@ -198,7 +207,7 @@ def preview(request, template_slug):
             "affirmations": card.affirmation_list(),
             "preview": True,
             "template": template,
-            "fonts_url": styles.google_fonts_url(),
+            "fonts_url": styles.google_fonts_url(card.fonts_used()),
         },
     )
 
@@ -214,7 +223,7 @@ def _render_card(request, card, extra=None):
         "card": card,
         "photos": list(card.photos.all()),
         "affirmations": card.affirmation_list(),
-        "fonts_url": styles.google_fonts_url(),
+        "fonts_url": styles.google_fonts_url(card.fonts_used()),
         "frame_photos": card.photo_by_slot(),
         "gallery_photos": card.gallery_photos(),
     }
@@ -281,8 +290,48 @@ def editor(request, template_slug):
     probe = card or GiftCard(template=template, category=template.category)
     current_colors = styles.sanitize_style(card.style if card else None)["colors"]
 
-    frames = []
     by_slot = card.photo_by_slot() if card else {}
+
+    # Satu daftar elemen untuk editor. Urutannya = urutan panel kalau perlu.
+    element_specs = []
+    for key, label, kind in FIELD_ELEMENTS:
+        element_specs.append({"key": key, "label": label, "type": "field", "input": kind})
+    for spec in probe.text_specs():
+        element_specs.append(
+            {"key": spec["key"], "label": spec.get("label", spec["key"]), "type": "text"}
+        )
+    for spec in probe.frames():
+        element_specs.append(
+            {
+                "key": spec["key"],
+                "label": spec.get("label", spec["key"]),
+                "type": "photo",
+                "photo": _photo_payload(by_slot[spec["key"]])
+                if spec["key"] in by_slot
+                else None,
+            }
+        )
+    for spec in probe.surface_specs():
+        element_specs.append(
+            {
+                "key": spec["key"],
+                "label": spec.get("label", spec["key"]),
+                "type": "surface",
+                "value": current_colors.get(spec["key"], spec.get("default", "#FFFFFF")),
+            }
+        )
+
+    field_values = {
+        "recipient": form["recipient_name"].value() or "",
+        "sender": form["sender_name"].value() or "",
+        "message": form["message"].value() or "",
+        "favorite_flower": form["favorite_flower"].value() or "",
+        "affirmations": form["affirmations"].value() or "",
+        "youtube_url": form["youtube_url"].value() or "",
+    }
+    text_values = {spec["key"]: probe.text(spec["key"]) for spec in probe.text_specs()}
+
+    frames = []
     for frame in (template.config or {}).get("frames", []):
         if not isinstance(frame, dict) or not frame.get("key"):
             continue
@@ -304,35 +353,20 @@ def editor(request, template_slug):
             "template": template,
             "form": form,
             "price": settings.CARD_PRICE,
+            # Editor memuat SELURUH katalog font supaya pemilihnya bisa
+            # menampilkan contoh tulisan tiap font.
             "fonts_url": styles.google_fonts_url(),
-            "font_choices": styles.font_choices(),
             "max_photos": settings.MAX_PHOTOS_PER_CARD,
-            # Semua bekal editor lewat satu blok json_script. Jangan ganti ke
-            # json.dumps di dalam <script>: entitas HTML tidak di-decode di sana
-            # dan JSON.parse akan gagal diam-diam.
             "editor_init": {
                 "cardId": str(card.id) if card else "",
-                "templateSlug": template.slug,
                 "style": styles.sanitize_style(card.style if card else None),
-                "text": {
-                    "recipient": form["recipient_name"].value() or "",
-                    "sender": form["sender_name"].value() or "",
-                    "message": form["message"].value() or "",
-                    "favorite_flower": form["favorite_flower"].value() or "",
-                    "affirmations": form["affirmations"].value() or "",
-                    "youtube_url": form["youtube_url"].value() or "",
-                },
-                "fonts": {key: css for key, _label, css in styles.font_choices()},
-                "texts": probe.text_specs(),
-                "textValues": {
-                    spec["key"]: probe.text(spec["key"]) for spec in probe.text_specs()
-                },
-                "surfaces": [
-                    {**spec, "value": current_colors.get(spec["key"], spec.get("default", "#FFFFFF"))}
-                    for spec in probe.surface_specs()
-                ],
-                "frames": frames,
+                "fields": field_values,
+                "texts": text_values,
+                "elements": element_specs,
                 "gallery": gallery,
+                "fontCatalog": styles.font_catalog(),
+                "fonts": {key: value[2] for key, value in styles.FONTS.items()},
+                    "swatches": styles.SWATCHES,
                 "maxPhotos": settings.MAX_PHOTOS_PER_CARD,
                 "urls": {
                     "frame": reverse("cards:editor_frame", args=[template.slug]),

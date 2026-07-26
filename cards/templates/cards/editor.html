@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Edit kartu — {{ template.name }}{% endblock %}
+{% block title %}Edit — {{ template.name }}{% endblock %}
 
 {% block body %}
 <link href="{{ fonts_url }}" rel="stylesheet">
@@ -9,202 +9,203 @@
 
 <div class="ed" x-data="cardEditor()" x-cloak>
 
-  <!-- ── Panel kiri: isinya berganti mengikuti elemen terpilih ──────────── -->
+  <!-- ── Panel kiri ─────────────────────────────────────────────────────
+       Aturan: hanya tampilkan yang sedang dibutuhkan. Belum ada yang dipilih
+       → panel nyaris kosong. Klik elemen → hanya kontrol elemen itu. -->
   <aside class="ed-panel">
-    <div class="ed-panel-head">
-      <a class="ed-back" href="{% url 'cards:gallery' template.category %}">← Template lain</a>
-      <h1>{{ template.name }}</h1>
+    <a class="ed-back" href="{% url 'cards:gallery' template.category %}">← Template lain</a>
+
+    <!-- Diam sampai ada yang diklik -->
+    <div class="ed-idle" x-show="!sel">
+      <p><strong>Klik apa saja di kartu</strong></p>
+      <p>Tulisan, foto, atau latarnya.</p>
     </div>
 
-    <!-- Belum ada yang dipilih -->
-    <div class="ed-empty" x-show="!sel">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v14l4-3 3 6 2-1-3-6h5z" fill="currentColor"/></svg>
-      <p><strong>Klik bagian mana pun di kartu</strong></p>
-      <p class="hint">Teks, foto, atau bingkai kosong — panel ini akan menampilkan
-      pengaturan untuk bagian yang kamu klik saja.</p>
+    <!-- ── Kepala: nama elemen terpilih ──────────────────────────────── -->
+    <div class="ed-head" x-show="sel">
+      <span x-text="label"></span>
+      <button type="button" @click="sel = null" title="Selesai">×</button>
     </div>
 
-    <!-- ── Teks ────────────────────────────────────────────────────────── -->
-    <template x-if="sel && kind === 'text'">
-      <div>
-        <div class="ed-sel-head">
-          <span class="ed-chip" x-text="labelFor(sel)"></span>
-          <button type="button" class="ed-x" @click="clearSel()" title="Tutup">×</button>
+    <!-- ── Isi: teks ─────────────────────────────────────────────────── -->
+    <template x-if="sel && (kind === 'field' || kind === 'text')">
+      <div class="ed-body">
+        <textarea x-show="multiline" rows="5" class="ed-input"
+                  :value="content" @input="setContent($event.target.value)"
+                  :placeholder="placeholder"></textarea>
+        <input type="text" x-show="!multiline" class="ed-input"
+               :value="content" @input="setContent($event.target.value)"
+               :placeholder="placeholder">
+
+        <!-- Baris kontrol padat, seperti toolbar -->
+        <button type="button" class="ed-font" @click="fontOpen = !fontOpen"
+                :style="'font-family:' + fontCss(st.font)">
+          <span x-text="fontName(st.font)"></span>
+          <em>▾</em>
+        </button>
+
+        <div class="ed-fontlist" x-show="fontOpen" @click.outside="fontOpen = false">
+          <input type="text" class="ed-search" placeholder="Cari font..." x-model="fontQuery">
+          <button type="button" class="ed-fontitem" @click="setStyle('font', null); fontOpen = false"
+                  :class="{ 'is-on': !st.font }">Bawaan template</button>
+          <template x-for="group in filteredFonts" :key="group.group">
+            <div>
+              <p class="ed-fontgroup" x-text="group.group"></p>
+              <template x-for="font in group.fonts" :key="font.key">
+                <button type="button" class="ed-fontitem" :style="'font-family:' + font.css"
+                        @click="setStyle('font', font.key); fontOpen = false"
+                        :class="{ 'is-on': st.font === font.key }" x-text="font.name"></button>
+              </template>
+            </div>
+          </template>
         </div>
 
-        <div class="field">
-          <label>Isi</label>
-          <textarea x-show="sel === 'message' || sel === 'affirmations'" rows="6"
-                    x-model="text[sel]" @input="pushText(sel)"
-                    :placeholder="sel === 'affirmations' ? 'Satu kalimat per baris' : 'Tulis pesanmu...'"></textarea>
-          <input type="text" x-show="sel !== 'message' && sel !== 'affirmations'"
-                 maxlength="80" x-model="text[sel]" @input="pushText(sel)">
+        <div class="ed-row">
+          <div class="ed-step">
+            <button type="button" @click="bumpSize(-0.05)">−</button>
+            <span x-text="Math.round((st.size || 1) * 100)"></span>
+            <button type="button" @click="bumpSize(0.05)">+</button>
+          </div>
+          <div class="ed-icons">
+            <button type="button" @click="toggle('bold')" :class="{ 'is-on': st.bold }"><b>B</b></button>
+            <button type="button" @click="toggle('italic')" :class="{ 'is-on': st.italic }"><i>I</i></button>
+          </div>
+          <div class="ed-icons">
+            <button type="button" @click="setStyle('align','left')" :class="{ 'is-on': st.align === 'left' }">⇤</button>
+            <button type="button" @click="setStyle('align','center')" :class="{ 'is-on': st.align === 'center' }">⇔</button>
+            <button type="button" @click="setStyle('align','right')" :class="{ 'is-on': st.align === 'right' }">⇥</button>
+          </div>
+          <button type="button" class="ed-dot" :style="'background:' + (st.color || '#ffffff')"
+                  @click="colorOpen = !colorOpen" title="Warna"></button>
         </div>
 
-        <template x-if="styleSlot">
-          <div>
-            <div class="field">
-              <label>Huruf</label>
-              <div class="font-row">
-                {% for key, font_label, css in font_choices %}
-                  <button type="button" class="font-chip" style="font-family:{{ css }}"
-                          @click="setStyle('font', '{{ key }}')"
-                          :class="{ 'is-on': cur().font === '{{ key }}' }">{{ font_label }}</button>
-                {% endfor %}
-              </div>
-            </div>
+        <div class="ed-swatches" x-show="colorOpen" @click.outside="colorOpen = false">
+          <template x-for="hex in swatches" :key="hex">
+            <button type="button" :style="'background:' + hex"
+                    @click="setStyle('color', hex)" :class="{ 'is-on': st.color === hex }"></button>
+          </template>
+          <label class="ed-custom">
+            <input type="color" :value="st.color || '#ffffff'"
+                   @input="setStyle('color', $event.target.value)">
+          </label>
+          <button type="button" class="ed-reset" @click="setStyle('color', null)">Bawaan</button>
+        </div>
 
-            <div class="ed-two">
-              <label class="swatch">Warna
-                <input type="color" :value="cur().color" @input="setStyle('color', $event.target.value)">
-              </label>
-              <div>
-                <label>Perataan</label>
-                <div class="seg">
-                  <button type="button" @click="setStyle('align','left')" :class="{ 'is-on': cur().align === 'left' }">≡</button>
-                  <button type="button" @click="setStyle('align','center')" :class="{ 'is-on': cur().align === 'center' }">≣</button>
-                  <button type="button" @click="setStyle('align','right')" :class="{ 'is-on': cur().align === 'right' }">≢</button>
-                </div>
-              </div>
-            </div>
+        <button type="button" class="ed-more" @click="moreOpen = !moreOpen">
+          <span x-text="moreOpen ? '▾ Lebih sedikit' : '▸ Lainnya'"></span>
+        </button>
 
-            <div class="field">
-              <label>Ukuran <span class="hint" x-text="Math.round(cur().size * 100) + '%'"></span></label>
-              <input type="range" min="0.7" max="1.8" step="0.05"
-                     :value="cur().size" @input="setStyle('size', parseFloat($event.target.value))">
+        <div x-show="moreOpen">
+          <label class="ed-slider">Jarak huruf
+            <input type="range" min="-0.05" max="0.5" step="0.01"
+                   :value="st.spacing || 0" @input="setStyle('spacing', parseFloat($event.target.value))">
+          </label>
+          <label class="ed-slider">Jarak baris
+            <input type="range" min="0.9" max="2.4" step="0.05"
+                   :value="st.line || 1.4" @input="setStyle('line', parseFloat($event.target.value))">
+          </label>
+          <button type="button" class="ed-reset wide" @click="resetElement()">Kembalikan ke bawaan template</button>
+        </div>
+      </div>
+    </template>
+
+    <!-- ── Isi: foto ─────────────────────────────────────────────────── -->
+    <template x-if="sel && kind === 'photo'">
+      <div class="ed-body">
+        <div class="ed-thumb" x-show="photo"><img :src="photo && photo.url" alt=""></div>
+        <button type="button" class="btn btn-primary btn-sm ed-wide"
+                @click="$refs.pick.click()" :disabled="busy"
+                x-text="photo ? 'Ganti foto' : 'Pilih foto'"></button>
+        <input type="file" accept="image/*" x-ref="pick" hidden @change="uploadTo(sel, $event)">
+
+        <input type="text" class="ed-input" x-show="photo" maxlength="40"
+               :value="photo && photo.caption" placeholder="Caption (opsional)"
+               @change="saveCaption(photo.id, $event.target.value)">
+
+        <button type="button" class="ed-more" @click="moreOpen = !moreOpen"
+                x-show="photo" x-text="moreOpen ? '▾ Lebih sedikit' : '▸ Lainnya'"></button>
+        <div x-show="moreOpen && photo">
+          <div class="ed-row">
+            <div class="ed-icons wide">
+              <button type="button" @click="setStyle('fit','cover')" :class="{ 'is-on': st.fit !== 'contain' }">Penuhi</button>
+              <button type="button" @click="setStyle('fit','contain')" :class="{ 'is-on': st.fit === 'contain' }">Muat</button>
             </div>
           </div>
-        </template>
-      </div>
-    </template>
-
-    <!-- ── Teks bawaan template ────────────────────────────────────────── -->
-    <template x-if="sel && kind === 'free'">
-      <div>
-        <div class="ed-sel-head">
-          <span class="ed-chip" x-text="labelFor(sel)"></span>
-          <button type="button" class="ed-x" @click="clearSel()" title="Tutup">×</button>
-        </div>
-        <div class="field">
-          <label>Tulisan</label>
-          <textarea rows="3" x-model="textValues[sel]" @input="pushFreeText(sel)"></textarea>
-          <p class="hint">Kosongkan untuk memakai tulisan bawaan template.</p>
+          <label class="ed-slider">Sudut membulat
+            <input type="range" min="0" max="50" step="1"
+                   :value="st.radius || 0" @input="setStyle('radius', parseFloat($event.target.value))">
+          </label>
+          <button type="button" class="ed-reset wide" @click="removePhoto(photo.id)">Hapus foto</button>
         </div>
       </div>
     </template>
 
-    <!-- ── Bingkai foto ────────────────────────────────────────────────── -->
-    <template x-if="sel && kind === 'frame'">
-      <div>
-        <div class="ed-sel-head">
-          <span class="ed-chip" x-text="labelFor(sel)"></span>
-          <button type="button" class="ed-x" @click="clearSel()" title="Tutup">×</button>
+    <!-- ── Isi: latar / warna ────────────────────────────────────────── -->
+    <template x-if="sel && kind === 'surface'">
+      <div class="ed-body">
+        <div class="ed-swatches open">
+          <template x-for="pal in palettes" :key="pal.name">
+            <button type="button" :style="'background:' + pal.bg" :title="pal.name"
+                    @click="setSurface(sel, pal.bg)"
+                    :class="{ 'is-on': colors[sel] === pal.bg }"></button>
+          </template>
+          <label class="ed-custom">
+            <input type="color" :value="colors[sel] || '#ffffff'"
+                   @input="setSurface(sel, $event.target.value)">
+          </label>
         </div>
-
-        <div class="frame-preview" x-show="framePhoto(sel)">
-          <img :src="framePhoto(sel) && framePhoto(sel).url" alt="">
-        </div>
-
-        <div class="field">
-          <button type="button" class="btn btn-primary btn-sm ed-wide"
-                  @click="$refs.framefile.click()" :disabled="busy">
-            <span x-text="framePhoto(sel) ? 'Ganti foto' : 'Pilih foto'"></span>
-          </button>
-          <input type="file" accept="image/*" x-ref="framefile" hidden
-                 @change="uploadTo(sel, $event)">
-        </div>
-
-        <div class="field" x-show="framePhoto(sel)">
-          <label>Caption</label>
-          <input type="text" maxlength="40"
-                 :value="framePhoto(sel) && framePhoto(sel).caption"
-                 @change="saveCaption(framePhoto(sel).id, $event.target.value)"
-                 placeholder="mis. liburan">
-        </div>
-
-        <button type="button" class="ed-danger" x-show="framePhoto(sel)"
-                @click="removePhoto(framePhoto(sel).id)">Hapus foto dari bingkai</button>
       </div>
     </template>
 
-    <!-- ── Galeri ──────────────────────────────────────────────────────── -->
+    <!-- ── Isi: galeri foto ──────────────────────────────────────────── -->
     <template x-if="sel && kind === 'gallery'">
-      <div>
-        <div class="ed-sel-head">
-          <span class="ed-chip">Galeri foto</span>
-          <button type="button" class="ed-x" @click="clearSel()" title="Tutup">×</button>
-        </div>
-
-        <div class="field">
-          <button type="button" class="btn btn-primary btn-sm ed-wide"
-                  @click="$refs.galfile.click()" :disabled="busy">Tambah foto</button>
-          <input type="file" accept="image/*" multiple x-ref="galfile" hidden
-                 @change="uploadGallery($event)">
-          <p class="hint" x-text="gallery.length + ' dari {{ max_photos }} foto'"></p>
-        </div>
-
-        <template x-for="photo in gallery" :key="photo.id">
+      <div class="ed-body">
+        <button type="button" class="btn btn-primary btn-sm ed-wide"
+                @click="$refs.gal.click()" :disabled="busy">Tambah foto</button>
+        <input type="file" accept="image/*" multiple x-ref="gal" hidden @change="uploadGallery($event)">
+        <p class="ed-note" x-text="gallery.length + ' dari {{ max_photos }} foto'"></p>
+        <template x-for="p in gallery" :key="p.id">
           <div class="cap-row">
-            <img :src="photo.url" alt="">
-            <input type="text" maxlength="40" :value="photo.caption"
-                   @change="saveCaption(photo.id, $event.target.value)"
-                   placeholder="Caption">
-            <button type="button" class="ed-x" @click="removePhoto(photo.id)" title="Hapus">×</button>
+            <img :src="p.url" alt="">
+            <input type="text" maxlength="40" :value="p.caption" placeholder="Caption"
+                   @change="saveCaption(p.id, $event.target.value)">
+            <button type="button" @click="removePhoto(p.id)" title="Hapus">×</button>
           </div>
         </template>
       </div>
     </template>
-
-    <!-- ── Warna latar: selalu tersedia ────────────────────────────────── -->
-    <section class="ed-group" x-show="surfaces.length">
-      <h2>Warna kartu</h2>
-      <template x-for="surface in surfaces" :key="surface.key">
-        <label class="swatch swatch-row">
-          <input type="color" :value="s.colors[surface.key]"
-                 @input="setSurface(surface.key, $event.target.value)">
-          <span x-text="surface.label"></span>
-        </label>
-      </template>
-    </section>
 
     <p class="errors" x-show="error" x-text="error"></p>
 
-    <!-- Selalu ada di bawah -->
-    <form method="post" class="ed-submit" @submit="syncBeforeSubmit()">
+    <form method="post" class="ed-submit">
       {% csrf_token %}
       <input type="hidden" name="card" :value="cardId">
-      <input type="hidden" name="style_json" :value="JSON.stringify(s)">
-      <input type="hidden" name="texts_json" :value="JSON.stringify(textValues)">
-      <input type="hidden" name="recipient_name" :value="text.recipient">
-      <input type="hidden" name="sender_name" :value="text.sender">
-      <input type="hidden" name="message" :value="text.message">
-      <input type="hidden" name="favorite_flower" :value="text.favorite_flower">
-      <input type="hidden" name="affirmations" :value="text.affirmations">
-      <input type="hidden" name="youtube_url" :value="text.youtube_url">
+      <input type="hidden" name="style_json" :value="JSON.stringify(style)">
+      <input type="hidden" name="texts_json" :value="JSON.stringify(texts)">
+      <input type="hidden" name="recipient_name" :value="fields.recipient">
+      <input type="hidden" name="sender_name" :value="fields.sender">
+      <input type="hidden" name="message" :value="fields.message">
+      <input type="hidden" name="favorite_flower" :value="fields.favorite_flower">
+      <input type="hidden" name="affirmations" :value="fields.affirmations">
+      <input type="hidden" name="youtube_url" :value="fields.youtube_url">
       <button class="btn btn-primary" type="submit" :disabled="busy">
         Lanjut bayar Rp{{ price|floatformat:0 }}
       </button>
-      <p class="hint">Foto tersimpan otomatis begitu dipilih.</p>
     </form>
   </aside>
 
-  <!-- ── Preview: kartu asli di dalam iframe ───────────────────────────── -->
+  <!-- ── Preview ────────────────────────────────────────────────────── -->
   <div class="ed-preview">
-    <div class="ed-preview-bar">
-      <span>Pratinjau — klik untuk mengedit</span>
-      <div class="seg small">
-        <button type="button" @click="device='phone'" :class="{ 'is-on': device === 'phone' }">HP</button>
-        <button type="button" @click="device='wide'" :class="{ 'is-on': device === 'wide' }">Lebar</button>
-      </div>
-    </div>
-
     <div class="ed-scenes" x-show="scenes.length > 1">
       <template x-for="scene in scenes" :key="scene">
         <button type="button" @click="goScene(scene)"
                 :class="{ 'is-on': currentScene === scene }" x-text="sceneLabel(scene)"></button>
       </template>
+      <div class="ed-devices">
+        <button type="button" @click="device='phone'" :class="{ 'is-on': device === 'phone' }">HP</button>
+        <button type="button" @click="device='wide'" :class="{ 'is-on': device === 'wide' }">Lebar</button>
+      </div>
     </div>
-
     <div class="ed-stage" :class="'as-' + device">
       <iframe x-ref="frame" :src="frameSrc" title="Pratinjau kartu"></iframe>
     </div>

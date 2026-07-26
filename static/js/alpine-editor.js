@@ -1,49 +1,35 @@
-/* Editor kartu: panel kiri berubah mengikuti elemen yang diklik di preview.
+/* Editor kartu.
 
-   Preview adalah kartu ASLI yang dimuat di dalam iframe, jadi yang dilihat saat
-   mengedit tidak mungkin berbeda dari hasil akhirnya. Komunikasi dua arah lewat
-   postMessage (lihat static/js/card-frame.js).
+   Prinsip panel kiri: DIAM sampai ada yang diklik, lalu tampilkan hanya kontrol
+   untuk elemen yang diklik. Tidak ada bagian yang nongkrong terus-menerus.
 
-   Foto diunggah begitu dipilih. Teks & gaya baru tersimpan saat tombol
-   "Lanjut bayar" ditekan. */
+   Preview adalah kartu ASLI di dalam iframe, jadi yang dilihat saat mengedit
+   tidak mungkin berbeda dari hasil akhirnya. Perubahan gaya dikirim lewat
+   postMessage dan langsung ditempel sebagai var CSS di elemen yang sama —
+   tidak ada duplikasi tampilan antara editor dan kartu.
+
+   Semua di sini hanya untuk tampilan. Server menyaring ulang seluruh gaya dan
+   teks (cards/styles.py, cards/forms.py); JS ini bukan lapisan keamanan. */
 
 window.cardEditor = function () {
   var init = JSON.parse(document.getElementById("editor-init").textContent);
-
-  // Elemen teks yang punya pengaturan gaya, dan slot gaya mana yang dipakai.
-  var TEXT_SLOTS = {
-    recipient: "title",
-    message: "message",
-    sender: "signature",
-    favorite_flower: "title",
-    affirmations: "message",
-  };
-
-  var LABELS = {
-    recipient: "Nama penerima",
-    message: "Pesan",
-    sender: "Nama pengirim",
-    favorite_flower: "Nama bunga",
-    affirmations: "Kalimat manis",
-    gallery: "Galeri foto",
-  };
 
   var SCENE_LABELS = {
     cover: "Sampul", hero: "Ucapan", hub: "Hadiah", message: "Surat",
     flower: "Bunga", cake: "Kue", song: "Lagu", gallery: "Kenangan",
   };
 
+  var specByKey = {};
+  init.elements.forEach(function (spec) { specByKey[spec.key] = spec; });
+
   return {
-    s: init.style,
-    text: init.text,
-    frames: init.frames,
-    texts: init.texts,
-    textValues: init.textValues,
-    surfaces: init.surfaces,
-    framesById: {},
-    gallery: init.gallery,
     cardId: init.cardId,
-    templateSlug: init.templateSlug,
+    style: init.style,
+    fields: init.fields,
+    texts: init.texts,
+    gallery: init.gallery,
+    palettes: init.palettes,
+    swatches: init.swatches,
     urls: init.urls,
     maxPhotos: init.maxPhotos,
 
@@ -53,30 +39,66 @@ window.cardEditor = function () {
     currentScene: "",
     busy: false,
     error: "",
+    fontOpen: false,
+    colorOpen: false,
+    moreOpen: false,
+    fontQuery: "",
 
+    /* ── Turunan dari elemen terpilih ─────────────────────────────────── */
+    get spec() { return specByKey[this.sel] || null; },
+    get kind() {
+      if (this.sel === "gallery") return "gallery";
+      return this.spec ? this.spec.type : null;
+    },
+    get label() { return this.spec ? this.spec.label : "Galeri foto"; },
+    get st() { return (this.style.elements && this.style.elements[this.sel]) || {}; },
+    get colors() { return this.style.colors || {}; },
+    get multiline() {
+      return this.kind === "text" || (this.spec && this.spec.input === "multiline");
+    },
+    get placeholder() {
+      return this.kind === "text" ? "Kosongkan = pakai bawaan template" : "Tulis di sini...";
+    },
+    get content() {
+      if (this.kind === "field") return this.fields[this.sel] || "";
+      if (this.kind === "text") return this.texts[this.sel] || "";
+      return "";
+    },
+    get photo() { return this.spec ? this.spec.photo : null; },
     get frameSrc() {
       return this.urls.frame + (this.cardId ? "?card=" + this.cardId : "");
     },
-
-    get kind() {
-      if (!this.sel) return null;
-      if (this.sel === "gallery") return "gallery";
-      if (this.framesById[this.sel]) return "frame";
-      if (this.textValues.hasOwnProperty(this.sel)) return "free";
-      return "text";
+    get filteredFonts() {
+      var q = this.fontQuery.toLowerCase().trim();
+      if (!q) return init.fontCatalog;
+      return init.fontCatalog
+        .map(function (group) {
+          return {
+            group: group.group,
+            fonts: group.fonts.filter(function (f) {
+              return f.name.toLowerCase().indexOf(q) !== -1;
+            }),
+          };
+        })
+        .filter(function (group) { return group.fonts.length; });
     },
 
-    get styleSlot() {
-      return TEXT_SLOTS[this.sel] || null;
+    fontName: function (key) {
+      return key && init.fonts[key] ? specFontName(key) : "Bawaan template";
     },
+    fontCss: function (key) { return key ? init.fonts[key] : "inherit"; },
+    sceneLabel: function (id) { return SCENE_LABELS[id] || id; },
 
+    /* ── Siklus hidup ─────────────────────────────────────────────────── */
     init: function () {
       var self = this;
-      this.frames.forEach(function (f) { self.framesById[f.key] = f; });
-      // Warna permukaan template masuk ke style.colors supaya ikut tersimpan.
-      if (!this.s.colors) this.s.colors = {};
-      this.surfaces.forEach(function (surface) {
-        if (!self.s.colors[surface.key]) self.s.colors[surface.key] = surface.value;
+      if (!this.style.elements) this.style.elements = {};
+      if (!this.style.colors) this.style.colors = {};
+      // Warna bawaan template jadi titik awal supaya pemilih warna tidak kosong.
+      init.elements.forEach(function (spec) {
+        if (spec.type === "surface" && !self.style.colors[spec.key]) {
+          self.style.colors[spec.key] = spec.value;
+        }
       });
 
       window.addEventListener("message", function (event) {
@@ -85,42 +107,19 @@ window.cardEditor = function () {
 
         if (data.type === "ready") {
           self.scenes = data.scenes || [];
-          self.currentScene = self.scenes[0] || "";
-          self.pushStyle();
+          if (!self.currentScene) self.currentScene = self.scenes[0] || "";
+          self.pushColors();
         }
         if (data.type === "select") {
           self.sel = data.key;
           self.error = "";
+          self.fontOpen = self.colorOpen = self.moreOpen = false;
+          if (data.scene) self.currentScene = data.scene;
         }
       });
     },
 
-    /* ── Bantuan tampilan ─────────────────────────────────────────────── */
-    labelFor: function (key) {
-      if (this.framesById[key]) return this.framesById[key].label;
-      if (LABELS[key]) return LABELS[key];
-      var spec = this.texts.filter(function (t) { return t.key === key; })[0];
-      return spec ? spec.label : key;
-    },
-
-    pushFreeText: function (key) {
-      this.post({ type: "text", key: key, value: this.textValues[key] });
-    },
-
-    setSurface: function (key, value) {
-      this.s.colors[key] = value;
-      this.post({ type: "colors", colors: this.s.colors });
-    },
-    sceneLabel: function (id) { return SCENE_LABELS[id] || id; },
-    clearSel: function () { this.sel = null; },
-    cur: function () {
-      return this.s[this.styleSlot] || { font: "serif", color: "#000000", size: 1, align: "left" };
-    },
-    framePhoto: function (key) {
-      return this.frames.filter(function (f) { return f.key === key; })[0].photo || null;
-    },
-
-    /* ── Kirim perubahan ke iframe ────────────────────────────────────── */
+    /* ── Kirim ke iframe ──────────────────────────────────────────────── */
     post: function (message) {
       var frame = this.$refs.frame;
       if (frame && frame.contentWindow) {
@@ -129,30 +128,46 @@ window.cardEditor = function () {
         );
       }
     },
-
-    cssVars: function () {
-      var vars = { "--bg": this.s.bg, "--accent": this.s.accent };
-      var self = this;
-      ["title", "message", "signature"].forEach(function (slot) {
-        var conf = self.s[slot];
-        vars["--" + slot + "-font"] = init.fonts[conf.font] || init.fonts.serif;
-        vars["--" + slot + "-color"] = conf.color;
-        vars["--" + slot + "-size"] = conf.size;
-        vars["--" + slot + "-align"] = conf.align;
-      });
-      return vars;
-    },
-
     pushStyle: function () {
-      this.post({ type: "style", vars: this.cssVars() });
-      this.post({ type: "colors", colors: this.s.colors || {} });
+      this.post({ type: "style", key: this.sel, css: elementCss(this.st) });
     },
-    pushText: function (key) { this.post({ type: "text", key: key, value: this.text[key] }); },
+    pushColors: function () {
+      this.post({ type: "colors", colors: this.style.colors });
+    },
+
+    /* ── Sunting ──────────────────────────────────────────────────────── */
+    setContent: function (value) {
+      if (this.kind === "field") this.fields[this.sel] = value;
+      else if (this.kind === "text") this.texts[this.sel] = value;
+      this.post({ type: "text", key: this.sel, value: value });
+    },
 
     setStyle: function (prop, value) {
-      if (!this.styleSlot) return;
-      this.s[this.styleSlot][prop] = value;
+      if (!this.sel) return;
+      var current = this.style.elements[this.sel] || {};
+      if (value === null || value === undefined) delete current[prop];
+      else current[prop] = value;
+      this.style.elements[this.sel] = current;
       this.pushStyle();
+    },
+
+    toggle: function (prop) {
+      this.setStyle(prop, this.st[prop] ? null : true);
+    },
+
+    bumpSize: function (delta) {
+      var next = Math.round(((this.st.size || 1) + delta) * 100) / 100;
+      this.setStyle("size", Math.min(Math.max(next, 0.5), 3));
+    },
+
+    resetElement: function () {
+      delete this.style.elements[this.sel];
+      this.pushStyle();
+    },
+
+    setSurface: function (key, value) {
+      this.style.colors[key] = value;
+      this.pushColors();
     },
 
     goScene: function (id) {
@@ -160,25 +175,22 @@ window.cardEditor = function () {
       this.post({ type: "scene", value: id });
     },
 
-    /* ── Foto: langsung diunggah ──────────────────────────────────────── */
+    /* ── Foto: diunggah begitu dipilih ────────────────────────────────── */
+    csrf: function () {
+      var field = document.querySelector("[name=csrfmiddlewaretoken]");
+      return field ? field.value : "";
+    },
+
     ensureCard: function () {
       var self = this;
       if (this.cardId) return Promise.resolve(this.cardId);
       return fetch(this.urls.draft, {
         method: "POST",
         headers: { "X-CSRFToken": this.csrf(), "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: "{}",
       })
         .then(function (r) { return r.json(); })
-        .then(function (data) {
-          self.cardId = data.card;
-          return data.card;
-        });
-    },
-
-    csrf: function () {
-      var field = document.querySelector("[name=csrfmiddlewaretoken]");
-      return field ? field.value : "";
+        .then(function (data) { self.cardId = data.card; return data.card; });
     },
 
     sendPhoto: function (file, slot) {
@@ -209,7 +221,7 @@ window.cardEditor = function () {
       this.error = "";
       this.sendPhoto(file, slot)
         .then(function (photo) {
-          self.frames.forEach(function (f) { if (f.key === slot) f.photo = photo; });
+          specByKey[slot].photo = photo;
           self.post({ type: "reload" });
         })
         .catch(function (err) { self.error = err.message; })
@@ -222,17 +234,15 @@ window.cardEditor = function () {
       if (!files.length) return;
 
       var room = this.maxPhotos - this.gallery.length;
+      this.error = "";
       if (files.length > room) {
-        this.error = "Maksimal " + this.maxPhotos + " foto galeri; sisanya diabaikan.";
+        this.error = "Maksimal " + this.maxPhotos + " foto; sisanya diabaikan.";
         files = files.slice(0, Math.max(room, 0));
-      } else {
-        this.error = "";
       }
       if (!files.length) return;
 
       var self = this;
       this.busy = true;
-      // Berurutan, bukan serentak — supaya urutan foto sesuai pilihan user.
       files
         .reduce(function (chain, file) {
           return chain.then(function () {
@@ -260,8 +270,9 @@ window.cardEditor = function () {
           self.gallery.forEach(function (p, i) {
             if (p.id === photo.id) self.gallery[i] = photo;
           });
-          self.frames.forEach(function (f) {
-            if (f.photo && f.photo.id === photo.id) f.photo = photo;
+          Object.keys(specByKey).forEach(function (key) {
+            var spec = specByKey[key];
+            if (spec.photo && spec.photo.id === photo.id) spec.photo = photo;
           });
           self.post({ type: "reload" });
         });
@@ -276,14 +287,41 @@ window.cardEditor = function () {
       })
         .then(function () {
           self.gallery = self.gallery.filter(function (p) { return p.id !== photoId; });
-          self.frames.forEach(function (f) {
-            if (f.photo && f.photo.id === photoId) f.photo = null;
+          Object.keys(specByKey).forEach(function (key) {
+            var spec = specByKey[key];
+            if (spec.photo && spec.photo.id === photoId) spec.photo = null;
           });
           self.post({ type: "reload" });
         })
         .finally(function () { self.busy = false; });
     },
-
-    syncBeforeSubmit: function () { return true; },
   };
+
+  /* Nama font untuk tombol pemilih. */
+  function specFontName(key) {
+    var found = "";
+    init.fontCatalog.forEach(function (group) {
+      group.fonts.forEach(function (font) {
+        if (font.key === key) found = font.name;
+      });
+    });
+    return found || "Bawaan template";
+  }
+
+  /* Susun var CSS satu elemen — cerminan cards/styles.py:element_css().
+     Nama var sengaja sama supaya preview dan kartu asli tidak bisa berbeda. */
+  function elementCss(conf) {
+    var parts = [];
+    if (conf.font) parts.push("--f:" + init.fonts[conf.font]);
+    if (conf.size) parts.push("--fs:" + conf.size);
+    if (conf.color) parts.push("--c:" + conf.color);
+    if (conf.align) parts.push("--al:" + conf.align);
+    if (conf.bold) parts.push("--fw:700");
+    if (conf.italic) parts.push("--fi:italic");
+    if (conf.spacing !== undefined) parts.push("--ls:" + conf.spacing + "em");
+    if (conf.line !== undefined) parts.push("--lh:" + conf.line);
+    if (conf.fit) parts.push("--fit:" + conf.fit);
+    if (conf.radius !== undefined) parts.push("--br:" + conf.radius + "px");
+    return parts.join(";");
+  }
 };

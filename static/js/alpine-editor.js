@@ -41,6 +41,7 @@ window.cardEditor = function () {
     error: "",
     dragging: false,
     dragFrom: null,
+    saveTimer: null,
     fontOpen: false,
     colorOpen: false,
     moreOpen: false,
@@ -162,6 +163,31 @@ window.cardEditor = function () {
       if (this.kind === "field") this.fields[this.sel] = value;
       else if (this.kind === "text") this.texts[this.sel] = value;
       this.post({ type: "text", key: this.sel, value: value });
+      this.queueSave();
+    },
+
+    /* Simpan ke server, ditunda sebentar supaya tiap ketikan tidak jadi satu
+       permintaan. Ini yang membuat editan tidak hilang saat preview dimuat
+       ulang — dan draft tetap ada kalau tab tertutup. */
+    queueSave: function () {
+      var self = this;
+      clearTimeout(this.saveTimer);
+      this.saveTimer = setTimeout(function () { self.saveNow(); }, 600);
+    },
+
+    saveNow: function () {
+      var self = this;
+      return this.ensureCard().then(function (cardId) {
+        return fetch(self.urls.content.replace("CARD", cardId), {
+          method: "POST",
+          headers: { "X-CSRFToken": self.csrf(), "Content-Type": "application/json" },
+          body: JSON.stringify({
+            style: self.style,
+            texts: self.texts,
+            fields: self.fields,
+          }),
+        });
+      });
     },
 
     setStyle: function (prop, value) {
@@ -171,6 +197,7 @@ window.cardEditor = function () {
       else current[prop] = value;
       this.style.elements[this.sel] = current;
       this.pushStyle();
+      this.queueSave();
     },
 
     toggle: function (prop) {
@@ -185,6 +212,7 @@ window.cardEditor = function () {
     resetElement: function () {
       delete this.style.elements[this.sel];
       this.pushStyle();
+      this.queueSave();
     },
 
     /* ── Crop: geser & perbesar di dalam bingkai ──────────────────────
@@ -215,9 +243,13 @@ window.cardEditor = function () {
       this.pushStyle();
     },
 
-    cropEnd: function () { this.dragging = false; },
+    cropEnd: function () {
+      this.dragging = false;
+      this.queueSave();
+    },
 
     resetCrop: function () {
+      this.queueSave();
       var current = this.style.elements[this.sel] || {};
       delete current.zoom;
       delete current.ox;
@@ -241,6 +273,7 @@ window.cardEditor = function () {
     setSurface: function (key, value) {
       this.style.colors[key] = value;
       this.pushColors();
+      this.queueSave();
     },
 
     goScene: function (id) {
@@ -268,7 +301,12 @@ window.cardEditor = function () {
 
     sendPhoto: function (file, slot) {
       var self = this;
-      return this.ensureCard().then(function (cardId) {
+      // Simpan editan DULU: unggah foto memicu preview memuat ulang dari
+      // server, jadi server harus sudah memegang teks & gaya terbaru.
+      clearTimeout(this.saveTimer);
+      return this.saveNow().then(function () {
+        return self.cardId;
+      }).then(function (cardId) {
         var body = new FormData();
         body.append("photo", file);
         if (slot) body.append("slot", slot);

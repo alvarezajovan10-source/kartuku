@@ -15,8 +15,8 @@ from PIL import Image
 from cards.models import CardType, GiftCard, GiftPhoto, Template
 
 FRAMES = [
-    {"key": "p1", "label": "Polaroid kiri"},
-    {"key": "p2", "label": "Polaroid tengah"},
+    {"key": "p1", "label": "Polaroid kiri", "area": "letter"},
+    {"key": "p2", "label": "Polaroid tengah", "area": "letter"},
 ]
 
 
@@ -261,3 +261,135 @@ class FramingHeaderTests(TestCase):
         )
         response = self.client.get(reverse("cards:public", args=[card.id]))
         self.assertEqual(response.headers["X-Frame-Options"], "DENY")
+
+
+@override_settings(MEDIA_ROOT="/tmp/giftcard-test-media")
+class AutosaveTests(TestCase):
+    """Editan tersimpan otomatis, supaya tidak hilang saat preview dimuat ulang."""
+
+    def setUp(self):
+        self.template = Template.objects.create(
+            slug="amplop-merah",
+            name="Amplop Merah",
+            category=CardType.BIRTHDAY,
+            config={
+                "renderer": "birthday",
+                "frames": [{"key": "p1", "label": "Polaroid", "area": "letter"}],
+                "texts": [
+                    {"key": "cover_title", "label": "Judul", "default": "Happy Birthday!"}
+                ],
+                "surfaces": [{"key": "scene_bg", "label": "Latar", "default": "#9E1B32"}],
+            },
+        )
+        self.card_id = self.client.post(
+            reverse("cards:api_draft", args=[self.template.slug]),
+            content_type="application/json",
+            data="{}",
+        ).json()["card"]
+        self.url = reverse("cards:api_content", args=[self.card_id])
+
+    def save(self, payload):
+        import json
+
+        return self.client.post(
+            self.url, content_type="application/json", data=json.dumps(payload)
+        )
+
+    def test_text_and_style_saved(self):
+        response = self.save(
+            {
+                "fields": {"recipient": "Nadia", "message": "halo"},
+                "texts": {"cover_title": "Selamat!"},
+                "style": {"elements": {"cover_title": {"font": "lobster"}},
+                          "colors": {"scene_bg": "#123456"}},
+            }
+        )
+        self.assertEqual(response.status_code, 200)
+        card = GiftCard.objects.get(pk=self.card_id)
+        self.assertEqual(card.recipient_name, "Nadia")
+        self.assertEqual(card.text("cover_title"), "Selamat!")
+        self.assertEqual(card.style["elements"]["cover_title"]["font"], "lobster")
+        self.assertEqual(card.style["colors"]["scene_bg"], "#123456")
+
+    def test_saved_edits_survive_a_preview_reload(self):
+        # Inti keluhan: unggah foto memuat ulang preview dan editan hilang.
+        self.save({"fields": {"recipient": "Nadia"}, "texts": {}, "style": {}})
+        self.client.post(
+            reverse("cards:api_photo_upload", args=[self.card_id]),
+            {"photo": make_image("a.jpg"), "slot": "p1"},
+        )
+        response = self.client.get(
+            reverse("cards:editor_frame", args=[self.template.slug])
+            + "?card=" + self.card_id
+        )
+        self.assertContains(response, "Nadia")
+
+    def test_malicious_style_sanitised_on_autosave(self):
+        evil = {"elements": {"cover_title": {"color": "#fff;} x{}"}}}
+        self.save({"style": evil})
+        card = GiftCard.objects.get(pk=self.card_id)
+        self.assertEqual(card.style["elements"], {})
+
+    def test_unknown_text_key_dropped_on_autosave(self):
+        self.save({"texts": {"kunci_asing": "x", "cover_title": "ok"}})
+        self.assertEqual(
+            GiftCard.objects.get(pk=self.card_id).texts, {"cover_title": "ok"}
+        )
+
+    def test_other_session_cannot_autosave(self):
+        from django.test import Client
+
+        stranger = Client()
+        response = stranger.post(
+            self.url, content_type="application/json",
+            data='{"fields": {"recipient": "Jahat"}}',
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(GiftCard.objects.get(pk=self.card_id).recipient_name, "")
+
+    def test_paid_card_cannot_be_autosaved(self):
+        GiftCard.objects.filter(pk=self.card_id).update(status=GiftCard.Status.PAID)
+        response = self.save({"fields": {"recipient": "X"}})
+        self.assertEqual(response.status_code, 409)
+
+    def test_bad_youtube_link_does_not_break_saving(self):
+        response = self.save({"fields": {"recipient": "Nadia", "youtube_url": "bukan link"}})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(GiftCard.objects.get(pk=self.card_id).recipient_name, "Nadia")
+
+
+class FrameAreaTests(TestCase):
+    """Bingkai hanya muncul di areanya sendiri."""
+
+    def setUp(self):
+        self.template = Template.objects.create(
+            slug="amplop-merah",
+            name="Amplop Merah",
+            category=CardType.BIRTHDAY,
+            config={
+                "renderer": "birthday",
+                "frames": [
+                    {"key": "hero", "label": "Latar ucapan", "area": "hero"},
+                    {"key": "p1", "label": "Polaroid kiri", "area": "letter"},
+                    {"key": "p2", "label": "Polaroid tengah", "area": "letter"},
+                ],
+            },
+        )
+
+    def test_letter_shows_only_letter_frames(self):
+        response = self.client.get(
+            reverse("cards:editor_frame", args=[self.template.slug])
+        )
+        body = response.content.decode()
+        # Bug lama: bingkai latar ucapan ikut tampil sebagai polaroid di Surat,
+        # sehingga foto yang ditaruh di situ malah jadi latar.
+        letter = body[body.index('class="polastrip"') : body.index("</section>", body.index('class="polastrip"'))]
+        self.assertIn('data-frame="p1"', letter)
+        self.assertIn('data-frame="p2"', letter)
+        self.assertNotIn('data-frame="hero"', letter)
+
+    def test_hero_frame_still_exists_in_its_own_scene(self):
+        response = self.client.get(
+            reverse("cards:editor_frame", args=[self.template.slug])
+        )
+        self.assertContains(response, 'data-frame="hero"')

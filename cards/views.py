@@ -382,6 +382,9 @@ def editor(request, template_slug):
                 "urls": {
                     "frame": reverse("cards:editor_frame", args=[template.slug]),
                     "draft": reverse("cards:api_draft", args=[template.slug]),
+                    "content": reverse(
+                        "cards:api_content", args=[PLACEHOLDER_UUID]
+                    ).replace(PLACEHOLDER_UUID, "CARD"),
                     "upload": reverse(
                         "cards:api_photo_upload", args=[PLACEHOLDER_UUID]
                     ).replace(PLACEHOLDER_UUID, "CARD"),

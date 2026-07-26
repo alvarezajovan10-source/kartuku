@@ -67,3 +67,14 @@ def frame(card, editing, key):
     if css:
         out += format_html(' style="{}"', css)
     return mark_safe(out)
+
+
+@register.simple_tag
+def frames_in(card, area):
+    """Bingkai foto untuk satu area saja.
+
+    Ada karena bug nyata: bagian Surat dulu me-loop SEMUA bingkai, sehingga
+    bingkai latar Ucapan ikut tampil di sana sebagai polaroid — foto yang
+    ditaruh di situ malah jadi latar.
+    """
+    return [f for f in card.frames() if f.get("area", "") == area]

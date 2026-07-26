@@ -17,6 +17,11 @@ urlpatterns = [
         name="api_draft",
     ),
     path(
+        "api/cards/<uuid:card_id>/content/",
+        api_photos.save_content,
+        name="api_content",
+    ),
+    path(
         "api/cards/<uuid:card_id>/photos/",
         api_photos.upload_photo,
         name="api_photo_upload",

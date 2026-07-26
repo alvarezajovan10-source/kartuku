@@ -307,8 +307,9 @@
       <p class="body"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis pesanmu di sini..."{% endif %}>{{ card.message|default:"Tulis pesanmu di sini..." }}</p>
       <p class="from">— <span class="e-sender"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</span></p>
     </div>
+    {% frames_in card "letter" as letter_frames %}
     <div class="polastrip">
-      {% for frame in card.frames %}
+      {% for frame in letter_frames %}
         {% with photo=frame_photos|get:frame.key %}
         <div class="polaroid r{{ forloop.counter }}{% if editing and not photo %} is-empty{% endif %}"
              {% frame card editing frame.key %}>

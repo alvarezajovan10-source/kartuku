@@ -443,3 +443,31 @@ class SlugAndMusicTests(TestCase):
         self.card.save()
         response = self.client.get(reverse("cards:qr", args=[self.card.id]))
         self.assertEqual(response.status_code, 404)
+
+
+class SeedIntegrityTests(TestCase):
+    """Seed pernah menimpa config Amplop Merah dengan versi kosong — semua teks
+    template lenyap dari kartu. Tes ini menjaga seed selalu lengkap."""
+
+    def test_seeded_templates_with_renderer_have_texts_and_frames(self):
+        from django.core.management import call_command
+
+        call_command("seed_templates")
+        birthday = Template.objects.get(slug="klasik-ulang-tahun")
+        self.assertEqual(len(birthday.config["texts"]), 20)
+        self.assertEqual(len(birthday.config["frames"]), 4)
+        scrapbook = Template.objects.get(slug="scrapbook-cerita")
+        self.assertGreaterEqual(len(scrapbook.config["texts"]), 14)
+        self.assertEqual(len(scrapbook.config["frames"]), 7)
+        # Tiap frame wajib punya area supaya tidak nyasar ke bagian lain.
+        for template in (birthday, scrapbook):
+            for frame in template.config["frames"]:
+                self.assertIn("area", frame)
+
+    def test_seed_is_idempotent(self):
+        from django.core.management import call_command
+
+        call_command("seed_templates")
+        first = Template.objects.get(slug="klasik-ulang-tahun").config
+        call_command("seed_templates")
+        self.assertEqual(Template.objects.get(slug="klasik-ulang-tahun").config, first)

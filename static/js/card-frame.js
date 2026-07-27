@@ -12,6 +12,23 @@
 
   var SELECTORS = "[data-edit], [data-frame]";
 
+  var styleRules = {};
+  function renderStyleRules() {
+    var el = document.getElementById("user-style");
+    if (!el) {
+      el = document.createElement("style");
+      el.id = "user-style";
+      document.head.appendChild(el);
+    }
+    el.textContent = Object.keys(styleRules)
+      .filter(function (key) { return styleRules[key]; })
+      .map(function (key) {
+        var esc = cssEscape(key);
+        return '[data-edit="' + esc + '"], [data-frame="' + esc + '"] { ' + styleRules[key] + ' }';
+      })
+      .join("\n");
+  }
+
   function all(selector) {
     return Array.prototype.slice.call(document.querySelectorAll(selector));
   }
@@ -58,12 +75,11 @@
     if (data.source !== "card-editor") return;
 
     if (data.type === "style") {
-      // Tempel var langsung di elemen yang bersangkutan. Var yang hilang dari
-      // daftar berarti user mengembalikannya ke bawaan template.
-      all('[data-edit="' + cssEscape(data.key) + '"], [data-frame="' + cssEscape(data.key) + '"]')
-        .forEach(function (el) {
-          el.setAttribute("style", data.css || "");
-        });
+      // Semua gaya user dikumpulkan di SATU stylesheet suntikan. Ini satu
+      // jalur, idempoten, dan tidak bisa kalah dari gaya inline mana pun
+      // (server tidak memancarkan gaya inline saat mode edit).
+      styleRules[data.key] = data.css || "";
+      renderStyleRules();
     }
 
     if (data.type === "colors") {

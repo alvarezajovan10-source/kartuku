@@ -39,9 +39,12 @@ window.cardEditor = function () {
     currentScene: "",
     busy: false,
     error: "",
-    dragging: false,
-    dragFrom: null,
     saveTimer: null,
+
+    /* Crop sebelum masuk template: antrean file menunggu dipotong */
+    cropOpen: false,
+    cropQueue: [],
+    crop: { img: null, slot: "", zoom: 1, dx: 0, dy: 0, base: 1, drag: null },
     saveState: "",   // "" | "saving" | "saved"
     fontOpen: false,
     colorOpen: false,
@@ -246,62 +249,6 @@ window.cardEditor = function () {
       this.queueSave();
     },
 
-    /* ── Crop: geser & perbesar di dalam bingkai ──────────────────────
-       Foto aslinya tidak disentuh; yang disimpan cuma posisi & perbesaran,
-       jadi user bisa mengatur ulang kapan saja tanpa unggah ulang. */
-    cropStart: function (event) {
-      this.dragging = true;
-      this.dragFrom = {
-        x: event.clientX,
-        y: event.clientY,
-        ox: this.st.ox === undefined ? 50 : this.st.ox,
-        oy: this.st.oy === undefined ? 50 : this.st.oy,
-      };
-      event.currentTarget.setPointerCapture(event.pointerId);
-    },
-
-    cropMove: function (event) {
-      if (!this.dragging) return;
-      var box = event.currentTarget.getBoundingClientRect();
-      // Makin besar zoom, makin kecil geseran per pixel — terasa wajar.
-      var reach = Math.max((this.st.zoom || 1) - 1, 0.35);
-      var dx = ((event.clientX - this.dragFrom.x) / box.width) * (100 / reach);
-      var dy = ((event.clientY - this.dragFrom.y) / box.height) * (100 / reach);
-      var current = this.style.elements[this.sel] || {};
-      current.ox = Math.min(Math.max(this.dragFrom.ox - dx, 0), 100);
-      current.oy = Math.min(Math.max(this.dragFrom.oy - dy, 0), 100);
-      this.style.elements[this.sel] = current;
-      this.pushStyle();
-    },
-
-    cropEnd: function () {
-      this.dragging = false;
-      this.queueSave();
-    },
-
-    resetCrop: function () {
-      this.queueSave();
-      var current = this.style.elements[this.sel] || {};
-      delete current.zoom;
-      delete current.ox;
-      delete current.oy;
-      this.style.elements[this.sel] = current;
-      this.pushStyle();
-    },
-
-    /* Rumus tampilan SAMA dengan kartu (object-position + scale dari titik
-       fokus) — apa yang terlihat di kotak crop = yang tampil di template. */
-    cropImgStyle: function () {
-      var ox = (this.st.ox === undefined ? 50 : this.st.ox) + "%";
-      var oy = (this.st.oy === undefined ? 50 : this.st.oy) + "%";
-      var zoom = this.st.zoom || 1;
-      return (
-        "object-position:" + ox + " " + oy + ";" +
-        "transform:scale(" + zoom + ");" +
-        "transform-origin:" + ox + " " + oy
-      );
-    },
-
     setSurface: function (key, value) {
       this.style.colors[key] = value;
       this.pushColors();
@@ -359,16 +306,107 @@ window.cardEditor = function () {
       var file = event.target.files[0];
       event.target.value = "";
       if (!file) return;
+      this.cropQueue.push({ file: file, slot: slot });
+      this.nextCrop();
+    },
+
+    /* ── Modal crop ──────────────────────────────────────────────────── */
+    nextCrop: function () {
+      if (this.cropOpen || !this.cropQueue.length) return;
+      var item = this.cropQueue.shift();
       var self = this;
+      var img = new Image();
+      img.onload = function () {
+        var canvas = self.$refs.cropCanvas;
+        // Skala awal = "cover": foto memenuhi kotak, sisa bisa digeser.
+        var base = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+        self.crop = {
+          img: img, slot: item.slot, zoom: 1, base: base,
+          dx: (canvas.width - img.naturalWidth * base) / 2,
+          dy: (canvas.height - img.naturalHeight * base) / 2,
+          drag: null,
+        };
+        self.cropOpen = true;
+        self.$nextTick(function () { self.drawCrop(); });
+      };
+      img.onerror = function () { self.error = "Foto tidak bisa dibaca."; self.nextCrop(); };
+      img.src = URL.createObjectURL(item.file);
+      this.cropFile = item.file;
+    },
+
+    drawCrop: function () {
+      var canvas = this.$refs.cropCanvas;
+      if (!canvas || !this.crop.img) return;
+      var ctx = canvas.getContext("2d");
+      var s = this.crop.base * this.crop.zoom;
+      ctx.fillStyle = "#eee";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(this.crop.img, this.crop.dx, this.crop.dy,
+        this.crop.img.naturalWidth * s, this.crop.img.naturalHeight * s);
+    },
+
+    clampCrop: function () {
+      var canvas = this.$refs.cropCanvas;
+      var s = this.crop.base * this.crop.zoom;
+      var w = this.crop.img.naturalWidth * s, h = this.crop.img.naturalHeight * s;
+      this.crop.dx = Math.min(0, Math.max(canvas.width - w, this.crop.dx));
+      this.crop.dy = Math.min(0, Math.max(canvas.height - h, this.crop.dy));
+    },
+
+    cropDown: function (event) {
+      this.crop.drag = { x: event.clientX, y: event.clientY, dx: this.crop.dx, dy: this.crop.dy };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    cropDrag: function (event) {
+      if (!this.crop.drag) return;
+      var canvas = this.$refs.cropCanvas;
+      var scale = canvas.width / canvas.getBoundingClientRect().width;
+      this.crop.dx = this.crop.drag.dx + (event.clientX - this.crop.drag.x) * scale;
+      this.crop.dy = this.crop.drag.dy + (event.clientY - this.crop.drag.y) * scale;
+      this.clampCrop();
+      this.drawCrop();
+    },
+    cropUp: function () { this.crop.drag = null; },
+
+    cropZoom: function (zoom) {
+      // Perbesar dari tengah kotak supaya tidak "lari".
+      var canvas = this.$refs.cropCanvas;
+      var cx = canvas.width / 2, cy = canvas.height / 2;
+      var old = this.crop.base * this.crop.zoom;
+      var next = this.crop.base * zoom;
+      this.crop.dx = cx - (cx - this.crop.dx) * (next / old);
+      this.crop.dy = cy - (cy - this.crop.dy) * (next / old);
+      this.crop.zoom = zoom;
+      this.clampCrop();
+      this.drawCrop();
+    },
+
+    cancelCrop: function () {
+      this.cropOpen = false;
+      this.crop.img = null;
+      this.nextCrop();
+    },
+
+    confirmCrop: function () {
+      var self = this;
+      var canvas = this.$refs.cropCanvas;
       this.busy = true;
-      this.error = "";
-      this.sendPhoto(file, slot)
-        .then(function (photo) {
-          specByKey[slot].photo = photo;
-          self.reloadFrame();
-        })
-        .catch(function (err) { self.error = err.message; })
-        .finally(function () { self.busy = false; });
+      // Hasil potongan = persis isi canvas. Itu yang diunggah.
+      canvas.toBlob(function (blob) {
+        var file = new File([blob], "foto.jpg", { type: "image/jpeg" });
+        var slot = self.crop.slot;
+        self.sendPhoto(file, slot)
+          .then(function (photo) {
+            if (slot) specByKey[slot].photo = photo;
+            else self.gallery.push(photo);
+            self.cropOpen = false;
+            self.crop.img = null;
+            self.reloadFrame();
+            self.nextCrop();
+          })
+          .catch(function (err) { self.error = err.message; self.cropOpen = false; })
+          .finally(function () { self.busy = false; });
+      }, "image/jpeg", 0.9);
     },
 
     uploadGallery: function (event) {
@@ -382,23 +420,9 @@ window.cardEditor = function () {
         this.error = "Maksimal " + this.maxPhotos + " foto; sisanya diabaikan.";
         files = files.slice(0, Math.max(room, 0));
       }
-      if (!files.length) return;
-
       var self = this;
-      this.busy = true;
-      files
-        .reduce(function (chain, file) {
-          return chain.then(function () {
-            return self.sendPhoto(file, "").then(function (photo) {
-              self.gallery.push(photo);
-            });
-          });
-        }, Promise.resolve())
-        .catch(function (err) { self.error = err.message; })
-        .finally(function () {
-          self.busy = false;
-          self.reloadFrame();
-        });
+      files.forEach(function (file) { self.cropQueue.push({ file: file, slot: "" }); });
+      this.nextCrop();
     },
 
     saveCaption: function (photoId, caption) {

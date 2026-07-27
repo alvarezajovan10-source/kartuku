@@ -34,13 +34,13 @@ def el(card, editing, key):
     cukup menulis var(--f, <bawaan>) dan desain aslinya tetap utuh kalau user
     belum mengubah apa-apa.
     """
-    css = styles.element_css((card.style or {}).get("elements", {}).get(key, {}))
-    out = ""
     if editing:
-        out += format_html(' data-edit="{}"', key)
-    if css:
-        out += format_html(' style="{}"', css)
-    return mark_safe(out)
+        # Saat mengedit, gaya diterapkan editor lewat stylesheet suntikan —
+        # gaya inline dari server justru menimpanya dan membuat pilihan font
+        # user "tidak berefek". Jadi inline hanya untuk kartu asli.
+        return format_html(' data-edit="{}"', key)
+    css = styles.element_css((card.style or {}).get("elements", {}).get(key, {}))
+    return format_html(' style="{}"', css) if css else ""
 
 
 @register.simple_tag
@@ -60,13 +60,10 @@ def t(card, key):
 @register.simple_tag
 def frame(card, editing, key):
     """Atribut bingkai foto: penanda edit + gaya (bentuk sudut, cara mengisi)."""
-    css = styles.element_css((card.style or {}).get("elements", {}).get(key, {}))
-    out = ""
     if editing:
-        out += format_html(' data-frame="{}"', key)
-    if css:
-        out += format_html(' style="{}"', css)
-    return mark_safe(out)
+        return format_html(' data-frame="{}"', key)
+    css = styles.element_css((card.style or {}).get("elements", {}).get(key, {}))
+    return format_html(' style="{}"', css) if css else ""
 
 
 @register.simple_tag

@@ -777,3 +777,21 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   pointer-events: none;
   user-select: none;
 }
+
+/* Modal crop sebelum foto masuk template */
+.crop-modal {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(30, 20, 22, .6); backdrop-filter: blur(3px); padding: 16px;
+}
+.crop-box {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); padding: 18px; width: 380px; max-width: 100%;
+}
+.crop-title { margin: 0 0 12px; font-weight: 600; font-size: .92rem; }
+.crop-box canvas {
+  width: 100%; aspect-ratio: 1; display: block; border-radius: 10px;
+  background: var(--cream); cursor: grab; touch-action: none;
+}
+.crop-box canvas:active { cursor: grabbing; }
+.crop-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }

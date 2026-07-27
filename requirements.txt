@@ -6,3 +6,4 @@ Pillow==11.*
 django-storages[s3]==1.14.*
 boto3==1.35.*
 gunicorn==23.*
+qrcode[pil]

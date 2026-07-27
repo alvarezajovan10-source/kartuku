@@ -39,7 +39,9 @@ urlpatterns = [
     path("pay/<uuid:card_id>/", views.pay, name="pay"),
     path("pay/<uuid:card_id>/gratis/", views.mark_paid, name="mark_paid"),
     path("sukses/<uuid:card_id>/", views.success, name="success"),
-    path("g/<uuid:card_id>/", views.public_card, name="public"),
+    path("g/<str:ref>/", views.public_card, name="public"),
+    path("sukses/<uuid:card_id>/link/", views.set_slug, name="set_slug"),
+    path("qr/<uuid:card_id>.png", views.qr_png, name="qr"),
     path("api/cards/<uuid:card_id>/pay/", api.create_charge, name="api_pay"),
     path("api/cards/<uuid:card_id>/status/", api.card_status, name="api_status"),
 ]

@@ -5,7 +5,7 @@ from django.conf import settings
 
 from .models import GiftCard
 from .styles import sanitize_style
-from .utils import extract_youtube_id
+from .utils import parse_music_link
 
 MAX_TEXT_KEYS = 60
 MAX_TEXT_LENGTH = 300
@@ -17,7 +17,7 @@ class GiftCardForm(forms.ModelForm):
     texts_json = forms.CharField(required=False, widget=forms.HiddenInput())
 
     youtube_url = forms.CharField(
-        label="Link YouTube (opsional)",
+        label="Link lagu — YouTube / Spotify (opsional)",
         required=False,
         widget=forms.TextInput(attrs={"placeholder": "https://youtu.be/..."}),
     )
@@ -113,12 +113,12 @@ class GiftCardForm(forms.ModelForm):
         return "\n".join(lines)
 
     def clean_youtube_url(self):
-        # extract_youtube_id raise ValidationError → otomatis jadi field error.
-        return extract_youtube_id(self.cleaned_data["youtube_url"])
+        # Kembalikan pasangan (youtube_id, spotify_id).
+        return parse_music_link(self.cleaned_data["youtube_url"])
 
     def save(self, commit=True):
         card = super().save(commit=False)
-        card.youtube_video_id = self.cleaned_data["youtube_url"]
+        card.youtube_video_id, card.spotify_track_id = self.cleaned_data["youtube_url"]
         card.style = self.cleaned_data["style_json"]
         card.texts = self.cleaned_data["texts_json"]
         if commit:

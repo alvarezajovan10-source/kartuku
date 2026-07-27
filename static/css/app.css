@@ -750,3 +750,7 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   color: #fff;
   background: rgba(0, 0, 0, .38);
 }
+
+/* Pemilih QR di halaman sukses */
+.qr-opts { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 16px; }
+.qr-preview { width: 220px; max-width: 100%; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 14px; }

@@ -370,3 +370,76 @@ class EditorTests(TestCase):
         )
         response = self.client.get(reverse("cards:pay", args=[card.id]))
         self.assertEqual(response.status_code, 403)
+
+
+class SlugAndMusicTests(TestCase):
+    def setUp(self):
+        self.template = Template.objects.create(
+            slug="t", name="T", category=CardType.BIRTHDAY
+        )
+        self.card = GiftCard.objects.create(
+            template=self.template, category=CardType.BIRTHDAY,
+            status=GiftCard.Status.PAID, message="halo",
+        )
+        session = self.client.session
+        session["owned_cards"] = [str(self.card.id)]
+        session.save()
+
+    def set_slug(self, slug):
+        return self.client.post(
+            reverse("cards:set_slug", args=[self.card.id]), {"slug": slug}
+        )
+
+    def test_slug_sets_and_resolves(self):
+        self.set_slug("untuk-nadia")
+        self.card.refresh_from_db()
+        self.assertEqual(self.card.slug, "untuk-nadia")
+        response = self.client.get("/g/untuk-nadia/")
+        self.assertContains(response, "halo")
+        # UUID lama tetap jalan
+        self.assertEqual(self.client.get(f"/g/{self.card.id}/").status_code, 200)
+
+    def test_slug_must_be_unique(self):
+        GiftCard.objects.create(
+            template=self.template, category=CardType.BIRTHDAY,
+            status=GiftCard.Status.PAID, slug="untuk-nadia",
+        )
+        self.set_slug("untuk-nadia")
+        self.card.refresh_from_db()
+        self.assertIsNone(self.card.slug)
+
+    def test_reserved_slug_rejected(self):
+        self.set_slug("admin")
+        self.card.refresh_from_db()
+        self.assertIsNone(self.card.slug)
+
+    def test_stranger_cannot_set_slug(self):
+        from django.test import Client
+
+        response = Client().post(
+            reverse("cards:set_slug", args=[self.card.id]), {"slug": "curian"}
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_spotify_link_parsed(self):
+        from cards.utils import parse_music_link
+
+        yt, sp = parse_music_link("https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC")
+        self.assertEqual((yt, sp), ("", "4uLU6hMCjMI75M1A2tKUQC"))
+        yt, sp = parse_music_link("https://youtu.be/dQw4w9WgXcQ")
+        self.assertEqual((yt, sp), ("dQw4w9WgXcQ", ""))
+
+    def test_qr_png_served_for_paid_card(self):
+        for params in ["style=kotak&warna=hitam", "style=hati&warna=pink"]:
+            response = self.client.get(
+                reverse("cards:qr", args=[self.card.id]) + "?" + params
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "image/png")
+            self.assertTrue(response.content.startswith(b"\x89PNG"))
+
+    def test_qr_hidden_for_unpaid_card(self):
+        self.card.status = GiftCard.Status.PENDING
+        self.card.save()
+        response = self.client.get(reverse("cards:qr", args=[self.card.id]))
+        self.assertEqual(response.status_code, 404)

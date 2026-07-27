@@ -5,10 +5,13 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.staticfiles import finders
 from django.core.exceptions import ValidationError
-from django.http import Http404
+from uuid import UUID
+
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.templatetags.static import static
+from django.utils.text import slugify
 from django.utils import timezone
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
@@ -435,12 +438,24 @@ def success(request, card_id):
     card = get_object_or_404(GiftCard, pk=card_id)
     if not card.is_paid:
         return redirect("cards:pay", card_id=card.id)
-    return render(request, "cards/success.html", {"card": card})
+    return render(
+        request,
+        "cards/success.html",
+        {"card": card, "slug_error": request.session.pop("slug_error", "")},
+    )
 
 
-def public_card(request, card_id):
+def _card_by_ref(ref):
+    """Cari kartu lewat UUID atau slug pilihan user — dua-duanya tetap jalan."""
+    try:
+        return get_object_or_404(GiftCard, pk=UUID(str(ref)))
+    except (ValueError, AttributeError):
+        return get_object_or_404(GiftCard, slug=ref)
+
+
+def public_card(request, ref):
     """Halaman kartu publik. Aturan emas: hanya render penuh kalau status == paid."""
-    card = get_object_or_404(GiftCard, pk=card_id)
+    card = _card_by_ref(ref)
     # Staff (pemilik situs) boleh mengintip kartu yang belum dibayar untuk
     # mengecek hasil template. Pengunjung biasa tetap terkunci.
     staff_peek = request.user.is_staff and not card.is_paid
@@ -465,3 +480,94 @@ def _photo_payload(photo):
         "slot": photo.slot,
         "order": photo.order,
     }
+
+
+RESERVED_SLUGS = {"admin", "api", "create", "pay", "sukses", "template", "preview", "qr", "g", "static", "media"}
+
+
+@require_POST
+def set_slug(request, card_id):
+    """Ganti link kartu jadi nama pilihan user. Hanya setelah bayar, pemilik saja."""
+    card = get_object_or_404(GiftCard, pk=card_id)
+    if not (_owns(request, card) or request.user.is_staff):
+        return render(request, "cards/not_yours.html", status=403)
+    if not card.is_paid:
+        return redirect("cards:pay", card_id=card.id)
+
+    slug = slugify(request.POST.get("slug", ""))[:60]
+    error = ""
+    if not slug or len(slug) < 3:
+        error = "Minimal 3 karakter (huruf, angka, tanda minus)."
+    elif slug in RESERVED_SLUGS:
+        error = "Nama itu tidak bisa dipakai."
+    elif GiftCard.objects.filter(slug=slug).exclude(pk=card.pk).exists():
+        error = "Sudah dipakai kartu lain — coba nama lain."
+    else:
+        card.slug = slug
+        card.save(update_fields=["slug", "updated_at"])
+
+    if error:
+        request.session["slug_error"] = error
+    return redirect("cards:success", card_id=card.id)
+
+
+# Gaya QR yang ditawarkan: (bentuk modul, warna). Nilai dari user hanya kunci
+# dari peta ini — tidak ada warna/bentuk mentah dari luar.
+QR_COLORS = {
+    "hitam": ("#2B2320", "#FFFFFF"),
+    "merah": ("#9E1B32", "#FFF6F0"),
+    "pink": ("#E75480", "#FFF4F7"),
+    "emas": ("#A9863A", "#FFFBEF"),
+}
+
+
+def qr_png(request, card_id):
+    """Gambar QR menuju link kartu. Gaya: kotak / hati, warna dari QR_COLORS."""
+    import io as _io
+
+    import qrcode
+    from PIL import Image as PILImage, ImageDraw
+
+    card = get_object_or_404(GiftCard, pk=card_id)
+    if not card.is_paid:
+        raise Http404
+
+    style = request.GET.get("style", "kotak")
+    fg, bg_color = QR_COLORS.get(request.GET.get("warna", "hitam"), QR_COLORS["hitam"])
+
+    link = request.build_absolute_uri(card.public_url())
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H, border=2, box_size=16)
+    qr.add_data(link)
+    qr.make(fit=True)
+    matrix = qr.get_matrix()
+
+    n = len(matrix)
+    box = 16
+    img = PILImage.new("RGB", (n * box, n * box), bg_color)
+    draw = ImageDraw.Draw(img)
+
+    def heart(cx, cy, r):
+        # Dua lingkaran + segitiga = hati kecil per titik QR.
+        draw.ellipse([cx - r, cy - r * 0.9, cx, cy + r * 0.1], fill=fg)
+        draw.ellipse([cx, cy - r * 0.9, cx + r, cy + r * 0.1], fill=fg)
+        draw.polygon(
+            [(cx - r * 0.96, cy - r * 0.25), (cx + r * 0.96, cy - r * 0.25), (cx, cy + r)],
+            fill=fg,
+        )
+
+    for y, row in enumerate(matrix):
+        for x, filled in enumerate(row):
+            if not filled:
+                continue
+            x0, y0 = x * box, y * box
+            if style == "hati":
+                heart(x0 + box / 2, y0 + box / 2, box / 2 - 1)
+            else:
+                draw.rounded_rectangle([x0 + 1, y0 + 1, x0 + box - 1, y0 + box - 1], radius=3, fill=fg)
+
+    buffer = _io.BytesIO()
+    img.save(buffer, "PNG")
+    response = HttpResponse(buffer.getvalue(), content_type="image/png")
+    if request.GET.get("download"):
+        response["Content-Disposition"] = 'attachment; filename="qr-kartuku.png"'
+    return response

@@ -20,7 +20,7 @@ from rest_framework.throttling import AnonRateThrottle
 from .forms import MAX_TEXT_KEYS, MAX_TEXT_LENGTH
 from .models import GiftCard, GiftPhoto, Template
 from .styles import sanitize_style
-from .utils import extract_youtube_id, validate_and_compress_photo
+from .utils import parse_music_link, validate_and_compress_photo
 from .views import OWNED_CARDS_KEY, _mark_owned, _owns
 
 logger = logging.getLogger(__name__)
@@ -176,7 +176,9 @@ def save_content(request, card_id):
             if line.strip()
         )[:1000]
         try:
-            card.youtube_video_id = extract_youtube_id(fields.get("youtube_url", ""))
+            card.youtube_video_id, card.spotify_track_id = parse_music_link(
+                fields.get("youtube_url", "")
+            )
         except ValidationError:
             pass  # link belum benar — biarkan yang lama, jangan gagalkan simpan
 

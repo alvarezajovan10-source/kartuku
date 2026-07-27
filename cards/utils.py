@@ -79,3 +79,37 @@ def validate_and_compress_photo(uploaded) -> InMemoryUploadedFile:
     return InMemoryUploadedFile(
         buffer, "ImageField", name, "image/jpeg", buffer.getbuffer().nbytes, None
     )
+
+
+_SPOTIFY = re.compile(r"open\.spotify\.com/(?:intl-[a-z]{2}/)?track/([A-Za-z0-9]{22})")
+
+
+def extract_spotify_id(value: str) -> str:
+    """ID track dari link Spotify. Kosong → "". Tidak valid → ValidationError."""
+    value = (value or "").strip()
+    if not value:
+        return ""
+    match = _SPOTIFY.search(value)
+    if match:
+        return match.group(1)
+    raise ValidationError("Link Spotify tidak dikenali.")
+
+
+def parse_music_link(value: str):
+    """Satu kolom lagu menerima YouTube ATAU Spotify.
+
+    Kembalikan (youtube_id, spotify_id) — salah satu terisi, satunya kosong.
+    """
+    value = (value or "").strip()
+    if not value:
+        return "", ""
+    try:
+        return extract_youtube_id(value), ""
+    except ValidationError:
+        pass
+    try:
+        return "", extract_spotify_id(value)
+    except ValidationError:
+        raise ValidationError(
+            "Link lagu tidak dikenali. Tempel link YouTube atau Spotify (track)."
+        )

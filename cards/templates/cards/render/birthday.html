@@ -281,7 +281,7 @@
       <svg class="ico" viewBox="0 0 82 82" aria-hidden="true"><rect x="18" y="44" width="46" height="24" rx="4" fill="#fbeee0"/><rect x="18" y="52" width="46" height="7" fill="#e78ea0"/><rect x="39" y="26" width="4" height="16" fill="#f7d774"/><circle cx="41" cy="22" r="4" fill="#ff8a5b"/></svg>
       <span class="lbl"{% el card editing "gift_cake" %}>{% t card "gift_cake" %}</span>
     </button>
-    {% if editing or card.youtube_video_id %}
+    {% if editing or card.youtube_video_id or card.spotify_track_id %}
     <button class="gift" data-go="song">
       <svg class="ico" viewBox="0 0 82 82" aria-hidden="true"><circle cx="41" cy="41" r="30" fill="#1e1618"/><circle cx="41" cy="41" r="10" fill="#9E1B32"/><circle cx="41" cy="41" r="3" fill="#faf2e4"/></svg>
       <span class="lbl"{% el card editing "gift_song" %}>{% t card "gift_song" %}</span>
@@ -377,17 +377,22 @@
 </section>
 
 <!-- ======================= SONG ======================= -->
-{% if editing or card.youtube_video_id %}
+{% if editing or card.youtube_video_id or card.spotify_track_id %}
 <section class="scene on-red" id="song"{% bg card editing "scene_bg" %}>
   <button class="back" data-go="hub">← kembali</button>
   <h3 class="scene-head script"{% el card editing "song_head" %}>{% t card "song_head" %}</h3>
   <div class="player">
     <div class="vinyl" aria-hidden="true"></div>
     <div class="yt">
+      {% if card.spotify_track_id %}
+      <iframe src="{{ card.spotify_embed_url }}" title="Lagu untukmu" loading="lazy"
+              allow="encrypted-media; clipboard-write" style="border-radius:10px"></iframe>
+      {% else %}
       <iframe src="{{ card.youtube_embed_url }}"
               title="Lagu untukmu" loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      {% endif %}
     </div>
   </div>
   <p class="caption"{% el card editing "song_caption" %}>{% t card "song_caption" %}</p>

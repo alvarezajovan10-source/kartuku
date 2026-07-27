@@ -4,19 +4,51 @@
 
 {% block content %}
   <h1>Pembayaran diterima 🎉</h1>
-  <p class="lede">Kartumu sudah aktif. Bagikan link ini — bisa dibuka berkali-kali, kapan saja.</p>
+  <p class="lede">Kartumu aktif. Rapikan link-nya, lalu bagikan lewat tautan atau QR.</p>
 
   <div class="card">
-    <label for="share-link">Link kartu</label>
+    <label for="slug">Rapikan link (opsional)</label>
+    <form method="post" action="{% url 'cards:set_slug' card.id %}" class="linkbox">
+      {% csrf_token %}
+      <input type="text" id="slug" name="slug" placeholder="mis. untuk-nadia"
+             value="{{ card.slug|default:'' }}" maxlength="60">
+      <button class="btn btn-primary" type="submit">Simpan</button>
+    </form>
+    {% if slug_error %}<p class="errors">{{ slug_error }}</p>{% endif %}
+
+    <label for="share-link" style="margin-top:18px">Link kartu</label>
     <div class="linkbox">
       <input type="text" id="share-link" readonly
              value="{{ request.scheme }}://{{ request.get_host }}{{ card.public_url }}">
-      <button class="btn" type="button" id="copy">Salin</button>
+      <button class="btn btn-primary" type="button" id="copy">Salin</button>
     </div>
-    <p class="hint" style="margin-top:12px;">Simpan link ini. Kami tidak mengirimnya lewat email.</p>
+    <p class="hint" style="margin-top:10px">Simpan link ini — bisa dibuka kapan saja oleh penerima.</p>
   </div>
 
-  <a class="btn ghost" href="{{ card.public_url }}">Lihat kartunya</a>
+  <div class="card qr-pick">
+    <label>Kode QR</label>
+    <p class="hint">Pilih bentuk & warna, lalu unduh — cocok untuk dicetak atau dikirim.</p>
+
+    <div class="qr-opts">
+      <div class="seg small">
+        <button type="button" data-style="kotak" class="is-on">Kotak</button>
+        <button type="button" data-style="hati">Hati ♥</button>
+      </div>
+      <div class="seg small">
+        <button type="button" data-warna="hitam" class="is-on">Hitam</button>
+        <button type="button" data-warna="merah">Merah</button>
+        <button type="button" data-warna="pink">Pink</button>
+        <button type="button" data-warna="emas">Emas</button>
+      </div>
+    </div>
+
+    <img id="qr-img" class="qr-preview" alt="Kode QR kartu"
+         src="{% url 'cards:qr' card.id %}?style=kotak&warna=hitam">
+    <a class="btn btn-outline" id="qr-dl"
+       href="{% url 'cards:qr' card.id %}?style=kotak&warna=hitam&download=1">Unduh QR</a>
+  </div>
+
+  <a class="btn btn-outline" href="{{ card.public_url }}">Lihat kartunya</a>
 {% endblock %}
 
 {% block scripts %}
@@ -24,13 +56,28 @@
 document.getElementById("copy").addEventListener("click", async function () {
   const input = document.getElementById("share-link");
   input.select();
-  try {
-    await navigator.clipboard.writeText(input.value);
-    this.textContent = "Tersalin";
-  } catch (err) {
-    document.execCommand("copy");
-    this.textContent = "Tersalin";
-  }
+  try { await navigator.clipboard.writeText(input.value); } catch (e) { document.execCommand("copy"); }
+  this.textContent = "Tersalin";
 });
+
+// Pemilih gaya QR — cukup ganti query string gambarnya.
+(function () {
+  const base = "{% url 'cards:qr' card.id %}";
+  let style = "kotak", warna = "hitam";
+  function refresh() {
+    document.getElementById("qr-img").src = base + "?style=" + style + "&warna=" + warna;
+    document.getElementById("qr-dl").href = base + "?style=" + style + "&warna=" + warna + "&download=1";
+  }
+  document.querySelectorAll("[data-style]").forEach(b => b.addEventListener("click", () => {
+    style = b.dataset.style;
+    document.querySelectorAll("[data-style]").forEach(x => x.classList.toggle("is-on", x === b));
+    refresh();
+  }));
+  document.querySelectorAll("[data-warna]").forEach(b => b.addEventListener("click", () => {
+    warna = b.dataset.warna;
+    document.querySelectorAll("[data-warna]").forEach(x => x.classList.toggle("is-on", x === b));
+    refresh();
+  }));
+})();
 </script>
 {% endblock %}

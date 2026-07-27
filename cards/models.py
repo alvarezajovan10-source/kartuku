@@ -44,6 +44,10 @@ class GiftCard(models.Model):
     recipient_name = models.CharField(max_length=80, blank=True)
     message = models.TextField(blank=True)
     youtube_video_id = models.CharField(max_length=20, blank=True)
+    spotify_track_id = models.CharField(max_length=30, blank=True)
+
+    # Link cantik pilihan user setelah bayar: /g/<slug>. Kode UUID tetap jalan.
+    slug = models.SlugField(max_length=60, unique=True, null=True, blank=True)
 
     # Isian khusus template yang punya bagian "bunga" (mis. Birthday).
     favorite_flower = models.CharField(max_length=40, blank=True)
@@ -92,12 +96,17 @@ class GiftCard(models.Model):
         return bool(self.qr_expires_at and timezone.now() >= self.qr_expires_at)
 
     def public_url(self):
-        return reverse("cards:public", args=[self.id])
+        return reverse("cards:public", args=[self.slug or self.id])
 
     def youtube_embed_url(self):
         if not self.youtube_video_id:
             return ""
         return f"https://www.youtube-nocookie.com/embed/{self.youtube_video_id}"
+
+    def spotify_embed_url(self):
+        if not self.spotify_track_id:
+            return ""
+        return f"https://open.spotify.com/embed/track/{self.spotify_track_id}"
 
     MAX_AFFIRMATIONS = 4
 

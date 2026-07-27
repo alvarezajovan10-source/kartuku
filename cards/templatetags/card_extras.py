@@ -78,3 +78,23 @@ def frames_in(card, area):
     ditaruh di situ malah jadi latar.
     """
     return [f for f in card.frames() if f.get("area", "") == area]
+
+
+import os
+
+from django.contrib.staticfiles import finders as _finders
+from django.templatetags.static import static as _static
+
+
+@register.simple_tag
+def static_v(path):
+    """URL static + penanda waktu ubah file (?v=mtime).
+
+    Tanpa ini, browser memakai JS/CSS lama dari cache setelah file berubah —
+    gejalanya editor 'kosong' atau berperilaku versi lama.
+    """
+    url = _static(path)
+    found = _finders.find(path)
+    if found:
+        url += f"?v={int(os.path.getmtime(found))}"
+    return url

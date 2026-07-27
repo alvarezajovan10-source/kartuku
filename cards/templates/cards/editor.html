@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static card_extras %}
 
 {% block title %}Edit — {{ template.name }}{% endblock %}
 
@@ -214,6 +214,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'js/alpine-editor.js' %}"></script>
-<script defer src="{% static 'js/alpine.min.js' %}"></script>
+<script src="{% static_v 'js/alpine-editor.js' %}"></script>
+<script defer src="{% static_v 'js/alpine.min.js' %}"></script>
 {% endblock %}

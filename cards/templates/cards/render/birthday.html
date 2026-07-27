@@ -215,8 +215,8 @@
   }
 </style>
 {% if editing %}
-<link rel="stylesheet" href="{% static 'css/editing.css' %}">
-<script defer src="{% static 'js/card-frame.js' %}"></script>
+<link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
+<script defer src="{% static_v 'js/card-frame.js' %}"></script>
 {% endif %}
 </head>
 <body{% if editing %} class="is-editing"{% endif %}>

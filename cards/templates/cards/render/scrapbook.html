@@ -272,7 +272,10 @@
     el.textContent = '';
     const text = el.dataset.text || '';
     [...text].forEach((ch, i) => {
-      if(ch === ' '){ el.appendChild(document.createTextNode(' ')); return; }
+      // Flexbox membuang spasi teks; nbsp pun tak memberi jarak antar item flex.
+      if(ch === ' '){ const sp = document.createElement('span'); sp.style.width = '.55em'; el.appendChild(sp); return; }
+      // Enter dari user = pindah baris.
+      if(ch === '\n'){ const br = document.createElement('span'); br.style.flexBasis = '100%'; el.appendChild(br); return; }
       const s = document.createElement('span');
       s.className = 'rl ' + variants[Math.floor(Math.random()*variants.length)];
       s.textContent = ch;

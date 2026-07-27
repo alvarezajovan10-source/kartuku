@@ -61,6 +61,8 @@ window.cardEditor = function () {
       return this.kind === "text" || (this.spec && this.spec.input === "multiline");
     },
     get placeholder() {
+      if (this.sel === "youtube_url")
+        return "https://youtu.be/... atau open.spotify.com/track/...";
       return this.kind === "text" ? "Kosongkan = pakai bawaan template" : "Tulis di sini...";
     },
     get content() {
@@ -171,6 +173,15 @@ window.cardEditor = function () {
     },
 
     /* ── Sunting ──────────────────────────────────────────────────────── */
+    /* Link lagu baru terlihat efeknya setelah tersimpan — muat ulang
+       preview begitu user selesai mengetik (blur). */
+    afterContentChange: function () {
+      var self = this;
+      if (this.sel !== "youtube_url") return;
+      clearTimeout(this.saveTimer);
+      this.saveNow().then(function () { self.reloadFrame(); });
+    },
+
     setContent: function (value) {
       if (this.kind === "field") this.fields[this.sel] = value;
       else if (this.kind === "text") this.texts[this.sel] = value;

@@ -37,6 +37,7 @@ FIELD_ELEMENTS = [
     ("sender", "Nama pengirim", "line"),
     ("favorite_flower", "Nama bunga", "line"),
     ("affirmations", "Kalimat manis", "multiline"),
+    ("youtube_url", "Lagu — link YouTube / Spotify", "line"),
 ]
 
 

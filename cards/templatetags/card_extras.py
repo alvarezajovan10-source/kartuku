@@ -98,3 +98,8 @@ def static_v(path):
     if found:
         url += f"?v={int(os.path.getmtime(found))}"
     return url
+
+
+@register.filter
+def split(value, sep=","):
+    return str(value).split(sep)

@@ -35,7 +35,11 @@
                   :placeholder="placeholder"></textarea>
         <input type="text" x-show="!multiline" class="ed-input"
                :value="content" @input="setContent($event.target.value)"
+               @change="afterContentChange()"
                :placeholder="placeholder">
+        <p class="hint" x-show="sel === 'youtube_url'">
+          Tempel link lagu dari YouTube atau Spotify. Player muncul di babak Lagu.
+        </p>
 
         <!-- Baris kontrol padat, seperti toolbar -->
         <button type="button" class="ed-font" @click="fontOpen = !fontOpen"

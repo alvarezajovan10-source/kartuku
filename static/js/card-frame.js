@@ -75,6 +75,14 @@
 
     if (data.type === "text") {
       all('[data-edit="' + cssEscape(data.key) + '"]').forEach(function (el) {
+        // data-no-text: isi elemen bukan teks polos (player lagu, dsb.)
+        if (el.hasAttribute("data-no-text")) return;
+        // Judul "ransom" dibangun per huruf oleh template — bangun ulang.
+        if (el.dataset.text !== undefined && typeof window.buildRansom === "function") {
+          el.dataset.text = data.value || el.dataset.placeholder || "";
+          window.buildRansom(el);
+          return;
+        }
         el.textContent = data.value || el.dataset.placeholder || "";
         el.classList.toggle("is-blank", !data.value);
       });

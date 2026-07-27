@@ -71,7 +71,8 @@
   /* ================= HERO (greeting) ================= */
   #hero{background:var(--c-scene_bg, #7A1526)}
   .photo-bg{position:absolute;inset:0;overflow:hidden;background:linear-gradient(160deg,#c33a4d,#7a1526);opacity:.55}
-  .photo-bg.has-photo{background-size:calc(100% * var(--zoom,1)) auto;background-position:var(--ox,50%) var(--oy,50%);background-repeat:no-repeat;opacity:.62}
+  .photo-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--ox,50%) var(--oy,50%);transform:scale(var(--zoom,1))}
+  .photo-bg.has-photo{opacity:.62}
   .photo-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,transparent,rgba(60,10,20,.7))}
   #hero .inner{position:relative;z-index:2;max-width:560px}
   #hero .greet{font-size:clamp(2.2rem,9vw,4.4rem);color:var(--tcream);margin-bottom:14px;text-shadow:0 4px 24px rgba(0,0,0,.35)}
@@ -250,8 +251,9 @@
 <section class="scene" id="hero"{% bg card editing "scene_bg" %}>
   {% with hero=frame_photos|get:"hero" %}
     <div class="photo-bg{% if hero %} has-photo{% endif %}{% if editing and not hero %} is-empty{% endif %}"
-         {% if hero %}style="background-image:url('{{ hero.image.url }}')"{% endif %}
-         {% frame card editing "hero" %}></div>
+         {% frame card editing "hero" %}>
+      {% if hero %}<img src="{{ hero.image.url }}" alt="">{% endif %}
+    </div>
   {% endwith %}
   <div class="inner">
     <h1 class="greet script">Selamat Ulang Tahun, <span class="e-recipient"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span>!</h1>
@@ -381,7 +383,7 @@
 <section class="scene on-red" id="song"{% bg card editing "scene_bg" %}>
   <button class="back" data-go="hub">← kembali</button>
   <h3 class="scene-head script"{% el card editing "song_head" %}>{% t card "song_head" %}</h3>
-  <div class="player">
+  <div class="player"{% if editing %} data-edit="youtube_url" data-no-text{% endif %}>
     <div class="vinyl" aria-hidden="true"></div>
     <div class="yt">
       {% if card.spotify_track_id %}

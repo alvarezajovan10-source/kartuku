@@ -1,0 +1,350 @@
+{% load static card_extras %}<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk {{ card.recipient_name|default:"kamu" }} ♥</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Bevan&family=Bungee&family=Fredericka+the+Great&family=Rye&family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+{% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
+<style>
+  :root{
+    --bg1:#2c2420; --bg2:#191310;
+    --paper:#f8f2e6; --paper-2:#efe5d2; --kraft:#d8bf94;
+    --ink:#3a2d26;
+    --rose:#E88FA0; --rose-deep:#d76e82;
+    --gold:#CBA557; --gold-deep:#a9863a;
+    --butter:#e9dcae;
+    --tcream:#f6efe1;
+    --shadow:rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Cormorant Garamond',serif;color:var(--tcream);
+    background:
+      radial-gradient(120% 80% at 50% -5%, #3a302a 0%, transparent 55%),
+      linear-gradient(165deg, var(--bg1) 0%, var(--bg2) 100%);
+    background-attachment:fixed;
+    min-height:100vh;overflow-x:hidden;position:relative;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.5) 100%)}
+
+  #leaves{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+  .content{position:relative;z-index:3}
+
+  /* ---------------- RANSOM HEADERS ---------------- */
+  .ransom{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:2px 4px;line-height:1}
+  .rl{
+    display:inline-block;rotate:var(--r,0deg);scale:.5;opacity:0;
+    padding:.02em .16em;border-radius:3px;
+    font-size:calc(clamp(2.1rem,9vw,3.4rem) * var(--fs,1));
+    box-shadow:0 4px 10px -3px var(--shadow);
+    transition:scale .5s cubic-bezier(.2,1.5,.4,1) var(--d,0s), opacity .4s ease var(--d,0s);
+  }
+  .ransom.in .rl{scale:1;opacity:1;animation:bob 3.2s ease-in-out infinite;animation-delay:calc(var(--d,0s) + .5s)}
+  @keyframes bob{0%,100%{translate:0 0}50%{translate:0 -5px}}
+  .rl.v1{font-family:'Abril Fatface',serif;background:var(--paper);color:#7a2230}
+  .rl.v2{font-family:'Bungee',cursive;background:var(--gold);color:#2a1a10}
+  .rl.v3{font-family:'Rye',serif;background:#2a2320;color:var(--butter)}
+  .rl.v4{font-family:'Fredericka the Great',cursive;background:var(--paper-2);color:#3a2d26}
+  .rl.v5{font-family:'Bevan',serif;background:var(--rose);color:#4a1420}
+  .rl.v6{font-family:'Abril Fatface',serif;background:#2a2320;color:var(--gold);-webkit-text-stroke:.5px var(--gold)}
+
+  /* ---------------- SCRAP ELEMENTS ---------------- */
+  .reveal{opacity:0;translate:0 26px;transition:opacity .8s ease, translate .9s cubic-bezier(.2,.7,.3,1)}
+  .reveal.in{opacity:1;translate:0 0}
+
+  .chapter{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:70px 22px;position:relative}
+  .collage{position:relative;width:100%;max-width:520px;display:flex;flex-wrap:wrap;
+    align-items:center;justify-content:center;gap:18px}
+
+  .note{
+    background:var(--paper);color:var(--ink);padding:24px 26px;max-width:340px;
+    box-shadow:0 16px 34px -14px var(--shadow);position:relative;
+    clip-path:polygon(0% 5%,6% 0,22% 4%,40% 0,60% 5%,78% 1%,94% 4%,100% 0,99% 20%,100% 42%,98% 64%,100% 84%,96% 100%,74% 97%,52% 100%,32% 96%,12% 100%,3% 96%,1% 74%,0 52%,2% 30%);
+  }
+  .note.tape::before{content:"";position:absolute;top:-14px;left:50%;translate:-50% 0;width:92px;height:26px;
+    background:linear-gradient(180deg,rgba(233,220,174,.85),rgba(210,193,140,.7));rotate:-3deg;
+    box-shadow:0 3px 6px rgba(0,0,0,.15);opacity:.9}
+  /* Lapisan gaya pilihan user: fallback = desain asli */
+  .note p{font-family:var(--f,'Caveat',cursive);font-size:calc(1.34rem*var(--fs,1));line-height:var(--lh,1.5);
+    color:var(--c,var(--ink));text-align:var(--al,left);font-weight:var(--fw,400);font-style:var(--fi,normal);
+    letter-spacing:var(--ls,normal);white-space:pre-wrap;overflow-wrap:break-word}
+  .note .quote{font-style:var(--fi,italic)}
+
+  .strip{background:var(--paper);color:var(--c,var(--ink));font-family:var(--f,'Caveat',cursive);
+    font-size:calc(1.18rem*var(--fs,1));text-align:var(--al,center);font-weight:var(--fw,400);
+    letter-spacing:var(--ls,normal);
+    padding:9px 20px;box-shadow:0 10px 22px -12px var(--shadow);rotate:-1.5deg;
+    clip-path:polygon(0 12%,10% 0,30% 8%,52% 0,72% 9%,90% 1%,100% 14%,98% 62%,100% 92%,80% 100%,58% 94%,36% 100%,14% 95%,2% 100%,0 60%)}
+
+  .pola{background:#fff;padding:8px 8px 30px;border-radius:2px;box-shadow:0 14px 30px -12px var(--shadow);
+    width:130px;position:relative;rotate:var(--pr,-4deg)}
+  .pola::before{content:"";position:absolute;top:-11px;left:50%;translate:-50% 0;width:66px;height:22px;
+    background:rgba(240,232,205,.55);rotate:var(--tr,4deg);box-shadow:0 2px 4px rgba(0,0,0,.1)}
+  .pola .ph{aspect-ratio:1;background:linear-gradient(150deg,#e9cdae,#d8a7b3);border-radius:1px;
+    display:grid;place-items:center;color:#9d6270;font-size:.72rem;overflow:hidden}
+  .pola .ph img{width:100%;height:100%;object-fit:var(--fit,cover);
+    object-position:var(--ox,50%) var(--oy,50%);transform:scale(var(--zoom,1));border-radius:var(--br,0)}
+  .pola .cap{font-family:'Caveat',cursive;font-size:1.05rem;color:#6d4650;text-align:center;margin-top:6px;min-height:1.1em;overflow-wrap:break-word}
+  .pola.sm{width:104px}
+
+  .bfly{width:64px;height:54px;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+  .bfly .wing{transform-origin:center;animation:flutter 4s ease-in-out infinite}
+  @keyframes flutter{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.82)}}
+
+  .squig{position:absolute;stroke:var(--rose);fill:none;stroke-width:9;stroke-linecap:round;opacity:.85;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+  .squig path{stroke-dasharray:600;stroke-dashoffset:600;transition:stroke-dashoffset 1.4s ease .2s}
+  .reveal.in .squig path,.squig.in path{stroke-dashoffset:0}
+  .sq-tr{top:6%;right:-10px;width:130px;rotate:8deg}
+  .sq-bl{bottom:6%;left:-12px;width:120px;rotate:-6deg}
+
+  #cover .cover-card{background:var(--paper);color:var(--ink);padding:40px 30px 34px;max-width:400px;
+    box-shadow:0 22px 48px -18px var(--shadow);rotate:-1.5deg;position:relative}
+  #cover .cover-card::before{content:"";position:absolute;top:-15px;left:50%;translate:-50% 0;width:120px;height:28px;
+    background:rgba(233,220,174,.75);rotate:-2deg;box-shadow:0 3px 6px rgba(0,0,0,.15)}
+  #cover .sub{font-family:var(--f,'Caveat',cursive);font-size:calc(1.5rem*var(--fs,1));
+    color:var(--c,#7a4550);text-align:var(--al,center);font-weight:var(--fw,400);font-style:var(--fi,normal);
+    letter-spacing:var(--ls,normal);margin-top:14px}
+  .scroll-hint{position:absolute;bottom:26px;left:50%;translate:-50% 0;color:var(--tcream);
+    font-family:'Caveat',cursive;font-size:1.15rem;opacity:.85;text-align:center}
+  .scroll-hint .chev{display:block;font-size:1.4rem;animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+  #closing .big-script{font-family:var(--f,'Caveat',cursive);font-weight:var(--fw,700);
+    font-size:calc(clamp(2.4rem,12vw,4rem)*var(--fs,1));
+    color:var(--c,var(--tcream));text-align:var(--al,center);letter-spacing:var(--ls,normal);line-height:var(--lh,1.05)}
+  #closing .from{font-family:var(--f,'Caveat',cursive);font-size:calc(1.7rem*var(--fs,1));
+    color:var(--c,var(--rose));text-align:var(--al,center);font-weight:var(--fw,400);
+    letter-spacing:var(--ls,normal);margin-top:10px}
+  .heart{width:30px;fill:var(--rose);margin:18px auto 0;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
+
+  .chap-label{margin-bottom:26px}
+  .row3{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *{animation:none !important}
+    .reveal,.rl,.squig path{transition:opacity .3s ease}
+    .rl{scale:1;opacity:1}
+  }
+</style>
+{% if editing %}
+<link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
+<script defer src="{% static_v 'js/card-frame.js' %}"></script>
+{% endif %}
+</head>
+<body{% if editing %} class="is-editing"{% endif %}>
+
+<div id="leaves" aria-hidden="true"></div>
+
+<main class="content">
+
+  <!-- ================= COVER ================= -->
+  <section class="chapter" id="cover">
+    <svg class="squig sq-tr reveal" viewBox="0 0 130 70"><path d="M6 40c18-40 40 10 54-6s34-30 52 2"/></svg>
+    <div class="cover-card reveal">
+      <div class="ransom" data-text="{% t card 'cover_title' %}"{% el card editing "cover_title" %}></div>
+      <p class="sub"{% el card editing "cover_sub" %}>{% t card "cover_sub" %}</p>
+    </div>
+    <svg class="squig sq-bl reveal" viewBox="0 0 120 70"><path d="M6 30c16 34 40-8 52 6s30 28 50-4"/></svg>
+    <div class="scroll-hint">geser ke bawah<span class="chev">⌄</span></div>
+  </section>
+
+  <!-- ================= BAB 1 ================= -->
+  <section class="chapter">
+    <div class="chap-label ransom reveal" data-text="{% t card 'bab1_label' %}"{% el card editing "bab1_label" %}></div>
+    <div class="collage">
+      {% with photo=frame_photos|get:"b1a" %}
+      <div class="pola reveal{% if editing and not photo %} is-empty{% endif %}" style="--pr:-6deg"
+           {% frame card editing "b1a" %}>
+        <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+        <p class="cap">{{ photo.caption|default:"" }}</p>
+      </div>
+      {% endwith %}
+      <div class="note tape reveal"><p{% el card editing "bab1_note" %}>{% t card "bab1_note" %}</p></div>
+      {% with photo=frame_photos|get:"b1b" %}
+      <div class="pola sm reveal{% if editing and not photo %} is-empty{% endif %}" style="--pr:5deg;--tr:-6deg"
+           {% frame card editing "b1b" %}>
+        <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+        <p class="cap">{{ photo.caption|default:"" }}</p>
+      </div>
+      {% endwith %}
+    </div>
+  </section>
+
+  <!-- ================= BAB 2 ================= -->
+  <section class="chapter">
+    <svg class="squig sq-tr reveal" viewBox="0 0 130 70"><path d="M6 40c18-40 40 10 54-6s34-30 52 2"/></svg>
+    <div class="chap-label ransom reveal" data-text="{% t card 'bab2_label' %}"{% el card editing "bab2_label" %}></div>
+    <div class="collage">
+      <div class="note tape reveal"><p{% el card editing "bab2_note" %}>{% t card "bab2_note" %}</p></div>
+      {% with photo=frame_photos|get:"b2a" %}
+      <div class="pola reveal{% if editing and not photo %} is-empty{% endif %}" style="--pr:4deg;--tr:-5deg"
+           {% frame card editing "b2a" %}>
+        <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+        <p class="cap">{{ photo.caption|default:"" }}</p>
+      </div>
+      {% endwith %}
+      <span class="bfly reveal">
+        <svg viewBox="0 0 64 54"><g class="wing"><path d="M32 27C22 6 4 4 8 22c2 10 16 14 24 5z" fill="#e9dcae" stroke="#a9863a" stroke-width="1.4"/><path d="M32 27C42 6 60 4 56 22c-2 10-16 14-24 5z" fill="#e9dcae" stroke="#a9863a" stroke-width="1.4"/><path d="M32 30C24 44 10 46 14 34c2-6 12-9 18-4z" fill="#ddcd9a" stroke="#a9863a" stroke-width="1.2"/><path d="M32 30c8 14 22 16 18 4-2-6-12-9-18-4z" fill="#ddcd9a" stroke="#a9863a" stroke-width="1.2"/></g><line x1="32" y1="22" x2="32" y2="40" stroke="#6a5230" stroke-width="2"/></svg>
+      </span>
+    </div>
+  </section>
+
+  <!-- ================= BAB 3 : MOMEN ================= -->
+  <section class="chapter">
+    <div class="collage" style="flex-direction:column">
+      <div class="row3">
+        {% for key in "m1,m2,m3"|split:"," %}
+          {% with photo=frame_photos|get:key %}
+          <div class="pola sm reveal{% if editing and not photo %} is-empty{% endif %}"
+               style="--pr:{% cycle '-5deg' '3deg' '-2deg' %}{% cycle '' ';--tr:-4deg' '' %}"
+               {% frame card editing key %}>
+            <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+            <p class="cap">{{ photo.caption|default:"" }}</p>
+          </div>
+          {% endwith %}
+        {% endfor %}
+      </div>
+      <div class="chap-label ransom reveal" data-text="{% t card 'momen_label' %}" style="margin-top:8px"{% el card editing "momen_label" %}></div>
+      <div class="strip reveal"{% el card editing "momen_strip" %}>{% t card "momen_strip" %}</div>
+    </div>
+    <svg class="squig sq-bl reveal" viewBox="0 0 120 70"><path d="M6 30c16 34 40-8 52 6s30 28 50-4"/></svg>
+  </section>
+
+  <!-- ================= BAB 4 : CINTA ================= -->
+  <section class="chapter">
+    <div class="chap-label ransom reveal" data-text="{% t card 'cinta_label' %}"{% el card editing "cinta_label" %}></div>
+    <div class="collage">
+      {% with photo=frame_photos|get:"c1" %}
+      <div class="pola reveal{% if editing and not photo %} is-empty{% endif %}" style="--pr:-5deg"
+           {% frame card editing "c1" %}>
+        <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+        <p class="cap">{{ photo.caption|default:"" }}</p>
+      </div>
+      {% endwith %}
+      <div class="note tape reveal"><p{% el card editing "cinta_note" %}>{% t card "cinta_note" %}</p></div>
+      <span class="bfly reveal">
+        <svg viewBox="0 0 64 54"><g class="wing"><path d="M32 27C22 6 4 4 8 22c2 10 16 14 24 5z" fill="#e9dcae" stroke="#a9863a" stroke-width="1.4"/><path d="M32 27C42 6 60 4 56 22c-2 10-16 14-24 5z" fill="#e9dcae" stroke="#a9863a" stroke-width="1.4"/><path d="M32 30C24 44 10 46 14 34c2-6 12-9 18-4z" fill="#ddcd9a" stroke="#a9863a" stroke-width="1.2"/><path d="M32 30c8 14 22 16 18 4-2-6-12-9-18-4z" fill="#ddcd9a" stroke="#a9863a" stroke-width="1.2"/></g><line x1="32" y1="22" x2="32" y2="40" stroke="#6a5230" stroke-width="2"/></svg>
+      </span>
+    </div>
+  </section>
+
+  <!-- ================= BAB 5 : HARAPAN ================= -->
+  <section class="chapter">
+    <svg class="squig sq-tr reveal" viewBox="0 0 130 70"><path d="M6 40c18-40 40 10 54-6s34-30 52 2"/></svg>
+    <div class="chap-label ransom reveal" data-text="{% t card 'harapan_label' %}"{% el card editing "harapan_label" %}></div>
+    <div class="collage">
+      <div class="note tape reveal" style="max-width:380px">
+        <p class="quote"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis harapanmu di sini..."{% endif %}>{{ card.message|default:"Tulis harapanmu di sini..." }}</p>
+      </div>
+    </div>
+    <svg class="squig sq-bl reveal" viewBox="0 0 120 70"><path d="M6 30c16 34 40-8 52 6s30 28 50-4"/></svg>
+  </section>
+
+  <!-- ================= CLOSING ================= -->
+  <section class="chapter" id="closing">
+    <div class="chap-label ransom reveal" data-text="{% t card 'closing_label' %}"{% el card editing "closing_label" %}></div>
+    <p class="big-script reveal"><span{% el card editing "closing_line" %}>{% t card "closing_line" %}</span> <span{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span></p>
+    <p class="from reveal"><span{% el card editing "from_line" %}>{% t card "from_line" %}</span> <span{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</span></p>
+    <svg class="heart reveal" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-10-9.2C.3 8.6 1.7 5 5 5c2 0 3.2 1.2 4 2.3C9.8 6.2 11 5 13 5c3.3 0 4.7 3.6 3 6.8C19.5 16.1 12 21 12 21z"/></svg>
+  </section>
+
+</main>
+
+<script>
+  /* ---------- build ransom letters ---------- */
+  const variants = ['v1','v2','v3','v4','v5','v6'];
+  // Diekspos supaya editor bisa membangun ulang saat teksnya diubah.
+  window.buildRansom = function (el) {
+    el.textContent = '';
+    const text = el.dataset.text || '';
+    [...text].forEach((ch, i) => {
+      if(ch === ' '){ el.appendChild(document.createTextNode(' ')); return; }
+      const s = document.createElement('span');
+      s.className = 'rl ' + variants[Math.floor(Math.random()*variants.length)];
+      s.textContent = ch;
+      s.style.setProperty('--r', (Math.random()*16 - 8).toFixed(1) + 'deg');
+      s.style.setProperty('--d', (i*0.06).toFixed(2) + 's');
+      el.appendChild(s);
+    });
+    el.classList.add('in');
+  };
+  document.querySelectorAll('.ransom').forEach(el => window.buildRansom(el));
+
+  /* ---------- scroll reveal ---------- */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.reveal, .ransom').forEach(el => io.observe(el));
+
+  /* ---------- falling dried leaves + petals + hearts ---------- */
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const layer = document.getElementById('leaves');
+  const leafColors = ['#b5722e','#c98a3a','#9c5a2a','#8a6d2f','#c46a4e'];
+  const petalColors = ['#e8a9b4','#e6c0a0'];
+
+  function makeSVG(kind){
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 24 24');
+    if(kind==='leaf'){
+      const p=document.createElementNS(ns,'path');
+      p.setAttribute('d','M12 2C6 6 4 14 12 22 20 14 18 6 12 2z');
+      p.setAttribute('fill', leafColors[Math.floor(Math.random()*leafColors.length)]);
+      const v=document.createElementNS(ns,'path');
+      v.setAttribute('d','M12 4v16'); v.setAttribute('stroke','rgba(60,30,10,.35)'); v.setAttribute('stroke-width','1'); v.setAttribute('fill','none');
+      svg.append(p,v);
+    } else if(kind==='petal'){
+      const p=document.createElementNS(ns,'path');
+      p.setAttribute('d','M12 3C7 7 7 17 12 21 17 17 17 7 12 3z');
+      p.setAttribute('fill', petalColors[Math.floor(Math.random()*petalColors.length)]);
+      svg.append(p);
+    } else {
+      const p=document.createElementNS(ns,'path');
+      p.setAttribute('d','M12 21s-7.5-4.9-10-9.2C.3 8.6 1.7 5 5 5c2 0 3.2 1.2 4 2.3C9.8 6.2 11 5 13 5c3.3 0 4.7 3.6 3 6.8C19.5 16.1 12 21 12 21z');
+      p.setAttribute('fill','rgba(232,143,160,.9)');
+      svg.append(p);
+    }
+    return svg;
+  }
+
+  function spawn(){
+    const roll=Math.random();
+    const kind = roll<0.72 ? 'leaf' : roll<0.9 ? 'petal' : 'heart';
+    const size = kind==='leaf' ? 16+Math.random()*16 : 12+Math.random()*8;
+    const el=makeSVG(kind);
+    const startX=Math.random()*100;
+    const drift=(Math.random()*24-12);
+    el.style.cssText=`position:absolute;top:-6%;left:${startX}vw;width:${size}px;height:${size}px;opacity:${0.5+Math.random()*0.4}`;
+    layer.appendChild(el);
+    const dur=9000+Math.random()*7000;
+    el.animate([
+      {transform:`translate(0,0) rotate(0deg)`},
+      {transform:`translate(${drift*0.5}vw,55vh) rotate(${180*(Math.random()<.5?1:-1)}deg)`,offset:.5},
+      {transform:`translate(${drift}vw,110vh) rotate(${360*(Math.random()<.5?1:-1)}deg)`}
+    ],{duration:dur,easing:'cubic-bezier(.45,.05,.55,.95)'}).onfinish=()=>el.remove();
+  }
+
+  if(!reduce){
+    for(let i=0;i<10;i++) setTimeout(spawn, Math.random()*4000);
+    setInterval(spawn, 900);
+  } else {
+    for(let i=0;i<5;i++) spawn();
+  }
+</script>
+{% include "cards/_preview_bar.html" %}
+</body>
+</html>

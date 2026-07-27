@@ -289,15 +289,16 @@ window.cardEditor = function () {
       this.pushStyle();
     },
 
-    cropStyle: function () {
-      if (!this.photo) return "";
+    /* Rumus tampilan SAMA dengan kartu (object-position + scale dari titik
+       fokus) — apa yang terlihat di kotak crop = yang tampil di template. */
+    cropImgStyle: function () {
+      var ox = (this.st.ox === undefined ? 50 : this.st.ox) + "%";
+      var oy = (this.st.oy === undefined ? 50 : this.st.oy) + "%";
+      var zoom = this.st.zoom || 1;
       return (
-        "background-image:url(" + this.photo.url + ");" +
-        "background-size:" + ((this.st.zoom || 1) * 100) + "% auto;" +
-        "background-position:" +
-        (this.st.ox === undefined ? 50 : this.st.ox) + "% " +
-        (this.st.oy === undefined ? 50 : this.st.oy) + "%;" +
-        "background-repeat:no-repeat"
+        "object-position:" + ox + " " + oy + ";" +
+        "transform:scale(" + zoom + ");" +
+        "transform-origin:" + ox + " " + oy
       );
     },
 

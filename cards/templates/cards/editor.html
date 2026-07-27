@@ -117,10 +117,10 @@
     <template x-if="sel && kind === 'photo'">
       <div class="ed-body">
         <div class="ed-crop" x-show="photo"
-             :style="cropStyle()"
              @pointerdown="cropStart($event)"
              @pointermove="cropMove($event)"
              @pointerup="cropEnd()" @pointercancel="cropEnd()">
+          <img :src="photo && photo.url" :style="cropImgStyle()" alt="" draggable="false">
           <span class="ed-crop-hint">geser untuk mengatur</span>
         </div>
         <label class="ed-slider" x-show="photo">Perbesar

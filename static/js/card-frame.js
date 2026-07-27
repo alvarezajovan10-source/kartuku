@@ -10,7 +10,7 @@
 (function () {
   "use strict";
 
-  var SELECTORS = "[data-edit], [data-surface], [data-frame]";
+  var SELECTORS = "[data-edit], [data-frame]";
 
   function all(selector) {
     return Array.prototype.slice.call(document.querySelectorAll(selector));
@@ -93,6 +93,18 @@
   function cssEscape(value) {
     return String(value).replace(/["\\]/g, "\\$&");
   }
+
+  // Kalau URL membawa ?scene=, langsung buka babak itu — inilah yang
+  // membuat preview TIDAK balik ke sampul setiap kali dimuat ulang.
+  (function () {
+    var scene = new URLSearchParams(location.search).get("scene");
+    if (!scene) return;
+    var target = document.getElementById(scene);
+    if (!target || !target.classList.contains("scene")) return;
+    document.querySelectorAll(".scene").forEach(function (el) {
+      el.classList.toggle("active", el === target);
+    });
+  })();
 
   window.addEventListener("load", function () {
     send({

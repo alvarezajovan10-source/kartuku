@@ -45,10 +45,10 @@ def el(card, editing, key):
 
 @register.simple_tag
 def bg(card, editing, key):
-    """Atribut untuk permukaan yang bisa diklik (latar babak, kertas surat, dll)."""
-    if not editing:
-        return ""
-    return format_html(' data-surface="{}"', key)
+    """Dulu membuat latar bisa diklik; fitur ganti latar dihapus atas
+    permintaan user (mengganggu, gampang salah klik). Tag dipertahankan agar
+    template lama tidak rusak."""
+    return ""
 
 
 @register.simple_tag

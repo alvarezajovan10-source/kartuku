@@ -209,7 +209,9 @@ class EditorFlowTests(TestCase):
         self.assertIn("recipient", keys)
         self.assertIn("cover_title", keys)
         self.assertIn("p1", keys)
-        self.assertIn("scene_bg", keys)
+        # Fitur ganti latar dihapus atas permintaan user — surface tidak
+        # boleh lagi muncul sebagai elemen yang bisa diklik.
+        self.assertNotIn("scene_bg", keys)
         self.assertTrue(data["fontCatalog"])
 
     def test_every_element_type_is_known(self):

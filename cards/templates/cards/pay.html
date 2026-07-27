@@ -3,6 +3,7 @@
 {% block title %}Pembayaran QRIS{% endblock %}
 
 {% block content %}
+  <p><a class="ed-back" href="{% url 'cards:editor' card.template.slug %}?card={{ card.id }}">← Kembali mengedit</a></p>
   <h1>Scan untuk bayar</h1>
   <p class="lede">Pakai GoPay, OVO, DANA, ShopeePay, atau m-banking apa pun yang mendukung QRIS.</p>
 

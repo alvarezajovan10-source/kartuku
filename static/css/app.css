@@ -754,3 +754,16 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 /* Pemilih QR di halaman sukses */
 .qr-opts { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 16px; }
 .qr-preview { width: 220px; max-width: 100%; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 14px; }
+
+/* Status penyimpanan otomatis */
+.ed-save { min-height: 1.1em; margin: 0; font-size: .74rem; color: var(--muted); text-align: right; }
+
+/* Editor di HP: preview dulu (atas), kontrol di bawahnya — seperti Canva HP */
+@media (max-width: 900px) {
+  .ed { display: flex; flex-direction: column-reverse; }
+  .ed-preview { order: 0; }
+  .ed-stage { padding: 10px; }
+  .ed-stage iframe { min-height: 58vh; }
+  .ed-panel { max-height: none; padding: 14px 14px 20px; }
+  .ed-fontlist { max-height: 220px; }
+}

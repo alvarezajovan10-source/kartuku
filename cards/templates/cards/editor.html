@@ -152,23 +152,6 @@
       </div>
     </template>
 
-    <!-- ── Isi: latar / warna ────────────────────────────────────────── -->
-    <template x-if="sel && kind === 'surface'">
-      <div class="ed-body">
-        <div class="ed-swatches open">
-          <template x-for="pal in palettes" :key="pal.name">
-            <button type="button" :style="'background:' + pal.bg" :title="pal.name"
-                    @click="setSurface(sel, pal.bg)"
-                    :class="{ 'is-on': colors[sel] === pal.bg }"></button>
-          </template>
-          <label class="ed-custom">
-            <input type="color" :value="colors[sel] || '#ffffff'"
-                   @input="setSurface(sel, $event.target.value)">
-          </label>
-        </div>
-      </div>
-    </template>
-
     <!-- ── Isi: galeri foto ──────────────────────────────────────────── -->
     <template x-if="sel && kind === 'gallery'">
       <div class="ed-body">
@@ -188,6 +171,11 @@
     </template>
 
     <p class="errors" x-show="error" x-text="error"></p>
+
+    <p class="ed-save" aria-live="polite">
+      <span x-show="saveState === 'saving'">Menyimpan…</span>
+      <span x-show="saveState === 'saved'">Tersimpan ✓</span>
+    </p>
 
     <form method="post" class="ed-submit">
       {% csrf_token %}
@@ -219,7 +207,7 @@
       </div>
     </div>
     <div class="ed-stage" :class="'as-' + device">
-      <iframe x-ref="frame" :src="frameSrc" title="Pratinjau kartu"></iframe>
+      <iframe x-ref="frame" title="Pratinjau kartu"></iframe>
     </div>
   </div>
 </div>

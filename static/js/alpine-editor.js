@@ -42,6 +42,7 @@ window.cardEditor = function () {
     dragging: false,
     dragFrom: null,
     saveTimer: null,
+    saveState: "",   // "" | "saving" | "saved"
     fontOpen: false,
     colorOpen: false,
     moreOpen: false,
@@ -68,8 +69,18 @@ window.cardEditor = function () {
       return "";
     },
     get photo() { return this.spec ? this.spec.photo : null; },
-    get frameSrc() {
-      return this.urls.frame + (this.cardId ? "?card=" + this.cardId : "");
+    /* Alamat iframe dibangun saat DIBUTUHKAN, bukan diikat reaktif —
+       dulu :src reaktif membuat preview memuat ulang (dan balik ke sampul)
+       begitu draft pertama kali dibuat di server. */
+    frameUrl: function () {
+      var q = [];
+      if (this.cardId) q.push("card=" + this.cardId);
+      if (this.currentScene) q.push("scene=" + encodeURIComponent(this.currentScene));
+      return this.urls.frame + (q.length ? "?" + q.join("&") : "");
+    },
+
+    reloadFrame: function () {
+      if (this.$refs.frame) this.$refs.frame.src = this.frameUrl();
     },
     get filteredFonts() {
       var q = this.fontQuery.toLowerCase().trim();
@@ -95,6 +106,8 @@ window.cardEditor = function () {
     /* ── Siklus hidup ─────────────────────────────────────────────────── */
     init: function () {
       var self = this;
+      // Src dipasang sekali di sini; selanjutnya hanya reloadFrame().
+      this.$nextTick(function () { self.reloadFrame(); });
       if (!this.style.elements) this.style.elements = {};
       if (!this.style.colors) this.style.colors = {};
       // Warna bawaan template jadi titik awal supaya pemilih warna tidak kosong.
@@ -153,8 +166,7 @@ window.cardEditor = function () {
       Object.keys(this.texts).forEach(function (key) {
         self.post({ type: "text", key: key, value: self.texts[key] });
       });
-      // Kembali ke babak yang sedang dilihat, bukan lompat ke sampul.
-      if (this.currentScene) this.post({ type: "scene", value: this.currentScene });
+      // Babak sudah dipulihkan lewat ?scene= di URL iframe.
       if (this.sel) this.post({ type: "select", key: this.sel });
     },
 
@@ -171,12 +183,14 @@ window.cardEditor = function () {
        ulang — dan draft tetap ada kalau tab tertutup. */
     queueSave: function () {
       var self = this;
+      this.saveState = "saving";
       clearTimeout(this.saveTimer);
       this.saveTimer = setTimeout(function () { self.saveNow(); }, 600);
     },
 
     saveNow: function () {
       var self = this;
+      this.saveState = "saving";
       return this.ensureCard().then(function (cardId) {
         return fetch(self.urls.content.replace("CARD", cardId), {
           method: "POST",
@@ -186,7 +200,13 @@ window.cardEditor = function () {
             texts: self.texts,
             fields: self.fields,
           }),
+        }).then(function (response) {
+          self.saveState = response.ok ? "saved" : "";
+          return response;
         });
+      }).catch(function (err) {
+        self.saveState = "";
+        throw err;
       });
     },
 
@@ -333,7 +353,7 @@ window.cardEditor = function () {
       this.sendPhoto(file, slot)
         .then(function (photo) {
           specByKey[slot].photo = photo;
-          self.post({ type: "reload" });
+          self.reloadFrame();
         })
         .catch(function (err) { self.error = err.message; })
         .finally(function () { self.busy = false; });
@@ -365,7 +385,7 @@ window.cardEditor = function () {
         .catch(function (err) { self.error = err.message; })
         .finally(function () {
           self.busy = false;
-          self.post({ type: "reload" });
+          self.reloadFrame();
         });
     },
 
@@ -385,7 +405,7 @@ window.cardEditor = function () {
             var spec = specByKey[key];
             if (spec.photo && spec.photo.id === photo.id) spec.photo = photo;
           });
-          self.post({ type: "reload" });
+          self.reloadFrame();
         });
     },
 
@@ -402,7 +422,7 @@ window.cardEditor = function () {
             var spec = specByKey[key];
             if (spec.photo && spec.photo.id === photoId) spec.photo = null;
           });
-          self.post({ type: "reload" });
+          self.reloadFrame();
         })
         .finally(function () { self.busy = false; });
     },

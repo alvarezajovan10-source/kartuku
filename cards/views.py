@@ -254,7 +254,18 @@ def editor_frame(request, template_slug):
     if card is None:
         card = GiftCard(template=template, category=template.category)
 
-    return _render_card(request, card, {"editing": True})
+    return _render_card(
+        request,
+        card,
+        {
+            "editing": True,
+            # Editor memuat seluruh katalog: user sedang memilih-milih font,
+            # jadi semua file font harus tersedia di preview. Kartu asli tetap
+            # hanya memuat font yang dipakai.
+            "fonts_url": styles.google_fonts_url(),
+            "start_scene": request.GET.get("scene", ""),
+        },
+    )
 
 
 def editor(request, template_slug):
@@ -312,15 +323,6 @@ def editor(request, template_slug):
                 "photo": _photo_payload(by_slot[spec["key"]])
                 if spec["key"] in by_slot
                 else None,
-            }
-        )
-    for spec in probe.surface_specs():
-        element_specs.append(
-            {
-                "key": spec["key"],
-                "label": spec.get("label", spec["key"]),
-                "type": "surface",
-                "value": current_colors.get(spec["key"], spec.get("default", "#FFFFFF")),
             }
         )
 

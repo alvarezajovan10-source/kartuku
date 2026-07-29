@@ -1,5 +1,5 @@
 {% load static card_extras %}<!DOCTYPE html>
-<html lang="id">
+<html lang="id" style="--kv-bg:{{ card.style_clean.bg }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,10 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="{{ fonts_url }}" rel="stylesheet">
 <link rel="stylesheet" href="{% static_v 'css/kanvas.css' %}">
-<style>html,body{margin:0;padding:0;min-height:100%;background:{{ card.style_clean.bg }}}
-.kv-frames{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;margin-bottom:26px}
-.kv-frame-empty{display:block;aspect-ratio:1;background:rgba(0,0,0,.06);border-radius:12px}
-.kv-hint{opacity:.5;font-style:italic;text-align:center;padding:18px 0}</style>
 {% if editing %}
 <link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
 <script defer src="{% static_v 'js/card-frame.js' %}"></script>
@@ -20,6 +16,8 @@
 </head>
 <body{% if editing %} class="is-editing"{% endif %}>
 {% include "cards/render/_kanvas_body.html" %}
+{% include "cards/_bgm.html" %}
+{% include "cards/_fullscreen.html" %}
 {% include "cards/_preview_bar.html" %}
 </body>
 </html>

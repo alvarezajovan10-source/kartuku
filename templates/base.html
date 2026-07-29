@@ -31,15 +31,18 @@
       <span></span><span></span><span></span>
     </label>
 
+    {# `here` = nama URL halaman ini, dipakai menandai menu yang sedang dibuka. #}
+    {% with here=request.resolver_match.url_name %}
     <nav class="site-nav">
-      <a href="{% url 'cards:landing' %}#template">Template</a>
-      <a href="{% url 'cards:landing' %}#cara-kerja">Cara Kerja</a>
-      <a href="{% url 'cards:landing' %}#harga">Harga</a>
-      <a href="{% url 'cards:landing' %}#testimoni">Testimoni</a>
-      <a href="{% url 'cards:landing' %}#faq">FAQ</a>
+      <a href="{% url 'cards:page_templates' %}"{% if here == 'page_templates' or here == 'gallery' %} class="is-here" aria-current="page"{% endif %}>Template</a>
+      <a href="{% url 'cards:page_how' %}"{% if here == 'page_how' %} class="is-here" aria-current="page"{% endif %}>Cara Kerja</a>
+      <a href="{% url 'cards:page_pricing' %}"{% if here == 'page_pricing' %} class="is-here" aria-current="page"{% endif %}>Harga</a>
+      <a href="{% url 'cards:page_testimonials' %}"{% if here == 'page_testimonials' %} class="is-here" aria-current="page"{% endif %}>Testimoni</a>
+      <a href="{% url 'cards:page_faq' %}"{% if here == 'page_faq' %} class="is-here" aria-current="page"{% endif %}>FAQ</a>
     </nav>
+    {% endwith %}
 
-    <a class="btn btn-primary btn-sm header-cta" href="{% url 'cards:landing' %}#template">Buat Kartu</a>
+    <a class="btn btn-primary btn-sm header-cta" href="{% url 'cards:page_templates' %}">Buat Kartu</a>
   </div>
 </header>
 
@@ -61,16 +64,7 @@
   </div>
 </footer>
 
-<script>
-// Tutup menu burger setelah link diklik. Link anchor tidak memicu reload,
-// jadi tanpa ini menu tetap terbuka menutupi konten di HP.
-(function () {
-  var toggle = document.getElementById("nav-toggle");
-  document.querySelectorAll(".site-nav a").forEach(function (link) {
-    link.addEventListener("click", function () { toggle.checked = false; });
-  });
-})();
-</script>
+<script src="{% static_v 'js/nav.js' %}"></script>
 
 {% block scripts %}{% endblock %}
 </body>

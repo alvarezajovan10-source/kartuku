@@ -15,9 +15,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         cutoff = timezone.now() - timedelta(hours=options["hours"])
+        # Patokannya updated_at, bukan created_at: kartu yang dibuat tiga hari
+        # lalu tapi masih disunting tadi pagi jelas belum ditinggalkan, dan
+        # menghapusnya berarti membuang kerja user beserta fotonya.
         stale = GiftCard.objects.filter(
             status__in=[GiftCard.Status.DRAFT, GiftCard.Status.EXPIRED],
-            created_at__lt=cutoff,
+            updated_at__lt=cutoff,
         )
         count = stale.count()
 

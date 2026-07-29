@@ -455,8 +455,51 @@ img { max-width: 100%; display: block; }
 .ed-back { font-size: .78rem; color: var(--rose); text-decoration: none; }
 .ed-back:hover { text-decoration: underline; }
 
-.ed-idle { color: var(--muted); font-size: .85rem; padding: 30px 4px; }
+.ed-idle { color: var(--muted); font-size: .85rem; padding: 30px 4px 16px; }
 .ed-idle p { margin: 0 0 4px; }
+
+/* Kotak lagu tetap di panel — lagu bukan elemen visual kartu. */
+.ed-song { border-top: 1px solid var(--line, #e8ddd3); padding: 16px 4px 0; }
+.ed-song h3 { margin: 0 0 8px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ed-song .hint { font-size: .78rem; color: var(--muted); margin: 6px 0 0; }
+.ed-song-status { font-size: .78rem; margin: 6px 0 0; line-height: 1.45; }
+.ed-song-status.ok { color: #2e7d54; }
+.ed-song-status.bad { color: #b3261e; }
+#songProbe { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* Catatan saat link diberi akhiran otomatis — pemberitahuan, bukan error. */
+.slug-note { margin: 8px 0 0; font-size: .84rem; line-height: 1.5;
+  color: #5b4b9c; background: #f1eefb; padding: 10px 13px; border-radius: 10px; }
+
+/* ── Dashboard "Kartu Saya" ─────────────────────────────────────────── */
+.mc { max-width: 860px; margin: 0 auto; padding: 40px 20px 70px; }
+.mc h1 { margin: 0 0 6px; }
+.mc-sub { color: var(--muted); font-size: .9rem; margin: 0 0 22px; }
+.mc-flag { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px;
+  background: #fdf0d5; color: #8a5a00; font-size: .72rem; letter-spacing: .04em; }
+.mc-tools { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.mc-count { color: var(--muted); font-size: .85rem; }
+.mc-empty { color: var(--muted); font-style: italic; }
+.mc-list { display: flex; flex-direction: column; gap: 12px; }
+.mc-item { display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+  justify-content: space-between; padding: 16px 18px; border-radius: 14px;
+  background: #fff; border: 1px solid var(--line, #e8ddd3); }
+.mc-item.is-live { border-color: #cfe4d5; }
+.mc-main { min-width: 0; }
+.mc-main h2 { margin: 0 0 4px; font-size: 1.05rem; display: flex; flex-wrap: wrap;
+  align-items: center; gap: 8px; }
+.mc-meta, .mc-song { margin: 0; font-size: .82rem; color: var(--muted); }
+.mc-song { margin-top: 3px; }
+.mc-nosong { font-style: italic; opacity: .7; }
+.mc-badge { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+.mc-paid { background: #dff0e4; color: #2e7d54; }
+.mc-draft { background: #eee9e3; color: #7a6b5c; }
+.mc-pending { background: #fdf0d5; color: #8a5a00; }
+.mc-expired { background: #f6e0de; color: #b3261e; }
+.mc-comped { background: #e6e2f5; color: #5b4b9c; }
+.mc-links { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 560px) { .mc-item { flex-direction: column; align-items: flex-start; } }
 .ed-idle strong { color: var(--ink); }
 
 .ed-head {
@@ -795,3 +838,85 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 }
 .crop-box canvas:active { cursor: grabbing; }
 .crop-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+
+/* ═══ Halaman informasi (Template, Cara Kerja, Harga, Testimoni, FAQ) ═════
+   Tiap bagian landing kini punya halamannya sendiri; kelas di bawah membuat
+   kelimanya terlihat satu keluarga. */
+.page { padding-top: 26px; }
+.page-hero { text-align: center; margin-bottom: 46px; }
+.page-hero .display { font-size: clamp(2.1rem, 4vw, 3rem); margin: 0; }
+.page-note { text-align: center; color: var(--ink-soft); font-size: .9rem; margin: 34px 0 0; }
+.page-cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 44px; }
+
+/* Menu yang sedang dibuka — di situs banyak halaman, penanda ini yang
+   memberi tahu pengunjung posisinya. */
+.site-nav a.is-here { color: var(--rose); border-bottom-color: var(--rose); }
+
+/* Cara Kerja: versi halaman penuh dibuat sebagai daftar bertingkat ke bawah,
+   bukan empat kolom sempit seperti ringkasan di landing. */
+.steps-page { grid-template-columns: 1fr; gap: 34px; max-width: 640px; margin: 0 auto; text-align: left; }
+.steps-page li { text-align: left; display: grid; grid-template-columns: 52px 1fr; column-gap: 20px; row-gap: 6px; }
+.steps-page .step-no { margin: 0; grid-row: span 2; }
+.steps-page h2 { margin: 10px 0 0; font-size: 1.15rem; font-weight: 600; align-self: center; }
+.steps-page p { margin: 0; grid-column: 2; color: var(--ink-soft); }
+
+/* Harga: catatan tambahan di bawah kartu harga. */
+.price-notes { max-width: 640px; margin: 52px auto 0; }
+.price-notes h2 { text-align: center; font-size: 1.3rem; margin: 0 0 22px; }
+.price-notes dt { font-weight: 600; margin-top: 18px; }
+.price-notes dd { margin: 6px 0 0; color: var(--ink-soft); }
+
+/* FAQ dikelompokkan supaya daftar panjang tetap mudah dipindai. */
+.faq-page { max-width: 720px; }
+.faq-group {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--rose);
+  margin: 38px 0 10px;
+  letter-spacing: .02em;
+}
+.faq-group:first-child { margin-top: 0; }
+
+/* Keadaan kosong yang jujur — dipakai halaman Testimoni selama belum ada
+   pengguna sungguhan. */
+.empty-state {
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 44px 26px;
+  border: 1px dashed var(--line);
+  border-radius: 18px;
+  background: var(--white);
+}
+.empty-icon { width: 46px; height: 46px; color: var(--rose-soft); margin-bottom: 14px; }
+.empty-state h2 { margin: 0 0 12px; font-size: 1.3rem; }
+.empty-state p { margin: 0 0 12px; color: var(--ink-soft); }
+.empty-sub { font-style: italic; font-size: .9rem; }
+.empty-state .page-cta { margin-top: 26px; }
+
+/* Kartu penjelajah di landing yang menuntun ke lima halaman itu. */
+.explore-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; }
+.explore-card {
+  position: relative;
+  display: block;
+  padding: 24px 22px 44px;
+  border-radius: 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.explore-card:hover { transform: translateY(-3px); border-color: var(--rose-soft); box-shadow: 0 12px 28px -18px rgba(0,0,0,.35); }
+.explore-card h3 { margin: 0 0 8px; font-size: 1.05rem; font-weight: 600; }
+.explore-card p { margin: 0; color: var(--ink-soft); font-size: .9rem; line-height: 1.55; }
+.explore-go { position: absolute; left: 22px; bottom: 20px; color: var(--rose); font-size: 1.1rem; }
+
+/* Di halaman Template, judul kartu naik jadi <h2> karena itu tingkat kedua
+   halaman tersendiri — samakan gayanya dengan <h3> di landing. */
+.cat-body h2 { margin: 0 0 8px; font-size: 1.08rem; font-weight: 600; }
+
+/* Penukaran kode akses di halaman bayar. */
+.redeem #code { text-transform: uppercase; letter-spacing: .08em; font-family: var(--sans); }
+.redeem .errors { margin-top: 10px; }
+.redeem .hint { margin-top: 12px; }

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static card_extras %}
+{% block title %}Kartu Saya — Kartuku{% endblock %}
+
+{% block content %}
+<section class="mc">
+  <h1>Kartu Saya</h1>
+  <p class="mc-sub">
+    Semua kartu di database ini. Halaman kerja untuk pemilik situs — bukan
+    bagian dari alur pembeli.
+    {% if dev_mode %}<span class="mc-flag">mode dev</span>{% endif %}
+  </p>
+
+  <div class="mc-tools">
+    <a class="btn btn-outline btn-sm" href="{% url 'cards:landing' %}">+ Buat kartu baru</a>
+    <span class="mc-count">{{ cards|length }} kartu</span>
+  </div>
+
+  {% if not cards %}
+    <p class="mc-empty">Belum ada kartu. Mulai dari “Buat kartu baru”.</p>
+  {% endif %}
+
+  <div class="mc-list">
+    {% for row in cards %}
+    <article class="mc-item{% if row.card.is_paid %} is-live{% endif %}">
+      <div class="mc-main">
+        <h2>
+          {{ row.card.recipient_name|default:"(tanpa nama penerima)" }}
+          <span class="mc-badge mc-{{ row.card.status }}">{{ row.card.get_status_display|default:row.card.status }}</span>
+          {% if row.card.comped %}<span class="mc-badge mc-comped">gratis</span>{% endif %}
+        </h2>
+        <p class="mc-meta">
+          {{ row.card.template.name }} · {{ row.card.get_category_display }} ·
+          diubah {{ row.card.updated_at|date:"j M, H:i" }}
+        </p>
+        <p class="mc-song">
+          {% if row.card.youtube_video_id %}
+            ♪ {{ row.card.track_title|default:"(judul belum terambil)" }}
+          {% else %}
+            <span class="mc-nosong">tanpa lagu</span>
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="mc-links">
+        <a class="btn btn-sm" href="{{ row.editor_url }}">Sunting</a>
+        {% if row.card.is_paid %}
+          <a class="btn btn-outline btn-sm" href="{{ row.public_url }}" target="_blank"
+             rel="noopener">Buka kartu ↗</a>
+          <button type="button" class="btn btn-outline btn-sm mc-copy"
+                  data-url="{{ row.share_url }}">Salin link</button>
+        {% else %}
+          <a class="btn btn-outline btn-sm" href="{{ row.pay_url }}">Aktifkan</a>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<script src="{% static_v 'js/my-cards.js' %}"></script>
+{% endblock %}

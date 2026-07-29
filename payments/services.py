@@ -54,13 +54,23 @@ def start_payment(card: GiftCard) -> midtrans.QrisCharge:
     except midtrans.MidtransError:
         # Charge gagal → kembalikan ke draft supaya user bisa coba lagi bersih.
         GiftCard.objects.filter(pk=card.pk, status=GiftCard.Status.PENDING).update(
-            status=GiftCard.Status.DRAFT, gateway_order_id="", qr_expires_at=None
+            status=GiftCard.Status.DRAFT,
+            gateway_order_id="",
+            qr_expires_at=None,
+            qr_string="",
+            qr_image_url="",
         )
         raise
 
-    if charge.transaction_id:
-        GiftCard.objects.filter(pk=card.pk).update(gateway_txn_id=charge.transaction_id)
-        card.refresh_from_db()
+    # QR disimpan supaya halaman bayar yang dimuat ulang bisa menampilkannya
+    # lagi. Midtrans menolak order_id yang dipakai ulang, jadi ini satu-satunya
+    # cara user melihat QR-nya kembali sebelum yang lama kedaluwarsa.
+    GiftCard.objects.filter(pk=card.pk).update(
+        gateway_txn_id=charge.transaction_id or card.gateway_txn_id,
+        qr_string=charge.qr_string,
+        qr_image_url=charge.qr_image_url,
+    )
+    card.refresh_from_db()
 
     return charge
 
@@ -92,12 +102,17 @@ def process_notification(payload: dict) -> str:
 
     with transaction.atomic():
         try:
-            PaymentEvent.objects.create(
-                card=card,
-                gateway_txn_id=txn_id,
-                transaction_status=txn_status,
-                raw_payload=payload,
-            )
+            # Blok atomic bersarang di DALAM try. Menangkap IntegrityError tanpa
+            # ini meninggalkan transaksi dalam keadaan rusak di PostgreSQL —
+            # semua query sesudahnya gagal. SQLite memaafkannya, jadi bug ini
+            # tidak akan terlihat di dev; produksi memakai PostgreSQL.
+            with transaction.atomic():
+                PaymentEvent.objects.create(
+                    card=card,
+                    gateway_txn_id=txn_id,
+                    transaction_status=txn_status,
+                    raw_payload=payload,
+                )
         except IntegrityError:
             # (txn_id, status) sudah pernah masuk → duplikat, jangan proses lagi.
             logger.info("Webhook duplikat diabaikan: %s/%s", txn_id, txn_status)

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Cara Kerja — Kartuku{% endblock %}
+
+{% block body %}
+<section class="section page">
+  {% include "cards/pages/_head.html" with eyebrow="Cara kerja" heading="Empat langkah, selesai" lede="Dari memilih template sampai kartumu sampai ke orang tersayang." %}
+
+  <ol class="steps steps-page">
+    <li>
+      <span class="step-no">1</span>
+      <h2>Pilih template</h2>
+      <p>Sesuaikan dengan momennya — ulang tahun, anniversary, love story,
+      atau lamaran. Setiap template bisa kamu lihat dulu sebelum mulai mengisi.</p>
+    </li>
+    <li>
+      <span class="step-no">2</span>
+      <h2>Isi kartunya</h2>
+      <p>Tulis pesan, unggah foto, dan tempel link YouTube untuk lagu favorit
+      kalian. Lagunya jadi musik latar saat kartu dibuka. Semua bisa disunting
+      langsung di atas kartunya, jadi kamu melihat hasil akhirnya sambil menulis.</p>
+    </li>
+    <li>
+      <span class="step-no">3</span>
+      <h2>Bayar QRIS</h2>
+      <p>Scan dengan e-wallet atau m-banking apa pun. Rp{{ price|floatformat:0 }},
+      sekali bayar, tanpa langganan. Kartumu aktif otomatis begitu pembayaran
+      terkonfirmasi.</p>
+    </li>
+    <li>
+      <span class="step-no">4</span>
+      <h2>Bagikan linknya</h2>
+      <p>Kamu dapat link unik yang bisa dibuka kapan saja oleh orang tersayang,
+      berkali-kali. Link-nya boleh kamu rapikan jadi nama yang mudah diingat.</p>
+    </li>
+  </ol>
+
+  <div class="page-cta">
+    <a class="btn btn-primary" href="{% url 'cards:page_templates' %}">Mulai dari template</a>
+    <a class="btn btn-outline" href="{% url 'cards:page_faq' %}">Baca FAQ</a>
+  </div>
+</section>
+{% endblock %}

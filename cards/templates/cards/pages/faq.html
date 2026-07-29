@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ — Kartuku{% endblock %}
+
+{% block body %}
+<section class="section page">
+  {% include "cards/pages/_head.html" with eyebrow="FAQ" heading="Pertanyaan yang sering muncul" lede="Belum terjawab? Tanyakan sebelum kamu membayar." %}
+
+  <div class="faq faq-page">
+    <h2 class="faq-group">Kartu &amp; isinya</h2>
+    <details>
+      <summary>Berapa lama kartunya aktif?</summary>
+      <p>Selamanya. Setelah pembayaran terkonfirmasi, link kartumu bisa dibuka
+      kapan saja, berkali-kali, tanpa biaya perpanjangan.</p>
+    </details>
+    <details>
+      <summary>Berapa foto yang bisa dimasukkan?</summary>
+      <p>Sampai {{ max_photo_mb }}MB per foto, format JPG, PNG, atau WEBP.
+      Foto otomatis dikompres supaya kartunya tetap ringan dibuka di HP.</p>
+    </details>
+    <details>
+      <summary>Bisa upload video atau lagu sendiri?</summary>
+      <p>Belum. Lagu dipakai lewat link YouTube supaya kartunya ringan dan cepat
+      dibuka. Lagunya akan berbunyi sebagai musik latar saat penerima membuka
+      kartu — penerima juga bisa menjedanya kapan saja.</p>
+    </details>
+    <details>
+      <summary>Kenapa link Spotify ditolak?</summary>
+      <p>Spotify tidak mengizinkan lagunya diputar otomatis di luar aplikasi
+      mereka, jadi kartunya akan bisu. Kami menolak di awal supaya kamu tidak
+      kecewa setelah kartunya terkirim. Cari lagu yang sama di YouTube.</p>
+    </details>
+    <details>
+      <summary>Kartunya bisa disunting setelah dibayar?</summary>
+      <p>Belum bisa. Pastikan isinya sudah sesuai sebelum membayar — kamu bisa
+      melihat hasil akhirnya di editor sebelum lanjut ke pembayaran.</p>
+    </details>
+
+    <h2 class="faq-group">Pembayaran</h2>
+    <details>
+      <summary>Bisa bayar pakai apa saja?</summary>
+      <p>Semua aplikasi yang mendukung QRIS — GoPay, OVO, DANA, ShopeePay, dan
+      m-banking bank mana pun.</p>
+    </details>
+    <details>
+      <summary>Kalau saya tutup tab sebelum bayar?</summary>
+      <p>Draftmu tersimpan di browser yang sama, jadi bisa kamu lanjutkan.
+      Kalau sudah bayar, kartunya tetap aktif dan linknya bisa dibuka kapan saja
+      meskipun tabnya tertutup.</p>
+    </details>
+    <details>
+      <summary>QR-nya kedaluwarsa sebelum saya sempat bayar</summary>
+      <p>Tidak masalah. Buka lagi halaman pembayaran kartumu, lalu buat QR baru.
+      Kartunya tidak hilang.</p>
+    </details>
+
+    <h2 class="faq-group">Privasi</h2>
+    <details>
+      <summary>Apakah kartunya bisa dilihat orang lain?</summary>
+      <p>Hanya yang punya linknya. Alamatnya memakai kode acak yang tidak bisa
+      ditebak, dan isinya baru terbuka setelah pembayaran terkonfirmasi.</p>
+    </details>
+    <details>
+      <summary>Kalau nama link yang saya mau sudah dipakai orang?</summary>
+      <p>Tetap bisa kamu pakai. Sistem menambahkan akhiran pendek secara acak,
+      misalnya <code>untuk-nadia-k3f</code>. Nama yang sama boleh dipakai banyak
+      orang — akhiran acak itu juga yang menjaga kartu orang lain tidak bisa
+      ditebak alamatnya.</p>
+    </details>
+    <details>
+      <summary>Apakah ada iklan?</summary>
+      <p>Tidak ada, dan tidak akan pernah ada.</p>
+    </details>
+  </div>
+
+  <div class="page-cta">
+    <a class="btn btn-primary" href="{% url 'cards:page_templates' %}">Buat Kartu Sekarang</a>
+    <a class="btn btn-outline" href="{% url 'cards:page_how' %}">Lihat cara kerjanya</a>
+  </div>
+</section>
+{% endblock %}

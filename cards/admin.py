@@ -1,6 +1,22 @@
 from django.contrib import admin
 
-from .models import GiftCard, GiftPhoto, Template
+from .models import AccessCode, GiftCard, GiftPhoto, Template
+
+
+@admin.register(AccessCode)
+class AccessCodeAdmin(admin.ModelAdmin):
+    list_display = ["code", "note", "status_label", "used_at", "created_at"]
+    list_filter = ["used_at"]
+    search_fields = ["code", "note"]
+    readonly_fields = ["used_at", "card", "created_at"]
+
+    @admin.display(description="Status", boolean=True)
+    def status_label(self, obj):
+        return not obj.is_used
+
+    def get_changeform_initial_data(self, request):
+        """Isi kode acak otomatis, jadi tinggal tulis catatan pembelinya."""
+        return {"code": AccessCode.generate_code()}
 
 
 @admin.register(Template)

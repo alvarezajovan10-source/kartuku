@@ -164,6 +164,14 @@ def save_content(request, card_id):
         else {}
     )
 
+    # Hanya kolom isi yang ditulis. Sebelumnya ini `card.save()` polos, yang
+    # menulis SELURUH kolom dari objek yang sudah basi — kalau webhook Midtrans
+    # menandai kartu `paid` di antara pembacaan dan penyimpanan, autosave
+    # menimpanya kembali jadi `pending` dan menghapus paid_at. Pembeli sudah
+    # bayar, kartunya tetap terkunci. Kolom pembayaran tidak boleh disentuh
+    # dari sini sama sekali.
+    changed = ["style", "texts"]
+
     fields = data.get("fields")
     if isinstance(fields, dict):
         card.recipient_name = str(fields.get("recipient", ""))[:80]
@@ -175,12 +183,20 @@ def save_content(request, card_id):
             for line in str(fields.get("affirmations", "")).splitlines()
             if line.strip()
         )[:1000]
+        changed += [
+            "recipient_name",
+            "sender_name",
+            "message",
+            "favorite_flower",
+            "affirmations",
+        ]
         try:
             card.youtube_video_id, card.spotify_track_id = parse_music_link(
                 fields.get("youtube_url", "")
             )
+            changed += ["youtube_video_id", "spotify_track_id"]
         except ValidationError:
             pass  # link belum benar — biarkan yang lama, jangan gagalkan simpan
 
-    card.save()
+    card.save(update_fields=changed + ["updated_at"])
     return Response({"saved": True})

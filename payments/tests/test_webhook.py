@@ -128,6 +128,39 @@ class SignatureTests(TestCase):
         self.assertFalse(midtrans.verify_signature({"order_id": "x"}))
 
 
+class UnconfiguredServerKeyTests(TestCase):
+    """Tanpa MIDTRANS_SERVER_KEY, webhook harus DITOLAK — bukan diloloskan.
+
+    Signature-nya cuma SHA512 dari tiga nilai yang semuanya ada di payload,
+    jadi siapa pun bisa menghitungnya dan mengaku sudah bayar. Deploy yang
+    kelupaan mengisi key tidak boleh berarti kartu gratis untuk semua orang.
+    """
+
+    def setUp(self):
+        self.template = Template.objects.create(
+            slug="t3", name="T3", category=CardType.BIRTHDAY
+        )
+        self.card = GiftCard.objects.create(
+            template=self.template,
+            category=CardType.BIRTHDAY,
+            status=GiftCard.Status.PENDING,
+            gateway_order_id="CARD-nokey-1",
+        )
+
+    @override_settings(MIDTRANS_SERVER_KEY="")
+    def test_forged_settlement_rejected_when_key_missing(self):
+        payload = signed_payload("CARD-nokey-1", "settlement")
+        response = self.client.post(
+            reverse("midtrans_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.card.refresh_from_db()
+        self.assertEqual(self.card.status, GiftCard.Status.PENDING)
+        self.assertIsNone(self.card.paid_at)
+
+
 class OrderIdTests(TestCase):
     def test_order_id_unique_per_attempt(self):
         template = Template.objects.create(

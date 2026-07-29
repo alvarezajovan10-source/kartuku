@@ -116,6 +116,16 @@ def verify_signature(notification: dict) -> bool:
 
     gross_amount dibandingkan apa adanya (string dari Midtrans, mis. "15000.00").
     """
+    # Tanpa server key, signature-nya cuma SHA512 dari tiga nilai yang semuanya
+    # ada di payload — siapa pun bisa menghitungnya dan mengaku "sudah bayar".
+    # Jadi konfigurasi yang belum lengkap harus MENOLAK, bukan meloloskan.
+    if not settings.MIDTRANS_SERVER_KEY:
+        logger.error(
+            "MIDTRANS_SERVER_KEY kosong — webhook ditolak. Tanpa key, signature "
+            "tidak bisa diverifikasi dan kartu bisa dibuka tanpa bayar."
+        )
+        return False
+
     expected = compute_signature(
         str(notification.get("order_id", "")),
         str(notification.get("status_code", "")),

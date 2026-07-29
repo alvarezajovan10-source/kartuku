@@ -6,6 +6,13 @@ app_name = "cards"
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("kartu-saya/", views.my_cards, name="my_cards"),
+    # Halaman informasi — tiap bagian landing punya alamat sendiri.
+    path("template/", views.page_templates, name="page_templates"),
+    path("cara-kerja/", views.page_how, name="page_how"),
+    path("harga/", views.page_pricing, name="page_pricing"),
+    path("testimoni/", views.page_testimonials, name="page_testimonials"),
+    path("faq/", views.page_faq, name="page_faq"),
     path("template/<slug:category>/", views.template_gallery, name="gallery"),
     path("preview/<slug:template_slug>/", views.preview, name="preview"),
     path("create/<slug:template_slug>/", views.editor, name="editor"),
@@ -38,6 +45,7 @@ urlpatterns = [
     ),
     path("pay/<uuid:card_id>/", views.pay, name="pay"),
     path("pay/<uuid:card_id>/gratis/", views.mark_paid, name="mark_paid"),
+    path("pay/<uuid:card_id>/kode/", views.redeem_code, name="redeem_code"),
     path("sukses/<uuid:card_id>/", views.success, name="success"),
     path("g/<str:ref>/", views.public_card, name="public"),
     path("sukses/<uuid:card_id>/link/", views.set_slug, name="set_slug"),

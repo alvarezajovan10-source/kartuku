@@ -357,6 +357,47 @@ class AutosaveTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(GiftCard.objects.get(pk=self.card_id).recipient_name, "Nadia")
 
+    def test_autosave_never_overwrites_payment_status(self):
+        """Bug nyata: autosave menulis SELURUH kolom dari objek yang sudah basi.
+
+        Kalau webhook Midtrans melunasi kartu tepat setelah view membaca
+        barisnya, penyimpanan mengembalikannya ke `pending` dan menghapus
+        paid_at — pembeli sudah bayar tapi kartunya tetap terkunci.
+
+        Webhook disisipkan lewat patch supaya benar-benar tiba DI TENGAH
+        permintaan: setelah view membaca kartu, sebelum ia menyimpan.
+        """
+        from unittest.mock import patch
+
+        from django.utils import timezone
+
+        from cards import api_photos
+
+        GiftCard.objects.filter(pk=self.card_id).update(
+            status=GiftCard.Status.PENDING
+        )
+
+        real_sanitize = api_photos.sanitize_style
+
+        def webhook_lands_mid_request(raw):
+            GiftCard.objects.filter(pk=self.card_id).update(
+                status=GiftCard.Status.PAID,
+                paid_at=timezone.now(),
+                gateway_txn_id="txn-9",
+            )
+            return real_sanitize(raw)
+
+        with patch.object(api_photos, "sanitize_style", webhook_lands_mid_request):
+            response = self.save({"fields": {"recipient": "Nadia"}})
+        self.assertEqual(response.status_code, 200)
+
+        card = GiftCard.objects.get(pk=self.card_id)
+        self.assertEqual(card.status, GiftCard.Status.PAID)
+        self.assertIsNotNone(card.paid_at)
+        self.assertEqual(card.gateway_txn_id, "txn-9")
+        # Isi yang dikirim tetap tersimpan — perbaikannya bukan "berhenti menyimpan".
+        self.assertEqual(card.recipient_name, "Nadia")
+
 
 class FrameAreaTests(TestCase):
     """Bingkai hanya muncul di areanya sendiri."""

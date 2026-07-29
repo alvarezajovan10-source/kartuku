@@ -58,12 +58,19 @@ editor — bedanya hanya atribut `data-edit` / `data-frame` yang muncul saat
       </div>
     {% endif %}
 
+    {% comment %} Lagu diputar lewat musik latar (cards/_bgm.html), bukan
+    embed video — dua pemutar sekaligus bikin suara dobel. Di sini cukup
+    kepingan info lagunya. {% endcomment %}
     {% if card.youtube_video_id %}
-      <div class="kv-video">
-        <iframe src="{{ card.youtube_embed_url }}"
-                title="Lagu untukmu" loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
-                allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <div class="kv-track">
+        {% if card.track_cover_url %}
+        <img class="kv-track-cover" src="{{ card.track_cover_url }}" alt=""
+             loading="lazy" referrerpolicy="no-referrer">
+        {% endif %}
+        <div class="kv-track-text">
+          <span class="kv-track-title">{{ card.track_title|default:"Lagu untukmu" }}</span>
+          {% if card.track_artist %}<span class="kv-track-artist">{{ card.track_artist }}</span>{% endif %}
+        </div>
       </div>
     {% endif %}
 

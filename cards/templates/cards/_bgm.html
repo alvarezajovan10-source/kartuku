@@ -1,0 +1,30 @@
+{% load static card_extras %}
+{% comment %}
+Musik latar kartu — sertakan sebelum </body> di template render mana pun.
+Hanya aktif kalau kartu punya lagu YouTube dan bukan mode editor.
+
+Memakai IFrame Player API resmi YouTube, bukan postMessage manual. API resmi
+menangani `origin` sendiri (sumber "Error 153"), dan yang terpenting mengirim
+kode error lewat onError sehingga kegagalan bisa dijelaskan ke penerima alih-alih
+gagal senyap.
+
+Tambahkan ?bgmdebug=1 di URL untuk menampakkan pemutar + status.
+
+Template lain bisa ikut menampilkan status musik (mis. piringan hitam berhenti
+berputar) dengan mendengarkan event "bgmstate" di document:
+  document.addEventListener('bgmstate', e => { e.detail.playing ... })
+dan memicu putar/jeda lewat window.bgmToggle().
+{% endcomment %}
+{% if card.youtube_video_id and not editing %}
+<link rel="stylesheet" href="{% static_v 'css/bgm.css' %}">
+<div id="bgm"{% if request.GET.bgmdebug %} class="is-debug"{% endif %}
+     data-vid="{{ card.youtube_video_id }}"
+     data-debug="{% if request.GET.bgmdebug %}1{% else %}0{% endif %}"></div>
+<button class="bgm-fab fresh" id="bgmFab" aria-label="Putar lagu di kartu ini">
+  <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+  <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+  <span class="bgm-label">putar lagu</span>
+</button>
+<p class="bgm-note" id="bgmNote"></p>
+<script src="{% static_v 'js/bgm.js' %}"></script>
+{% endif %}

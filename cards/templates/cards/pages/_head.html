@@ -1,0 +1,16 @@
+{% comment %}
+Kepala halaman informasi. Dipakai kelima halaman (Template, Cara Kerja, Harga,
+Testimoni, FAQ) supaya semuanya terlihat satu keluarga.
+
+Pemakaian:
+  {% include "cards/pages/_head.html" with eyebrow="Harga" heading="..." lede="..." %}
+`lede` opsional.
+{% endcomment %}
+<header class="page-hero">
+  <p class="eyebrow">{{ eyebrow }}</p>
+  <h1 class="display">{{ heading }}</h1>
+  <div class="flourish" aria-hidden="true">
+    <svg viewBox="0 0 120 14"><path d="M2 7h44M74 7h44" stroke="currentColor" stroke-width="1" fill="none"/><path d="M60 4.2c-1.2-1.4-3.4-1.1-4 .6-.5 1.5.7 2.9 2 3.9l2 1.6 2-1.6c1.3-1 2.5-2.4 2-3.9-.6-1.7-2.8-2-4-.6z" fill="currentColor"/></svg>
+  </div>
+  {% if lede %}<p class="section-lede">{{ lede }}</p>{% endif %}
+</header>

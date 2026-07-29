@@ -20,11 +20,11 @@
       </p>
 
       <div class="hero-actions">
-        <a class="btn btn-primary" href="#template">
+        <a class="btn btn-primary" href="{% url 'cards:page_templates' %}">
           <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true"><path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
           Buat Kartu Sekarang
         </a>
-        <a class="btn btn-outline" href="#cara-kerja">
+        <a class="btn btn-outline" href="{% url 'cards:page_how' %}">
           <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg>
           Lihat Cara Kerja
         </a>
@@ -100,99 +100,40 @@
   </div>
 </section>
 
-<!-- ── Cara kerja ────────────────────────────────────────────────────────── -->
-<section class="section section-alt" id="cara-kerja">
+<!-- ── Jalan pintas ke halaman informasi ─────────────────────────────────
+     Isi lengkap tiap bagian sekarang punya halamannya sendiri; di sini
+     cukup pengantar sebaris supaya landing tetap ringkas. -->
+<section class="section section-alt" id="jelajah">
   <div class="section-head">
-    <p class="eyebrow">Cara kerja</p>
-    <h2 class="display">Empat langkah, selesai</h2>
+    <p class="eyebrow">Sebelum mulai</p>
+    <h2 class="display">Cari tahu dulu</h2>
   </div>
-  <ol class="steps">
-    <li><span class="step-no">1</span><h3>Pilih template</h3><p>Sesuaikan dengan momennya — ulang tahun, anniversary, love story, atau lamaran.</p></li>
-    <li><span class="step-no">2</span><h3>Isi kartunya</h3><p>Tulis pesan, unggah foto, dan tempel link YouTube untuk lagu favorit kalian.</p></li>
-    <li><span class="step-no">3</span><h3>Bayar QRIS</h3><p>Scan dengan e-wallet atau m-banking apa pun. Rp{{ price|floatformat:0 }}, sekali bayar.</p></li>
-    <li><span class="step-no">4</span><h3>Bagikan linknya</h3><p>Kamu dapat link unik yang bisa dibuka kapan saja oleh orang tersayang.</p></li>
-  </ol>
-</section>
-
-<!-- ── Harga ─────────────────────────────────────────────────────────────── -->
-<section class="section" id="harga">
-  <div class="section-head">
-    <p class="eyebrow">Harga</p>
-    <h2 class="display">Satu harga untuk semua</h2>
-  </div>
-  <div class="price-card">
-    <p class="price-tag"><span class="cur">Rp</span>{{ price|floatformat:0 }}</p>
-    <p class="price-sub">per kartu — sekali bayar, tanpa langganan</p>
-    <ul class="price-list">
-      <li>Semua template, tanpa tier</li>
-      <li>Sampai 5 foto per kartu</li>
-      <li>Satu video YouTube</li>
-      <li>Link permanen, bisa dibuka berkali-kali</li>
-      <li>Tanpa iklan</li>
-    </ul>
-    <a class="btn btn-primary" href="#template">Buat Kartu Sekarang</a>
-  </div>
-</section>
-
-<!-- ── Testimoni ─────────────────────────────────────────────────────────── -->
-<section class="section section-alt" id="testimoni">
-  <div class="section-head">
-    <p class="eyebrow">Testimoni</p>
-    <h2 class="display">Kata mereka</h2>
-  </div>
-  <div class="quote-grid">
-    <!-- TODO: ganti dengan testimoni asli dari pengguna sungguhan sebelum situs live. -->
-    <blockquote class="quote is-placeholder">
-      <p>Ruang untuk testimoni asli. Ganti setelah ada pengguna sungguhan.</p>
-      <cite>— Nama pengguna</cite>
-    </blockquote>
-    <blockquote class="quote is-placeholder">
-      <p>Ruang untuk testimoni asli. Ganti setelah ada pengguna sungguhan.</p>
-      <cite>— Nama pengguna</cite>
-    </blockquote>
-    <blockquote class="quote is-placeholder">
-      <p>Ruang untuk testimoni asli. Ganti setelah ada pengguna sungguhan.</p>
-      <cite>— Nama pengguna</cite>
-    </blockquote>
-  </div>
-</section>
-
-<!-- ── FAQ ───────────────────────────────────────────────────────────────── -->
-<section class="section" id="faq">
-  <div class="section-head">
-    <p class="eyebrow">FAQ</p>
-    <h2 class="display">Pertanyaan yang sering muncul</h2>
-  </div>
-  <div class="faq">
-    <details>
-      <summary>Berapa lama kartunya aktif?</summary>
-      <p>Selamanya. Setelah pembayaran terkonfirmasi, link kartumu bisa dibuka kapan saja, berkali-kali.</p>
-    </details>
-    <details>
-      <summary>Bisa bayar pakai apa saja?</summary>
-      <p>Semua aplikasi yang mendukung QRIS — GoPay, OVO, DANA, ShopeePay, dan m-banking bank mana pun.</p>
-    </details>
-    <details>
-      <summary>Bisa upload video sendiri?</summary>
-      <p>Belum. Video dipakai lewat link YouTube supaya kartunya ringan dan cepat dibuka di HP.</p>
-    </details>
-    <details>
-      <summary>Berapa foto yang bisa dimasukkan?</summary>
-      <p>Sampai 5 foto per kartu, masing-masing maksimal 3MB, format JPG, PNG, atau WEBP.</p>
-    </details>
-    <details>
-      <summary>Kalau saya tutup tab sebelum bayar?</summary>
-      <p>Draftmu tersimpan di browser yang sama. Kalau sudah bayar, kartunya tetap aktif dan linknya bisa dibuka kapan saja.</p>
-    </details>
-    <details>
-      <summary>Apakah kartunya bisa dilihat orang lain?</summary>
-      <p>Hanya yang punya linknya. Alamatnya memakai kode acak yang tidak bisa ditebak, dan isinya baru terbuka setelah pembayaran terkonfirmasi.</p>
-    </details>
+  <div class="explore-grid">
+    <a class="explore-card" href="{% url 'cards:page_how' %}">
+      <h3>Cara Kerja</h3>
+      <p>Empat langkah dari memilih template sampai kartunya sampai ke orang tersayang.</p>
+      <span class="explore-go" aria-hidden="true">→</span>
+    </a>
+    <a class="explore-card" href="{% url 'cards:page_pricing' %}">
+      <h3>Harga</h3>
+      <p>Rp{{ price|floatformat:0 }} per kartu. Sekali bayar, tanpa langganan, tanpa biaya tersembunyi.</p>
+      <span class="explore-go" aria-hidden="true">→</span>
+    </a>
+    <a class="explore-card" href="{% url 'cards:page_faq' %}">
+      <h3>FAQ</h3>
+      <p>Soal foto, lagu, pembayaran, dan privasi kartumu.</p>
+      <span class="explore-go" aria-hidden="true">→</span>
+    </a>
+    <a class="explore-card" href="{% url 'cards:page_testimonials' %}">
+      <h3>Testimoni</h3>
+      <p>Cerita dari mereka yang sudah memakai Kartuku.</p>
+      <span class="explore-go" aria-hidden="true">→</span>
+    </a>
   </div>
 </section>
 
 <section class="cta-band">
   <h2 class="display">Siap bikin harinya jadi tak terlupakan?</h2>
-  <a class="btn btn-primary" href="#template">Buat Kartu Sekarang</a>
+  <a class="btn btn-primary" href="{% url 'cards:page_templates' %}">Buat Kartu Sekarang</a>
 </section>
 {% endblock %}

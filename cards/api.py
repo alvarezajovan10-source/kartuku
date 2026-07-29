@@ -28,8 +28,10 @@ def _owns(request, card):
 def create_charge(request, card_id):
     """POST /api/cards/<uuid>/pay/ → data QRIS.
 
-    Selalu buat order_id baru per percobaan (Midtrans menolak yang dipakai ulang),
-    tapi kalau QR yang lama masih hidup, minta user memakai yang itu.
+    Order_id baru dibuat per percobaan (Midtrans menolak yang dipakai ulang).
+    Kalau QR sebelumnya masih hidup, yang ITU yang dikirim balik — bukan error.
+    Dulu jalur ini membalas 409, jadi user yang me-refresh halaman bayar tidak
+    bisa melihat QR apa pun sampai yang lama kedaluwarsa (±15 menit).
     """
     card = get_object_or_404(GiftCard, pk=card_id)
     if not _owns(request, card):
@@ -37,10 +39,8 @@ def create_charge(request, card_id):
     if card.is_paid:
         return Response({"status": "paid", "redirect": card.public_url()})
 
-    if card.status == GiftCard.Status.PENDING and not card.qr_is_expired:
-        return Response(
-            {"detail": "QR sebelumnya masih berlaku.", "reuse": True}, status=409
-        )
+    if card.qr_is_live:
+        return _charge_payload(card, card.gateway_order_id, reused=True)
 
     try:
         charge = services.start_payment(card)
@@ -48,14 +48,20 @@ def create_charge(request, card_id):
         return Response({"detail": str(exc)}, status=502)
 
     card.refresh_from_db()
+    return _charge_payload(card, charge.order_id)
+
+
+def _charge_payload(card, order_id, reused=False):
+    """Bentuk balasan yang sama untuk QR baru maupun QR yang dipakai ulang."""
     return Response(
         {
             "status": card.status,
-            "order_id": charge.order_id,
-            "qr_string": charge.qr_string,
-            "qr_image_url": charge.qr_image_url,
+            "order_id": order_id,
+            "qr_string": card.qr_string,
+            "qr_image_url": card.qr_image_url,
             "amount": card.amount,
             "expires_at": card.qr_expires_at,
+            "reused": reused,
         }
     )
 

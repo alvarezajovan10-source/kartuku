@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static card_extras %}
 
 {% block title %}Kartu siap dibagikan{% endblock %}
 
@@ -15,6 +16,7 @@
       <button class="btn btn-primary" type="submit">Simpan</button>
     </form>
     {% if slug_error %}<p class="errors">{{ slug_error }}</p>{% endif %}
+    {% if slug_note %}<p class="slug-note">{{ slug_note }}</p>{% endif %}
 
     <label for="share-link" style="margin-top:18px">Link kartu</label>
     <div class="linkbox">
@@ -25,7 +27,7 @@
     <p class="hint" style="margin-top:10px">Simpan link ini — bisa dibuka kapan saja oleh penerima.</p>
   </div>
 
-  <div class="card qr-pick">
+  <div class="card qr-pick" id="qr-pick" data-qr-url="{% url 'cards:qr' card.id %}">
     <label>Kode QR</label>
     <p class="hint">Pilih bentuk & warna, lalu unduh — cocok untuk dicetak atau dikirim.</p>
 
@@ -52,32 +54,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-document.getElementById("copy").addEventListener("click", async function () {
-  const input = document.getElementById("share-link");
-  input.select();
-  try { await navigator.clipboard.writeText(input.value); } catch (e) { document.execCommand("copy"); }
-  this.textContent = "Tersalin";
-});
-
-// Pemilih gaya QR — cukup ganti query string gambarnya.
-(function () {
-  const base = "{% url 'cards:qr' card.id %}";
-  let style = "kotak", warna = "hitam";
-  function refresh() {
-    document.getElementById("qr-img").src = base + "?style=" + style + "&warna=" + warna;
-    document.getElementById("qr-dl").href = base + "?style=" + style + "&warna=" + warna + "&download=1";
-  }
-  document.querySelectorAll("[data-style]").forEach(b => b.addEventListener("click", () => {
-    style = b.dataset.style;
-    document.querySelectorAll("[data-style]").forEach(x => x.classList.toggle("is-on", x === b));
-    refresh();
-  }));
-  document.querySelectorAll("[data-warna]").forEach(b => b.addEventListener("click", () => {
-    warna = b.dataset.warna;
-    document.querySelectorAll("[data-warna]").forEach(x => x.classList.toggle("is-on", x === b));
-    refresh();
-  }));
-})();
-</script>
+<script src="{% static_v 'js/success.js' %}"></script>
 {% endblock %}

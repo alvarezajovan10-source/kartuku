@@ -5,7 +5,7 @@ from django.conf import settings
 
 from .models import GiftCard
 from .styles import sanitize_style
-from .utils import parse_music_link
+from .utils import check_youtube_embeddable, fetch_track_meta, parse_music_link
 
 MAX_TEXT_KEYS = 60
 MAX_TEXT_LENGTH = 300
@@ -114,13 +114,30 @@ class GiftCardForm(forms.ModelForm):
 
     def clean_youtube_url(self):
         # Kembalikan pasangan (youtube_id, spotify_id).
-        return parse_music_link(self.cleaned_data["youtube_url"])
+        youtube_id, spotify_id = parse_music_link(self.cleaned_data["youtube_url"])
+        # Tolak lagu yang akan bisu di kartu, selagi user masih di editor —
+        # jauh lebih baik daripada pembeli baru sadar setelah kartunya dikirim.
+        if youtube_id:
+            ok, reason = check_youtube_embeddable(youtube_id)
+            if not ok:
+                raise forms.ValidationError(reason)
+        return youtube_id, spotify_id
 
     def save(self, commit=True):
         card = super().save(commit=False)
+        old_youtube, old_spotify = card.youtube_video_id, card.spotify_track_id
         card.youtube_video_id, card.spotify_track_id = self.cleaned_data["youtube_url"]
         card.style = self.cleaned_data["style_json"]
         card.texts = self.cleaned_data["texts_json"]
+
+        # Panggil oEmbed hanya saat lagunya benar-benar berganti — menyimpan
+        # perubahan lain (teks, warna) tidak perlu menyentuh jaringan.
+        if (card.youtube_video_id, card.spotify_track_id) != (old_youtube, old_spotify):
+            meta = fetch_track_meta(card.youtube_video_id, card.spotify_track_id)
+            card.track_title = meta["title"][:200]
+            card.track_artist = meta["artist"][:120]
+            card.track_cover_url = meta["cover"][:500]
+
         if commit:
             card.save()
         return card

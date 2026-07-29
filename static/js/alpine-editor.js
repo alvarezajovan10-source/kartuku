@@ -50,6 +50,9 @@ window.cardEditor = function () {
     colorOpen: false,
     moreOpen: false,
     fontQuery: "",
+    songStatus: "",      // hasil uji putar lagu; "" = belum diuji
+    songOk: true,
+    probePlayer: null,
 
     /* ── Turunan dari elemen terpilih ─────────────────────────────────── */
     get spec() { return specByKey[this.sel] || null; },
@@ -65,7 +68,7 @@ window.cardEditor = function () {
     },
     get placeholder() {
       if (this.sel === "youtube_url")
-        return "https://youtu.be/... atau open.spotify.com/track/...";
+        return "https://youtu.be/... (lagunya jadi musik latar kartu)";
       return this.kind === "text" ? "Kosongkan = pakai bawaan template" : "Tulis di sini...";
     },
     get content() {
@@ -178,6 +181,88 @@ window.cardEditor = function () {
     /* ── Sunting ──────────────────────────────────────────────────────── */
     /* Link lagu baru terlihat efeknya setelah tersimpan — muat ulang
        preview begitu user selesai mengetik (blur). */
+    /* ── Lagu: kontrol tetap di panel kiri (bukan elemen di kartu) ────── */
+    songInput: function (value) {
+      this.fields.youtube_url = value;
+      this.songStatus = "";
+      this.queueSave();
+    },
+    songDone: function () {
+      // Link diproses server (validasi + ambil cover/judul via oEmbed),
+      // jadi efeknya baru terlihat setelah tersimpan → muat ulang preview.
+      var self = this;
+      clearTimeout(this.saveTimer);
+      this.saveNow().then(function () {
+        self.reloadFrame();
+        self.probeSong();
+      });
+    },
+
+    /* Uji putar sungguhan di browser.
+       Wajib dilakukan di sini, bukan di server: blokir dari pemilik hak cipta
+       (error 150) tidak terlihat di YouTube Data API — field `embeddable` di
+       sana hanya mencerminkan setelan pengunggah. Cuma pemutar asli yang tahu. */
+    probeSong: function () {
+      var self = this;
+      var id = this.youtubeIdFrom(this.fields.youtube_url || "");
+      if (!id) { this.songStatus = ""; return; }
+
+      this.songStatus = "Menguji lagu…";
+      this.songOk = true;
+
+      var start = function () {
+        if (self.probePlayer) { self.probePlayer.destroy(); }
+        var host = document.createElement("div");
+        document.getElementById("songProbe").appendChild(host);
+        self.probePlayer = new YT.Player(host, {
+          height: "1", width: "1", videoId: id,
+          playerVars: { playsinline: 1 },
+          events: {
+            onReady: function () {
+              self.songStatus = "✓ Lagu bisa diputar di kartu.";
+              self.songOk = true;
+            },
+            onError: function (e) {
+              self.songOk = false;
+              if (e.data === 101 || e.data === 150) {
+                // YouTube juga membalas 150 kalau editor dibuka lewat alamat
+                // IP mentah — hasil uji jadi tidak bisa dipercaya di sana.
+                if (/^\d+\.\d+\.\d+\.\d+$/.test(window.location.hostname)) {
+                  self.songStatus =
+                    "⚠ Tidak bisa diuji lewat alamat IP. Buka editor lewat " +
+                    "localhost untuk memastikan lagunya bisa diputar.";
+                  return;
+                }
+                self.songStatus =
+                  "✕ Lagu ini diblokir pemiliknya, kartu akan bisu. " +
+                  'Cari versi dari channel berakhiran "- Topic".';
+              } else if (e.data === 100) {
+                self.songStatus = "✕ Video tidak ditemukan.";
+              } else {
+                self.songStatus = "✕ Lagu gagal dimuat (kode " + e.data + ").";
+              }
+            }
+          }
+        });
+      };
+
+      if (window.YT && window.YT.Player) { start(); return; }
+      window.onYouTubeIframeAPIReady = start;
+      if (!document.getElementById("ytapi")) {
+        var tag = document.createElement("script");
+        tag.id = "ytapi";
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+      }
+    },
+
+    youtubeIdFrom: function (url) {
+      var m = String(url).match(
+        /(?:youtu\.be\/|v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/
+      );
+      return m ? m[1] : "";
+    },
+
     afterContentChange: function () {
       var self = this;
       if (this.sel !== "youtube_url") return;

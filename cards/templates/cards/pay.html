@@ -1,13 +1,20 @@
 {% extends "base.html" %}
+{% load static card_extras %}
 
 {% block title %}Pembayaran QRIS{% endblock %}
 
 {% block content %}
   <p><a class="ed-back" href="{% url 'cards:editor' card.template.slug %}?card={{ card.id }}">← Kembali mengedit</a></p>
+
+  {% if payment_ready %}
   <h1>Scan untuk bayar</h1>
   <p class="lede">Pakai GoPay, OVO, DANA, ShopeePay, atau m-banking apa pun yang mendukung QRIS.</p>
 
-  <div class="card qr">
+  <div class="card qr" id="pay-root"
+       data-pay-url="{% url 'cards:api_pay' card.id %}"
+       data-status-url="{% url 'cards:api_status' card.id %}"
+       data-success-url="{% url 'cards:success' card.id %}"
+       data-csrf="{{ csrf_token }}">
     <div class="price">Rp{{ price|floatformat:0 }}</div>
     <div id="qr-area" style="margin: 20px 0;">
       <p class="hint">Menyiapkan kode QR…</p>
@@ -15,16 +22,50 @@
     <p class="status-line" id="status-line">Menunggu pembayaran…</p>
     <button class="btn ghost" id="retry" hidden>Buat QR baru</button>
   </div>
+  {% else %}
+  <h1>Aktifkan kartumu</h1>
+  <p class="lede">Masukkan kode akses yang dikirim penjual lewat email setelah
+  pembayaranmu diterima.</p>
+  {% endif %}
+
+  {# Aktivasi selalu tersedia. Pembeli lewat Lynk.id menempelkan REF ID dari
+     email struknya; kode KRT-... tetap diterima sebagai jalur cadangan. #}
+  <div class="card redeem">
+    <label for="code">REF ID dari email pembelianmu</label>
+    <form method="post" action="{% url 'cards:redeem_code' card.id %}" class="linkbox">
+      {% csrf_token %}
+      <input type="text" id="code" name="code"
+             placeholder="41f2ff397e7d53cffa6e8371e1ba6096"
+             autocomplete="off" spellcheck="false"
+             maxlength="70" required>
+      <button class="btn btn-primary" type="submit">Aktifkan</button>
+    </form>
+    {% if code_error %}<p class="errors">{{ code_error }}</p>{% endif %}
+    <p class="hint">
+      Buka email struk pembelianmu, salin bagian <strong>REF ID</strong>, lalu
+      tempel di sini. Punya kode aktivasi dari penjual (KRT-…)? Bisa juga
+      dimasukkan di kolom yang sama.
+    </p>
+    <p class="hint">
+      Belum membeli? Kartu ini tetap tersimpan — beli dulu, lalu kembali
+      ke halaman ini.
+    </p>
+  </div>
 
   <p class="hint">
     Jangan tutup halaman ini sampai pembayaran terkonfirmasi. Kalau tertutup,
     kartumu tetap tersimpan.
   </p>
 
-  {% if user.is_staff %}
+  {% if user.is_staff or dev_bypass %}
     <div class="owner-box">
+      {% if user.is_staff %}
       <p><strong>Mode pemilik</strong> — kamu login sebagai admin, jadi boleh
       melewati pembayaran untuk mencoba template.</p>
+      {% else %}
+      <p><strong>Mode dev</strong> — DEBUG aktif, jadi pembayaran boleh
+      dilewati untuk uji coba. Tombol ini tidak ada di produksi.</p>
+      {% endif %}
       <form method="post" action="{% url 'cards:mark_paid' card.id %}">
         {% csrf_token %}
         <button class="btn btn-outline btn-sm" type="submit">Aktifkan tanpa bayar</button>
@@ -35,74 +76,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-(function () {
-  const cardId = "{{ card.id }}";
-  const payUrl = "{% url 'cards:api_pay' card.id %}";
-  const statusUrl = "{% url 'cards:api_status' card.id %}";
-  const csrfToken = "{{ csrf_token }}";
-
-  const qrArea = document.getElementById("qr-area");
-  const statusLine = document.getElementById("status-line");
-  const retryBtn = document.getElementById("retry");
-
-  let pollTimer = null;
-
-  function showError(message) {
-    qrArea.innerHTML = '<p class="hint">' + message + "</p>";
-    retryBtn.hidden = false;
-  }
-
-  async function createCharge() {
-    retryBtn.hidden = true;
-    qrArea.innerHTML = '<p class="hint">Menyiapkan kode QR…</p>';
-    try {
-      const response = await fetch(payUrl, {
-        method: "POST",
-        headers: { "X-CSRFToken": csrfToken },
-      });
-      const data = await response.json();
-
-      if (data.redirect) { window.location = data.redirect; return; }
-      if (!response.ok) { showError(data.detail || "Gagal membuat QR."); return; }
-
-      if (data.qr_image_url) {
-        qrArea.innerHTML = '<img alt="Kode QRIS" src="' + data.qr_image_url + '">';
-      } else {
-        showError("Midtrans tidak mengirim gambar QR.");
-        return;
-      }
-      startPolling();
-    } catch (err) {
-      showError("Koneksi bermasalah. Coba lagi.");
-    }
-  }
-
-  async function poll() {
-    try {
-      const response = await fetch(statusUrl);
-      const data = await response.json();
-      if (data.status === "paid") {
-        clearInterval(pollTimer);
-        statusLine.textContent = "Pembayaran diterima. Mengalihkan…";
-        window.location = "{% url 'cards:success' card.id %}";
-      } else if (data.status === "expired") {
-        clearInterval(pollTimer);
-        statusLine.textContent = "QR sudah kedaluwarsa.";
-        showError("Kode QR kedaluwarsa.");
-      }
-    } catch (err) {
-      /* jaringan sesaat bermasalah — coba lagi di tick berikutnya */
-    }
-  }
-
-  function startPolling() {
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(poll, 4000);
-  }
-
-  retryBtn.addEventListener("click", createCharge);
-  createCharge();
-})();
-</script>
+<script src="{% static_v 'js/pay.js' %}"></script>
 {% endblock %}

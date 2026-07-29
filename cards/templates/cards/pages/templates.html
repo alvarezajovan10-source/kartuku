@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Template Kartu — Kartuku{% endblock %}
+
+{% block body %}
+<section class="section page">
+  {% include "cards/pages/_head.html" with eyebrow="Template" heading="Untuk setiap momen spesial" lede="Pilih template yang sesuai dengan momenmu, lalu buat kartu digital yang penuh makna." %}
+
+  <div class="cat-grid">
+    {% for item in categories %}
+      <article class="cat-card">
+        <div class="cat-art tint-{{ item.tint }}">
+          {% if item.photo %}
+            <img src="{% static item.photo %}" alt="{{ item.title }}" loading="lazy">
+          {% endif %}
+          <span class="cat-icon">
+            {% if item.icon == "cake" %}
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 16c2 0 2 1.4 4 1.4S10 16 12 16s2 1.4 4 1.4S18 16 20 16" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 12V9M12 12V8.5M15 12V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            {% elif item.icon == "ring" %}
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="15" r="5.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9.4 9.6L12 4l2.6 5.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            {% endif %}
+          </span>
+        </div>
+        <div class="cat-body">
+          <h2>{{ item.title }}</h2>
+          <p>{{ item.blurb }}</p>
+          <a class="cat-link" href="{% url 'cards:gallery' item.category %}">
+            Pilih Template <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </article>
+    {% empty %}
+      <p class="hint">Belum ada template aktif. Jalankan <code>manage.py seed_templates</code>.</p>
+    {% endfor %}
+  </div>
+
+  <p class="page-note">
+    Semua template harganya sama, Rp{{ price|floatformat:0 }} per kartu —
+    <a href="{% url 'cards:page_pricing' %}">lihat rincian harga</a>.
+  </p>
+</section>
+{% endblock %}

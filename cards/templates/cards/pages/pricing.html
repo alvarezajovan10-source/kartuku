@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Harga — Kartuku{% endblock %}
+
+{% block body %}
+<section class="section page">
+  {% include "cards/pages/_head.html" with eyebrow="Harga" heading="Satu harga untuk semua" lede="Tidak ada tier, tidak ada biaya tersembunyi, tidak ada langganan." %}
+
+  <div class="price-card">
+    <p class="price-tag"><span class="cur">Rp</span>{{ price|floatformat:0 }}</p>
+    <p class="price-sub">per kartu — sekali bayar, tanpa langganan</p>
+    <ul class="price-list">
+      <li>Semua template, tanpa tier</li>
+      <li>Sampai {{ max_photos }} foto per kartu</li>
+      <li>Satu lagu YouTube sebagai musik latar</li>
+      <li>Link permanen, bisa dibuka berkali-kali</li>
+      <li>Link bisa dirapikan jadi nama pilihanmu</li>
+      <li>Tanpa iklan</li>
+    </ul>
+    <a class="btn btn-primary" href="{% url 'cards:page_templates' %}">Buat Kartu Sekarang</a>
+  </div>
+
+  <div class="price-notes">
+    <h2>Yang perlu kamu tahu</h2>
+    <dl>
+      <dt>Kapan saya membayar?</dt>
+      <dd>Setelah kartunya selesai kamu isi. Kamu bisa menyusun dan melihat
+      hasilnya lebih dulu — pembayaran baru diminta di langkah terakhir.</dd>
+
+      <dt>Bagaimana cara bayarnya?</dt>
+      <dd>QRIS. Scan dengan e-wallet atau m-banking apa pun — GoPay, OVO, DANA,
+      ShopeePay, atau aplikasi bank yang kamu pakai.</dd>
+
+      <dt>Ada biaya perpanjangan?</dt>
+      <dd>Tidak ada. Sekali bayar, kartunya aktif selamanya.</dd>
+
+      <dt>Kalau saya mau bikin kartu lagi?</dt>
+      <dd>Setiap kartu dihitung terpisah, Rp{{ price|floatformat:0 }} masing-masing.</dd>
+    </dl>
+  </div>
+</section>
+{% endblock %}

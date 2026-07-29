@@ -1,0 +1,32 @@
+/* Musik latar kartu — dipasang oleh cards/_bgm.html.
+   Pemutarnya disembunyikan di luar layar; yang terlihat cuma tombol bulat. */
+#bgm{position:fixed;width:1px;height:1px;left:-9999px;top:0;border:0;opacity:.01;
+  pointer-events:none}
+/* ?bgmdebug=1 → pemutar dimunculkan. Dulu blok ini dicetak bersyarat dari
+   template; sekarang aturannya selalu ada tapi menunggu kelas .is-debug. */
+#bgm.is-debug{width:320px;height:180px;left:auto;right:14px;top:70px;opacity:1;
+  pointer-events:auto;z-index:70;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.bgm-fab{position:fixed;top:14px;right:14px;z-index:80;height:42px;
+  border-radius:21px;border:0;cursor:pointer;display:flex;align-items:center;
+  gap:8px;padding:0 16px 0 12px;
+  background:rgba(20,10,14,.55);color:#faf2e4;backdrop-filter:blur(6px);
+  box-shadow:0 4px 14px -4px rgba(0,0,0,.5);transition:transform .2s,background .2s;
+  font:italic 500 .85rem/1 'Cormorant Garamond',Georgia,serif;letter-spacing:.03em}
+.bgm-fab:hover{transform:scale(1.05);background:rgba(20,10,14,.75)}
+.bgm-fab[disabled]{opacity:.5;cursor:default}
+.bgm-fab svg{width:18px;height:18px;fill:currentColor;flex:0 0 auto}
+.bgm-fab .icon-pause{display:none}
+.bgm-fab.playing .icon-play{display:none}
+.bgm-fab.playing .icon-pause{display:block}
+@keyframes bgm-pulse{0%,100%{box-shadow:0 4px 14px -4px rgba(0,0,0,.5)}
+  50%{box-shadow:0 4px 14px -4px rgba(0,0,0,.5),0 0 0 7px rgba(250,242,228,.14)}}
+.bgm-fab.fresh{animation:bgm-pulse 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.bgm-fab.fresh{animation:none}}
+/* Kegagalan harus terlihat, bukan senyap. */
+.bgm-note{position:fixed;top:64px;right:14px;z-index:80;max-width:250px;
+  padding:10px 14px;border-radius:12px;display:none;
+  background:rgba(20,10,14,.8);color:#faf2e4;backdrop-filter:blur(6px);
+  font:400 .78rem/1.45 'Cormorant Garamond',Georgia,serif;
+  box-shadow:0 4px 14px -4px rgba(0,0,0,.5)}
+.bgm-note.on{display:block}
+.bgm-note a{color:inherit}

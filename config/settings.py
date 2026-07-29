@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,9 +13,19 @@ env = environ.Env(
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="dev-only-insecure-key")
+DEV_SECRET_KEY = "dev-only-insecure-key"
+SECRET_KEY = env("DJANGO_SECRET_KEY", default=DEV_SECRET_KEY)
 DEBUG = env("DJANGO_DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+
+# Kunci bawaan hanya boleh untuk dev. Kalau ikut terbawa ke produksi, sesi dan
+# token CSRF bisa dipalsukan siapa pun yang membaca repo ini — gagal saat start
+# jauh lebih baik daripada situs yang menyala tapi bisa dibobol.
+if not DEBUG and SECRET_KEY == DEV_SECRET_KEY:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY belum diisi. Isi dengan string acak panjang di .env "
+        "sebelum menjalankan dengan DJANGO_DEBUG=False."
+    )
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 INSTALLED_APPS = [
@@ -29,8 +40,19 @@ INSTALLED_APPS = [
     "payments",
 ]
 
+# Bawaan Django "same-origin" menahan SELURUH info asal ke domain lain, dan
+# pemutar YouTube memakainya untuk memverifikasi situs pemanggil — tanpa itu
+# musik latar selalu gagal dengan "Error 153". Nilai ini hanya mengirim origin
+# (skema+host), bukan alamat lengkap, jadi kode unik kartu tetap tidak bocor
+# ke YouTube. Ini juga nilai bawaan mayoritas browser.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Menyajikan file di STATIC_ROOT langsung dari Django, jadi hosting tidak
+    # perlu dikonfigurasi menunjuk folder static. Wajib tepat di bawah
+    # SecurityMiddleware.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -90,7 +112,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    # WhiteNoise memampatkan file static saat collectstatic. Tanpa manifest
+    # hash — cache-busting sudah ditangani tag {% static_v %} lewat ?v=mtime.
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
 }
 
 if env("USE_R2"):
@@ -121,6 +145,25 @@ QR_TTL_MINUTES = 15
 MAX_PHOTOS_PER_CARD = 30
 MAX_PHOTO_BYTES = 3 * 1024 * 1024
 
+# API key YouTube Data v3 — dipakai memeriksa apakah lagu yang ditempel user
+# boleh diputar di situs lain. Kosong = pemeriksaan dilewati (kartu tetap bisa
+# dibuat, tapi risiko kartu bisu kembali ada).
+YOUTUBE_API_KEY = env("YOUTUBE_API_KEY", default="")
+
+# --- Lynk.id -----------------------------------------------------------------
+# Pembayaran ditangani di luar situs (link Lynk di bio TikTok). Lynk memanggil
+# /api/webhooks/lynk/ setiap pembayaran sukses; dari situ lahir "hak pakai"
+# yang ditukar pembeli dengan REF ID di email struknya.
+#
+# Kunci ini BARU MUNCUL di dashboard Lynk setelah URL webhook disimpan.
+# Kosong = webhook ditolak (lihat payments/lynk.verify_signature).
+LYNK_MERCHANT_KEY = env("LYNK_MERCHANT_KEY", default="")
+
+# Harga minimal yang dianggap sah untuk satu kartu. Dibuat bisa diatur supaya
+# produk uji coba murah bisa dipakai saat mencoba alurnya; naikkan ke
+# CARD_PRICE sebelum jualan sungguhan.
+LYNK_MIN_AMOUNT = env.int("LYNK_MIN_AMOUNT", default=CARD_PRICE)
+
 MIDTRANS_SERVER_KEY = env("MIDTRANS_SERVER_KEY", default="")
 MIDTRANS_CLIENT_KEY = env("MIDTRANS_CLIENT_KEY", default="")
 MIDTRANS_IS_PRODUCTION = env("MIDTRANS_IS_PRODUCTION")
@@ -143,6 +186,10 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD sengaja dibiarkan mati. Preload itu pintu satu arah:
+    # sekali masuk daftar browser, sulit dicabut, dan tidak pantas dinyalakan
+    # untuk subdomain milik bersama seperti *.pythonanywhere.com. Nyalakan
+    # nanti kalau situs sudah pindah ke domain sendiri.
 
 LOGGING = {
     "version": 1,

@@ -22,6 +22,14 @@ Kartu hanya bisa diakses versi final-nya **setelah pembayaran terkonfirmasi**.
 - **Tidak ada upload video.** Video = embed link YouTube. Simpan hanya `video_id`,
   render lewat iframe `youtube-nocookie.com/embed/<id>`. Validasi & ekstrak ID dari
   URL yang ditempel user.
+  > **Ditunda, bukan ditolak (2026-07-29).** Ide "pesan video di akhir kartu"
+  > disetujui secara konsep, tapi ditahan sampai pindah ke VPS/hosting berbayar.
+  > Penghalangnya bukan biaya penyimpanan (R2 murah), melainkan: paket gratis
+  > hanya 512 MB disk, dan video HP berformat HEVC/`.mov` tidak bisa diputar
+  > Chrome/Firefox tanpa dikonversi `ffmpeg` — yang butuh CPU dan proses latar
+  > belakang. Syarat sebelum dibangun: sudah di VPS, simpan di R2, batas 30
+  > detik / 25 MB, konversi otomatis ke H.264. Jalur murah untuk menguji minat
+  > lebih dulu: kolom YouTube kedua (unlisted) khusus pesan video penutup.
 - **Tidak ada iklan** di seluruh situs. Ini produk emosional/estetik; iklan merusak
   brand dan konversi.
 - **Foto boleh di-upload**, tapi dibatasi (lihat §7). Simpan di object storage
@@ -275,3 +283,59 @@ deploy VPS + nginx + SSL, cron pembersih draft, rate limiting.
 - **Minimum transaksi & kategori merchant:** konfirmasi ke Midtrans bahwa 15.000 di
   atas minimum, dan cek kategori MDR-mu saat pendaftaran (mikro ≤500k bisa 0%).
 ```
+
+---
+
+## 13. Status Saat Ini (29 Juli 2026)
+
+Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
+
+### Sudah jadi
+
+- **Musik latar** di semua template (`cards/_bgm.html`) — lagu YouTube diputar
+  lewat IFrame Player API resmi, ada tombol putar/jeda mengambang. Spotify
+  ditolak di editor karena tidak bisa diputar otomatis.
+- **Validasi lagu**: `check_youtube_embeddable()` pakai YouTube Data API +
+  uji putar sungguhan di browser dari editor (`probeSong` di alpine-editor.js).
+  Keduanya perlu, karena API mengatakan `embeddable: True` untuk video yang
+  ternyata diblokir label musik.
+- **Halaman informasi terpisah**: `/template/`, `/cara-kerja/`, `/harga/`,
+  `/testimoni/`, `/faq/`.
+- **Dashboard pemilik** `/kartu-saya/` — daftar semua kartu + link. Terbuka saat
+  `DEBUG`, atau untuk staff.
+- **Kode akses sekali pakai** (`AccessCode`) — pengganti Midtrans selama bayar
+  ditangani di luar situs. Buat lewat admin atau `manage.py buat_kode`.
+  Ditukar di halaman bayar; blok QRIS otomatis disembunyikan kalau
+  `MIDTRANS_SERVER_KEY` kosong.
+- **Slug bentrok** tidak lagi ditolak — diberi akhiran acak (`halo-k3f`).
+  Akhirannya acak, bukan berurutan, supaya kartu orang lain tidak bisa
+  di-enumerate.
+- **`DEPLOY.md`** — panduan deploy ke PythonAnywhere gratis.
+
+### Sedang berjalan
+
+1. **Deploy ke PythonAnywhere** — belum dikerjakan. Ikuti `DEPLOY.md`.
+   Tertahan di langkah 2: repo belum punya remote GitHub.
+2. **Webhook Lynk.id** — Lynk punya webhook (Settings → Integrations → Webhook).
+   Rencana: Lynk memberi tahu situs saat ada order → situs membuat `AccessCode`
+   → email otomatis ke pembeli. **Butuh situs online lebih dulu.**
+   Langkah berikutnya: tangkap contoh payload pakai webhook.site + tombol
+   "Test URL" di Lynk, baru tulis handler-nya. Wajib ada verifikasi keamanan
+   seperti aturan webhook Midtrans di §6.2.
+3. **Jualan lewat TikTok → Lynk.id.** Midtrans sengaja ditunda.
+
+### Jebakan lingkungan — mahal kalau lupa
+
+- **Buka situs lewat `http://localhost:8000`, JANGAN `127.0.0.1`.** YouTube
+  menolak memutar video kalau halaman diakses lewat alamat IP mentah
+  (`127.0.0.1`, `192.168.x.x`). Nama host seperti `localhost`, `*.local`, dan
+  domain publik diterima. Ini pernah memakan waktu sehari penuh untuk ketemu.
+- **`SECURE_REFERRER_POLICY`** harus `strict-origin-when-cross-origin`. Bawaan
+  Django (`same-origin`) membuat pemutar YouTube gagal dengan "Error 153".
+- **Setelah mengubah `.env`, wajib restart penuh**:
+  `launchctl kickstart -k gui/$UID/com.kartuku.server`. Autoreload Django
+  hanya memantau file `.py` dan mewarisi environment lama.
+- **Server dijalankan `launchd`** (`~/Library/LaunchAgents/com.kartuku.server.plist`),
+  otomatis menyala saat login. Log di `~/giftcard/server.log`.
+- **Venv dibuat dengan `uv`**, tanpa `pip` bawaan. Pasang paket:
+  `uv pip install <nama>`. Jalankan: `.venv/bin/python manage.py ...`

@@ -21,6 +21,23 @@
       <p>Tulisan, foto, atau latarnya.</p>
     </div>
 
+    <!-- ── Lagu: kontrol tetap, bukan bagian dari kartu ──────────────── -->
+    <div class="ed-song" x-show="!sel">
+      <h3>♪ Lagu kartu</h3>
+      <input type="text" class="ed-input"
+             :value="fields.youtube_url || ''"
+             @input="songInput($event.target.value)"
+             @change="songDone()"
+             placeholder="https://youtu.be/...">
+      <!-- Hasil uji putar di browser. Server tidak bisa memastikan ini:
+           blokir label musik tidak terlihat di YouTube Data API. -->
+      <p class="ed-song-status" x-show="songStatus"
+         :class="songOk ? 'ok' : 'bad'" x-text="songStatus"></p>
+      <p class="hint" x-show="!songStatus">Tempel link YouTube. Lagunya jadi
+      musik latar saat penerima membuka kartu.</p>
+      <div id="songProbe"></div>
+    </div>
+
     <!-- ── Kepala: nama elemen terpilih ──────────────────────────────── -->
     <div class="ed-head" x-show="sel">
       <span x-text="label"></span>
@@ -38,7 +55,7 @@
                @change="afterContentChange()"
                :placeholder="placeholder">
         <p class="hint" x-show="sel === 'youtube_url'">
-          Tempel link lagu dari YouTube atau Spotify. Player muncul di babak Lagu.
+          Tempel link YouTube. Lagunya jadi musik latar saat penerima membuka kartu.
         </p>
 
         <!-- Baris kontrol padat, seperti toolbar -->

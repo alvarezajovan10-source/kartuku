@@ -46,6 +46,13 @@ class GiftCard(models.Model):
     youtube_video_id = models.CharField(max_length=20, blank=True)
     spotify_track_id = models.CharField(max_length=30, blank=True)
 
+    # Metadata lagu hasil oEmbed, diisi otomatis saat link disimpan (lihat
+    # cards.utils.fetch_track_meta). Dicache di DB supaya halaman publik tidak
+    # memanggil YouTube/Spotify tiap kali dibuka. Kosong = jangan ditampilkan.
+    track_title = models.CharField(max_length=200, blank=True)
+    track_artist = models.CharField(max_length=120, blank=True)
+    track_cover_url = models.URLField(max_length=500, blank=True)
+
     # Link cantik pilihan user setelah bayar: /g/<slug>. Kode UUID tetap jalan.
     slug = models.SlugField(max_length=60, unique=True, null=True, blank=True)
 
@@ -72,6 +79,12 @@ class GiftCard(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
     qr_expires_at = models.DateTimeField(null=True, blank=True)
 
+    # QR dari Midtrans disimpan supaya bisa DITAMPILKAN ULANG. Midtrans menolak
+    # order_id yang dipakai ulang, jadi tanpa ini user yang me-refresh halaman
+    # bayar tidak bisa melihat QR apa pun sampai yang lama kedaluwarsa.
+    qr_string = models.TextField(blank=True)
+    qr_image_url = models.URLField(max_length=500, blank=True)
+
     # True = diaktifkan gratis oleh pemilik situs, bukan hasil pembayaran.
     # Dipisahkan supaya kartu uji coba tidak terhitung sebagai penjualan.
     comped = models.BooleanField(default=False, verbose_name="Gratis (pemilik)")
@@ -95,6 +108,15 @@ class GiftCard(models.Model):
     def qr_is_expired(self):
         return bool(self.qr_expires_at and timezone.now() >= self.qr_expires_at)
 
+    @property
+    def qr_is_live(self):
+        """QR lama masih bisa dipakai — tampilkan itu, jangan buat yang baru."""
+        return bool(
+            self.status == self.Status.PENDING
+            and not self.qr_is_expired
+            and (self.qr_image_url or self.qr_string)
+        )
+
     def public_url(self):
         return reverse("cards:public", args=[self.slug or self.id])
 
@@ -103,10 +125,26 @@ class GiftCard(models.Model):
             return ""
         return f"https://www.youtube-nocookie.com/embed/{self.youtube_video_id}"
 
+    def track_link_url(self):
+        """Tujuan klik piringan hitam: buka lagunya di sumber aslinya."""
+        if self.spotify_track_id:
+            return f"https://open.spotify.com/track/{self.spotify_track_id}"
+        if self.youtube_video_id:
+            return f"https://www.youtube.com/watch?v={self.youtube_video_id}"
+        return ""
+
+    def track_source_name(self):
+        if self.spotify_track_id:
+            return "Spotify"
+        if self.youtube_video_id:
+            return "YouTube"
+        return ""
+
     def spotify_embed_url(self):
         if not self.spotify_track_id:
             return ""
-        return f"https://open.spotify.com/embed/track/{self.spotify_track_id}"
+        # theme=0 = varian gelap, lebih menyatu dengan latar merah kartu
+        return f"https://open.spotify.com/embed/track/{self.spotify_track_id}?theme=0"
 
     MAX_AFFIRMATIONS = 4
 
@@ -205,3 +243,93 @@ class GiftPhoto(models.Model):
 
     def __str__(self):
         return f"Foto #{self.order} — {self.card_id}"
+
+
+class AccessCode(models.Model):
+    """Kode sekali pakai untuk mengaktifkan satu kartu.
+
+    Dipakai saat pembayaran ditangani di luar situs (mis. Lynk.id): pembeli
+    membayar di sana, pemilik situs mengirimkan kode lewat email, pembeli
+    menukarnya di halaman bayar.
+
+    Yang sekali pakai adalah KODE-nya, bukan kartunya. Kartu yang sudah aktif
+    tetap bisa dibuka berkali-kali oleh penerima — itu inti produknya.
+    """
+
+    # Tanpa huruf/angka yang mudah tertukar saat dibaca atau diketik ulang:
+    # I, L, O, 0, 1 sengaja dibuang.
+    ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+    PREFIX = "KRT"
+
+    code = models.CharField(max_length=20, unique=True, db_index=True)
+    # Jejak ke pembelian aslinya: nama/email pembeli atau nomor order Lynk.
+    note = models.CharField(
+        max_length=120, blank=True, verbose_name="Catatan pembeli"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    card = models.OneToOneField(
+        GiftCard,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="access_code",
+    )
+
+    class Meta:
+        verbose_name = "Kode Akses"
+        verbose_name_plural = "Kode Akses"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.code} ({'terpakai' if self.is_used else 'belum dipakai'})"
+
+    @property
+    def is_used(self):
+        return self.used_at is not None
+
+    @classmethod
+    def generate_code(cls):
+        """Kode acak baru yang belum ada di database."""
+        import secrets
+
+        while True:
+            body = "".join(secrets.choice(cls.ALPHABET) for _ in range(8))
+            code = f"{cls.PREFIX}-{body[:4]}-{body[4:]}"
+            if not cls.objects.filter(code=code).exists():
+                return code
+
+    @classmethod
+    def claim(cls, code, card):
+        """Pakai kode ini untuk `card`, secara atomik. True kalau berhasil.
+
+        Sengaja UPDATE bersyarat, bukan select_for_update(): SQLite tidak
+        mendukung penguncian baris dan Django mengabaikannya diam-diam, jadi
+        dua permintaan bersamaan bisa sama-sama lolos. Satu
+        `UPDATE ... WHERE used_at IS NULL` aman di semua database.
+        """
+        from django.utils import timezone
+
+        return (
+            cls.objects.filter(code=code, used_at__isnull=True).update(
+                used_at=timezone.now(), card=card
+            )
+            > 0
+        )
+
+    @classmethod
+    def normalize(cls, raw):
+        """Rapikan ketikan user jadi bentuk baku, atau "" kalau bentuknya salah.
+
+        Menerima huruf kecil, tanpa tanda hubung, dengan spasi, dan dengan atau
+        tanpa awalan KRT — pembeli menyalin kode dari email, bentuknya
+        bermacam-macam dan itu bukan salah mereka.
+        """
+        import re
+
+        cleaned = re.sub(r"[^A-Z0-9]", "", (raw or "").upper())
+        if cleaned.startswith(cls.PREFIX):
+            cleaned = cleaned[len(cls.PREFIX) :]
+        if len(cleaned) != 8 or any(c not in cls.ALPHABET for c in cleaned):
+            return ""
+        return f"{cls.PREFIX}-{cleaned[:4]}-{cleaned[4:]}"

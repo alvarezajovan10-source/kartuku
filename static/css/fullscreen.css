@@ -1,0 +1,12 @@
+/* Kiri bawah — kanan atas milik tombol musik (cards/_bgm.html), kiri atas
+   milik tombol "kembali" di template Amplop Merah. */
+.fs-fab{position:fixed;bottom:14px;left:14px;z-index:60;width:42px;height:42px;
+  border-radius:50%;border:0;cursor:pointer;display:none;place-items:center;
+  background:rgba(20,10,14,.55);color:#faf2e4;backdrop-filter:blur(6px);
+  box-shadow:0 4px 14px -4px rgba(0,0,0,.5);transition:transform .2s,background .2s}
+.fs-fab.supported{display:grid}
+.fs-fab:hover{transform:scale(1.08);background:rgba(20,10,14,.75)}
+.fs-fab svg{width:18px;height:18px;fill:currentColor}
+.fs-fab .icon-exit{display:none}
+.fs-fab.active .icon-enter{display:none}
+.fs-fab.active .icon-exit{display:block}

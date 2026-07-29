@@ -1,12 +1,10 @@
-import json
 import logging
-
-from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test
-from django.contrib.staticfiles import finders
-from django.core.exceptions import ValidationError
+import secrets
 from uuid import UUID
 
+from django.conf import settings
+from django.contrib.staticfiles import finders
+from django.db import IntegrityError, transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -18,8 +16,9 @@ from django.views.decorators.http import require_POST
 
 from . import styles
 from .forms import GiftCardForm
-from .models import CardType, GiftCard, GiftPhoto, Template
-from .utils import validate_and_compress_photo
+from payments.models import LynkOrder
+
+from .models import AccessCode, CardType, GiftCard, Template
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ FIELD_ELEMENTS = [
     ("sender", "Nama pengirim", "line"),
     ("favorite_flower", "Nama bunga", "line"),
     ("affirmations", "Kalimat manis", "multiline"),
-    ("youtube_url", "Lagu — link YouTube / Spotify", "line"),
+    ("youtube_url", "Lagu — link YouTube", "line"),
 ]
 
 
@@ -96,6 +95,19 @@ def _static_if_exists(path):
 
 def landing(request):
     """Landing: satu kartu per kategori, menunjuk ke template aktif pertamanya."""
+    return render(
+        request,
+        "cards/landing.html",
+        {
+            "categories": _category_cards(),
+            "price": settings.CARD_PRICE,
+            "hero_photo": _static_if_exists("img/hero.jpg"),
+        },
+    )
+
+
+def _category_cards():
+    """Kartu kategori untuk landing dan halaman Template — satu sumber."""
     active = Template.objects.filter(is_active=True)
     first_by_category = {}
     for template in active:
@@ -105,17 +117,48 @@ def landing(request):
     for entry in CATEGORY_CARDS:
         template = first_by_category.get(entry["category"])
         if template is None:
-            continue  # kategori tanpa template aktif tidak ditampilkan
+            continue
         photo = _static_if_exists(f"img/cat-{entry['tint']}.jpg")
         categories.append({**entry, "template": template, "photo": photo})
+    return categories
 
+
+# Halaman statis: tiap bagian landing sekarang punya alamatnya sendiri, supaya
+# bisa dibagikan langsung dan muncul terpisah di hasil pencarian.
+def page_templates(request):
     return render(
         request,
-        "cards/landing.html",
+        "cards/pages/templates.html",
+        {"categories": _category_cards(), "price": settings.CARD_PRICE},
+    )
+
+
+def page_how(request):
+    return render(request, "cards/pages/how.html", {"price": settings.CARD_PRICE})
+
+
+def page_pricing(request):
+    return render(
+        request,
+        "cards/pages/pricing.html",
         {
-            "categories": categories,
             "price": settings.CARD_PRICE,
-            "hero_photo": _static_if_exists("img/hero.jpg"),
+            "max_photos": settings.MAX_PHOTOS_PER_CARD,
+        },
+    )
+
+
+def page_testimonials(request):
+    return render(request, "cards/pages/testimonials.html", {})
+
+
+def page_faq(request):
+    return render(
+        request,
+        "cards/pages/faq.html",
+        {
+            "price": settings.CARD_PRICE,
+            "max_photo_mb": settings.MAX_PHOTO_BYTES // (1024 * 1024),
         },
     )
 
@@ -250,7 +293,8 @@ def editor_frame(request, template_slug):
     card = None
     if card_id:
         card = GiftCard.objects.filter(pk=card_id).first()
-        if card and not _owns(request, card):
+        # Sama seperti editor(): pemilik situs boleh membuka kartu mana pun.
+        if card and not (settings.DEBUG or request.user.is_staff or _owns(request, card)):
             card = None
     if card is None:
         card = GiftCard(template=template, category=template.category)
@@ -280,10 +324,17 @@ def editor(request, template_slug):
     card_id = request.POST.get("card") or request.GET.get("card")
     card = None
     if card_id:
-        card = GiftCard.objects.filter(
-            pk=card_id, status=GiftCard.Status.DRAFT
-        ).first()
-        if card and not _owns(request, card):
+        # Pemilik situs (staff, atau siapa saja saat DEBUG) boleh membuka kartu
+        # mana pun dari dashboard "Kartu Saya" — termasuk yang sudah lunas dan
+        # yang dibuat di sesi browser lain. Pembeli biasa tetap dibatasi:
+        # hanya draft miliknya sendiri, supaya kartu terkirim tidak bisa diubah
+        # orang lain.
+        owner_mode = settings.DEBUG or request.user.is_staff
+        queryset = GiftCard.objects.all()
+        if not owner_mode:
+            queryset = queryset.filter(status=GiftCard.Status.DRAFT)
+        card = queryset.filter(pk=card_id).first()
+        if card and not (owner_mode or _owns(request, card)):
             card = None
 
     if request.method == "POST":
@@ -383,7 +434,7 @@ def editor(request, template_slug):
                 "gallery": gallery,
                 "fontCatalog": styles.font_catalog(),
                 "fonts": {key: value[2] for key, value in styles.FONTS.items()},
-                    "swatches": styles.SWATCHES,
+                "swatches": styles.SWATCHES,
                 "maxPhotos": settings.MAX_PHOTOS_PER_CARD,
                 "urls": {
                     "frame": reverse("cards:editor_frame", args=[template.slug]),
@@ -413,17 +464,143 @@ def pay(request, card_id):
         return redirect("cards:success", card_id=card.id)
     if not _owns(request, card):
         return render(request, "cards/not_yours.html", status=403)
-    return render(request, "cards/pay.html", {"card": card, "price": card.amount})
+    return render(
+        request,
+        "cards/pay.html",
+        {
+            "card": card,
+            "price": card.amount,
+            "dev_bypass": settings.DEBUG,
+            # Tanpa kunci Midtrans, blok QRIS pasti gagal — jangan ditampilkan
+            # supaya pembeli tidak menunggu QR yang tidak akan pernah muncul.
+            "payment_ready": bool(settings.MIDTRANS_SERVER_KEY),
+            "code_error": request.session.pop("code_error", ""),
+        },
+    )
+
+
+# Batas percobaan kode salah per sesi. Ruang kodenya ~8×10^11, jadi ini bukan
+# pertahanan utama — hanya penahan supaya log tidak dibanjiri percobaan iseng.
+CODE_MAX_ATTEMPTS = 12
+CODE_ATTEMPT_WINDOW = 60 * 60  # detik
+
+
+def _recent_attempts(request):
+    now = timezone.now().timestamp()
+    return [
+        t for t in request.session.get("code_attempts", []) if now - t < CODE_ATTEMPT_WINDOW
+    ]
+
+
+def _code_attempts_exceeded(request):
+    """Hanya MEMBACA. Yang dihitung cuma percobaan gagal — pembeli yang kodenya
+    benar tidak boleh ikut terhukum oleh percobaannya sendiri."""
+    recent = _recent_attempts(request)
+    request.session["code_attempts"] = recent
+    return len(recent) >= CODE_MAX_ATTEMPTS
+
+
+def _record_failed_attempt(request):
+    recent = _recent_attempts(request)
+    recent.append(timezone.now().timestamp())
+    request.session["code_attempts"] = recent
+    request.session.modified = True
 
 
 @require_POST
-@user_passes_test(lambda user: user.is_staff)
+def redeem_code(request, card_id):
+    """Aktifkan kartu dengan bukti pembayaran dari luar situs.
+
+    Menerima dua bentuk, satu kolom isian:
+
+      REF ID Lynk   pembeli menyalinnya dari email struknya. Sah hanya kalau
+                    webhook Lynk sudah melaporkan pembayarannya lebih dulu,
+                    jadi nomor karangan tidak akan pernah ketemu.
+      Kode KRT-...  dibuat manual lewat `buat_kode`. Jalan keluar kalau webhook
+                    gagal, pembelian lewat kanal lain, atau kartu gratis.
+
+    Klaimnya atomik (lihat AccessCode.claim / LynkOrder.claim), jadi satu bukti
+    tidak bisa mengaktifkan dua kartu walau tombolnya diklik berkali-kali.
+    """
+    card = get_object_or_404(GiftCard, pk=card_id)
+    if not _owns(request, card):
+        return render(request, "cards/not_yours.html", status=403)
+    if card.is_paid:
+        return redirect("cards:success", card_id=card.id)
+
+    if _code_attempts_exceeded(request):
+        request.session["code_error"] = (
+            "Terlalu banyak percobaan gagal. Coba lagi nanti atau hubungi penjual."
+        )
+        return redirect("cards:pay", card_id=card.id)
+
+    raw = request.POST.get("code", "")
+
+    def gagal(pesan):
+        _record_failed_attempt(request)
+        request.session["code_error"] = pesan
+        return redirect("cards:pay", card_id=card.id)
+
+    # 1. Kode manual berpola KRT-XXXX-XXXX.
+    kode = AccessCode.normalize(raw)
+    if kode:
+        if not AccessCode.claim(kode, card):
+            return gagal(
+                "Kode ini sudah pernah dipakai untuk kartu lain."
+                if AccessCode.objects.filter(code=kode).exists()
+                else "Kode tidak ditemukan. Periksa lagi email dari penjual."
+            )
+        return _aktifkan(request, card, kode, f"kode {kode}")
+
+    # 2. REF ID dari struk Lynk.
+    ref = LynkOrder.normalize(raw)
+    if not ref:
+        return gagal(
+            "Bentuknya tidak dikenali. Tempel REF ID dari email pembelianmu, "
+            "atau kode aktivasi seperti KRT-A7K9-M3QP."
+        )
+
+    if not LynkOrder.claim(ref):
+        pesanan = LynkOrder.objects.filter(ref_id=ref).first()
+        if pesanan is None:
+            return gagal(
+                "Pembayaran dengan REF ID itu belum kami terima. Kalau kamu "
+                "baru saja membayar, tunggu sebentar lalu coba lagi."
+            )
+        return gagal("REF ID ini sudah dipakai untuk kartu lain.")
+
+    return _aktifkan(request, card, ref, f"REF ID Lynk {ref}")
+
+
+def _aktifkan(request, card, jejak, keterangan):
+    """Tandai kartu lunas setelah buktinya berhasil diklaim.
+
+    `comped` sengaja dibiarkan False: ini penjualan asli, cuma pembayarannya
+    terjadi di luar situs. Hanya kolom yang berubah yang ditulis, supaya tidak
+    menimpa perubahan lain pada baris yang sama.
+    """
+    card.status = GiftCard.Status.PAID
+    card.paid_at = timezone.now()
+    card.gateway_order_id = jejak[:64]
+    card.save(update_fields=["status", "paid_at", "gateway_order_id", "updated_at"])
+    logger.info("Kartu %s diaktifkan dengan %s", card.id, keterangan)
+    _mark_owned(request, card)
+    return redirect("cards:success", card_id=card.id)
+
+
+@require_POST
 def mark_paid(request, card_id):
     """Aktifkan kartu tanpa bayar. HANYA untuk staff (pemilik situs).
 
     Izinnya bersandar pada `is_staff` di database, bukan sesi atau parameter URL,
     supaya pengunjung biasa tidak punya cara apa pun memicunya.
+
+    Pengecualian dev: saat DEBUG aktif, siapa pun boleh — pemilik situs sering
+    menguji kartu di localhost tanpa mau repot login. JANGAN pernah nyalakan
+    DEBUG di produksi; gerbang bayar ikut terbuka.
     """
+    if not (request.user.is_staff or settings.DEBUG):
+        return render(request, "cards/not_yours.html", status=403)
     card = get_object_or_404(GiftCard, pk=card_id)
     if not card.is_paid:
         card.status = GiftCard.Status.PAID
@@ -431,7 +608,7 @@ def mark_paid(request, card_id):
         card.comped = True
         card.save(update_fields=["status", "paid_at", "comped", "updated_at"])
         logger.info(
-            "Kartu %s diaktifkan gratis oleh staff %s", card.id, request.user
+            "Kartu %s diaktifkan gratis oleh %s", card.id, request.user if request.user.is_authenticated else "dev-bypass (DEBUG)"
         )
     _mark_owned(request, card)
     return redirect("cards:success", card_id=card.id)
@@ -444,7 +621,38 @@ def success(request, card_id):
     return render(
         request,
         "cards/success.html",
-        {"card": card, "slug_error": request.session.pop("slug_error", "")},
+        {
+            "card": card,
+            "slug_error": request.session.pop("slug_error", ""),
+            "slug_note": request.session.pop("slug_note", ""),
+        },
+    )
+
+
+def my_cards(request):
+    """Daftar semua kartu — halaman kerja pemilik situs.
+
+    Terbuka saat DEBUG (dev di laptop) atau untuk staff. Di produksi dengan
+    DEBUG mati, pengunjung biasa tidak bisa melihatnya: daftar ini memuat nama
+    penerima dan link kartu orang lain.
+    """
+    if not (settings.DEBUG or request.user.is_staff):
+        return render(request, "cards/not_yours.html", status=403)
+
+    rows = []
+    for card in GiftCard.objects.select_related("template").order_by("-updated_at"):
+        rows.append(
+            {
+                "card": card,
+                "public_url": card.public_url(),
+                "share_url": request.build_absolute_uri(card.public_url()),
+                "editor_url": reverse("cards:editor", args=[card.template.slug])
+                + f"?card={card.id}",
+                "pay_url": reverse("cards:pay", args=[card.id]),
+            }
+        )
+    return render(
+        request, "cards/my_cards.html", {"cards": rows, "dev_mode": settings.DEBUG}
     )
 
 
@@ -488,6 +696,29 @@ def _photo_payload(photo):
 RESERVED_SLUGS = {"admin", "api", "create", "pay", "sukses", "template", "preview", "qr", "g", "static", "media"}
 
 
+def _free_slug(base, card_pk, tries=12):
+    """Slug yang belum terpakai, dengan akhiran acak kalau `base` bentrok.
+
+    Nama yang sama boleh dipakai banyak orang — URL-nya yang harus unik.
+    Akhirannya acak, bukan berurutan (halo-2, halo-3, ...), supaya orang tidak
+    bisa menebak link kartu orang lain hanya dengan menaikkan angkanya. Ini
+    menjaga prinsip URL tidak bisa di-enumerate.
+    """
+    taken = GiftCard.objects.exclude(pk=card_pk)
+    if not taken.filter(slug=base).exists():
+        return base
+
+    alphabet = "abcdefghijkmnpqrstuvwxyz23456789"  # tanpa l/o/0/1 yang mirip
+    room = 60 - 1 - 4  # sisakan tempat untuk "-xxxx"
+    stem = base[:room]
+    for _ in range(tries):
+        candidate = f"{stem}-{''.join(secrets.choice(alphabet) for _ in range(4))}"
+        if not taken.filter(slug=candidate).exists():
+            return candidate
+    # Sangat tidak mungkin sampai sini; UUID kartu tetap jadi link cadangan.
+    return f"{stem}-{secrets.token_hex(4)}"
+
+
 @require_POST
 def set_slug(request, card_id):
     """Ganti link kartu jadi nama pilihan user. Hanya setelah bayar, pemilik saja."""
@@ -497,17 +728,37 @@ def set_slug(request, card_id):
     if not card.is_paid:
         return redirect("cards:pay", card_id=card.id)
 
-    slug = slugify(request.POST.get("slug", ""))[:60]
+    wanted = slugify(request.POST.get("slug", ""))[:60]
     error = ""
-    if not slug or len(slug) < 3:
+    if not wanted or len(wanted) < 3:
         error = "Minimal 3 karakter (huruf, angka, tanda minus)."
-    elif slug in RESERVED_SLUGS:
+    elif wanted in RESERVED_SLUGS:
         error = "Nama itu tidak bisa dipakai."
-    elif GiftCard.objects.filter(slug=slug).exclude(pk=card.pk).exists():
-        error = "Sudah dipakai kartu lain — coba nama lain."
     else:
-        card.slug = slug
-        card.save(update_fields=["slug", "updated_at"])
+        # _free_slug memeriksa lalu menyimpan, jadi dua permintaan bersamaan
+        # bisa memilih slug yang sama dan menabrak batasan unique. Tanpa
+        # penanganan ini user melihat error 500; dengan retry, akhiran acak
+        # berikutnya hampir pasti lolos.
+        slug = ""
+        for _ in range(3):
+            candidate = _free_slug(wanted, card.pk)
+            try:
+                card.slug = candidate
+                card.save(update_fields=["slug", "updated_at"])
+            except IntegrityError:
+                card.refresh_from_db()
+                continue
+            slug = candidate
+            break
+
+        if not slug:
+            error = "Link itu baru saja diambil orang lain. Coba nama lain."
+        elif slug != wanted:
+            request.session["slug_note"] = (
+                f"“{wanted}” sudah dipakai kartu lain, jadi linkmu jadi "
+                f"“{slug}”. Nama yang sama boleh dipakai banyak orang — "
+                "yang membedakan cuma akhiran ini."
+            )
 
     if error:
         request.session["slug_error"] = error

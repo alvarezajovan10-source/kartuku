@@ -28,8 +28,6 @@
   pembayaranmu diterima.</p>
   {% endif %}
 
-  {# Aktivasi selalu tersedia. Pembeli lewat Lynk.id menempelkan REF ID dari
-     email struknya; kode KRT-... tetap diterima sebagai jalur cadangan. #}
   <div class="card redeem">
     <label for="code">REF ID dari email pembelianmu</label>
     <form method="post" action="{% url 'cards:redeem_code' card.id %}" class="linkbox">
@@ -43,8 +41,7 @@
     {% if code_error %}<p class="errors">{{ code_error }}</p>{% endif %}
     <p class="hint">
       Buka email struk pembelianmu, salin bagian <strong>REF ID</strong>, lalu
-      tempel di sini. Punya kode aktivasi dari penjual (KRT-…)? Bisa juga
-      dimasukkan di kolom yang sama.
+      tempel di sini.
     </p>
     <p class="hint">
       Belum membeli? Kartu ini tetap tersimpan — beli dulu, lalu kembali

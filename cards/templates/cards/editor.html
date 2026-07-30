@@ -21,23 +21,6 @@
       <p>Tulisan, foto, atau latarnya.</p>
     </div>
 
-    <!-- ── Lagu: kontrol tetap, bukan bagian dari kartu ──────────────── -->
-    <div class="ed-song" x-show="!sel">
-      <h3>♪ Lagu kartu</h3>
-      <input type="text" class="ed-input"
-             :value="fields.youtube_url || ''"
-             @input="songInput($event.target.value)"
-             @change="songDone()"
-             placeholder="https://youtu.be/...">
-      <!-- Hasil uji putar di browser. Server tidak bisa memastikan ini:
-           blokir label musik tidak terlihat di YouTube Data API. -->
-      <p class="ed-song-status" x-show="songStatus"
-         :class="songOk ? 'ok' : 'bad'" x-text="songStatus"></p>
-      <p class="hint" x-show="!songStatus">Tempel link YouTube. Lagunya jadi
-      musik latar saat penerima membuka kartu.</p>
-      <div id="songProbe"></div>
-    </div>
-
     <!-- ── Kepala: nama elemen terpilih ──────────────────────────────── -->
     <div class="ed-head" x-show="sel">
       <span x-text="label"></span>
@@ -54,9 +37,6 @@
                :value="content" @input="setContent($event.target.value)"
                @change="afterContentChange()"
                :placeholder="placeholder">
-        <p class="hint" x-show="sel === 'youtube_url'">
-          Tempel link YouTube. Lagunya jadi musik latar saat penerima membuka kartu.
-        </p>
 
         <!-- Baris kontrol padat, seperti toolbar -->
         <button type="button" class="ed-font" @click="fontOpen = !fontOpen"
@@ -134,10 +114,15 @@
     <template x-if="sel && kind === 'photo'">
       <div class="ed-body">
         <div class="ed-thumb" x-show="photo"><img :src="photo && photo.url" alt=""></div>
-        <button type="button" class="btn btn-primary btn-sm ed-wide"
-                @click="$refs.pick.click()" :disabled="busy"
-                x-text="photo ? 'Ganti foto' : 'Pilih foto'"></button>
-        <input type="file" accept="image/*" x-ref="pick" hidden @change="uploadTo(sel, $event)">
+        <!-- <label for> memicu pemilih berkas secara native, tanpa klik
+             sintetis dari JS. Sebagian WebView Android tidak menampilkan
+             galeri kalau input-nya display:none dan diklik lewat JS —
+             karena itu input di sini hanya disembunyikan secara visual. -->
+        <label class="btn btn-primary btn-sm ed-wide" for="pick-photo"
+               :class="{ 'is-disabled': busy }"
+               x-text="photo ? 'Ganti foto' : 'Pilih foto'"></label>
+        <input type="file" accept="image/*" class="visually-hidden" id="pick-photo"
+               :disabled="busy" @change="uploadTo(sel, $event)">
 
         <input type="text" class="ed-input" x-show="photo" maxlength="40"
                :value="photo && photo.caption" placeholder="Caption (opsional)"
@@ -164,10 +149,15 @@
     <!-- ── Isi: galeri foto ──────────────────────────────────────────── -->
     <template x-if="sel && kind === 'gallery'">
       <div class="ed-body">
-        <button type="button" class="btn btn-primary btn-sm ed-wide"
-                @click="$refs.gal.click()" :disabled="busy">Tambah foto</button>
-        <input type="file" accept="image/*" multiple x-ref="gal" hidden @change="uploadGallery($event)">
+        <label class="btn btn-primary btn-sm ed-wide" for="pick-gallery"
+               :class="{ 'is-disabled': busy }">Tambah foto</label>
+        <input type="file" accept="image/*" multiple class="visually-hidden"
+               id="pick-gallery" :disabled="busy" @change="uploadGallery($event)">
         <p class="ed-note" x-text="gallery.length + ' dari {{ max_photos }} foto'"></p>
+        <p class="hint">
+          Galeri tidak muncul saat memilih foto? Buka link ini di Chrome atau
+          Safari — pemilih berkas di dalam aplikasi TikTok/Instagram terbatas.
+        </p>
         <template x-for="p in gallery" :key="p.id">
           <div class="cap-row">
             <img :src="p.url" alt="">
@@ -179,6 +169,27 @@
       </div>
     </template>
 
+    <!-- ── Lagu: kontrol TETAP ────────────────────────────────────────
+         Sengaja selalu terlihat, tidak disembunyikan saat elemen kartu
+         dipilih. Waktu diuji ke orang awam, tidak ada yang menemukan kolom
+         ini karena dulu ia hilang begitu kartu diklik. Lagu bukan elemen
+         di dalam kartu, jadi tempatnya memang di panel, bukan di kanvas. -->
+    <div class="ed-song">
+      <h3>♪ Lagu kartu</h3>
+      <input type="text" class="ed-input"
+             :value="fields.youtube_url || ''"
+             @input="songInput($event.target.value)"
+             @change="songDone()"
+             placeholder="https://youtu.be/...">
+      <!-- Hasil uji putar di browser. Server tidak bisa memastikan ini:
+           blokir label musik tidak terlihat di YouTube Data API. -->
+      <p class="ed-song-status" x-show="songStatus"
+         :class="songOk ? 'ok' : 'bad'" x-text="songStatus"></p>
+      <p class="hint" x-show="!songStatus">Tempel link YouTube. Lagunya jadi
+      musik latar saat penerima membuka kartu.</p>
+      <div id="songProbe"></div>
+    </div>
+
     <p class="errors" x-show="error" x-text="error"></p>
 
     <p class="ed-save" aria-live="polite">
@@ -186,7 +197,7 @@
       <span x-show="saveState === 'saved'">Tersimpan ✓</span>
     </p>
 
-    <form method="post" class="ed-submit">
+    <form method="post" class="ed-submit" x-ref="exportForm">
       {% csrf_token %}
       <input type="hidden" name="card" :value="cardId">
       <input type="hidden" name="style_json" :value="JSON.stringify(style)">
@@ -197,8 +208,11 @@
       <input type="hidden" name="favorite_flower" :value="fields.favorite_flower">
       <input type="hidden" name="affirmations" :value="fields.affirmations">
       <input type="hidden" name="youtube_url" :value="fields.youtube_url">
-      <button class="btn btn-primary" type="submit" :disabled="busy">
-        Ekspor — Bayar Rp{{ price|floatformat:0 }}
+      <!-- type="button": submit sungguhan baru terjadi setelah dikonfirmasi,
+           supaya tombol ini tidak bisa tertekan tanpa sengaja. -->
+      <button class="btn btn-primary" type="button" :disabled="busy"
+              @click="confirmOpen = true">
+        Generate Link
       </button>
     </form>
   </aside>
@@ -210,14 +224,13 @@
         <button type="button" @click="goScene(scene)"
                 :class="{ 'is-on': currentScene === scene }" x-text="sceneLabel(scene)"></button>
       </template>
-      <div class="ed-devices">
-        <button type="button" @click="device='phone'" :class="{ 'is-on': device === 'phone' }">HP</button>
-        <button type="button" @click="device='wide'" :class="{ 'is-on': device === 'wide' }">Lebar</button>
-      </div>
     </div>
-    <div class="ed-stage" :class="'as-' + device">
+    <!-- Tidak ada lagi tombol HP/Lebar: kartu ditata pada lebar kanonis yang
+         sama di mana pun, jadi pratinjau ini SUDAH sama dengan hasil akhir. -->
+    <div class="ed-stage">
       <iframe x-ref="frame" title="Pratinjau kartu"></iframe>
     </div>
+    <p class="ed-fidelity">Tampilan ini sama persis di HP, tablet, dan laptop.</p>
   </div>
 
   <!-- ── Modal crop: dipotong DULU, baru masuk template ─────────────────
@@ -241,6 +254,30 @@
         </button>
       </div>
       <p class="hint" x-show="cropQueue.length" x-text="cropQueue.length + ' foto lagi menunggu'"></p>
+    </div>
+  </div>
+
+  <!-- ── Konfirmasi generate link ───────────────────────────────────────
+       Penahan agar tombol tidak tertekan tanpa sengaja. Memakai modal,
+       bukan confirm() bawaan, karena confirm() memblokir dan tampil
+       buruk di HP. -->
+  <div class="crop-modal" x-show="confirmOpen" x-cloak
+       @keydown.escape.window="confirmOpen = false">
+    <div class="crop-box confirm-box">
+      <p class="crop-title">Kartu ini sudah selesai?</p>
+      <p class="hint">
+        Setelah link dibuat, isi kartunya tidak bisa disunting lagi. Pastikan
+        nama, pesan, foto, dan lagunya sudah benar.
+      </p>
+      <div class="crop-actions">
+        <button type="button" class="ed-reset" @click="confirmOpen = false">
+          Periksa lagi
+        </button>
+        <button type="button" class="btn btn-primary btn-sm"
+                @click="confirmOpen = false; $refs.exportForm.submit()">
+          Ya, buat link
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -1,0 +1,15 @@
+{% load card_extras %}{% comment %}
+Kanvas kanonis kartu — sertakan di dalam <head> ketiga renderer, dan beri
+atribut data-stage="frame" atau "flow" pada <html>.
+
+Isi kartu harus dibungkus:
+  <div id="card-viewport"><div id="card-stage"> … </div></div>
+
+Tombol musik, layar penuh, dan preview bar sengaja DI LUAR pembungkus itu,
+supaya ukurannya tetap normal di layar besar dan tidak ikut diskalakan.
+
+Skrip dimuat sinkron (tanpa defer) supaya faktor skalanya sudah benar sebelum
+gambar pertama — kalau ditunda, kartu berkedip dari ukuran salah ke benar.
+{% endcomment %}
+<link rel="stylesheet" href="{% static_v 'css/card-stage.css' %}">
+<script src="{% static_v 'js/card-stage.js' %}"></script>

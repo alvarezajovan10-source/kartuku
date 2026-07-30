@@ -3,18 +3,41 @@ const variants = ['v1','v2','v3','v4','v5','v6'];
 // Diekspos supaya editor bisa membangun ulang saat teksnya diubah.
 window.buildRansom = function (el) {
   el.textContent = '';
-  const text = el.dataset.text || '';
-  [...text].forEach((ch, i) => {
-    // Flexbox membuang spasi teks; nbsp pun tak memberi jarak antar item flex.
-    if(ch === ' '){ const sp = document.createElement('span'); sp.style.width = '.55em'; el.appendChild(sp); return; }
-    // Enter dari user = pindah baris.
-    if(ch === '\n'){ const br = document.createElement('span'); br.style.flexBasis = '100%'; el.appendChild(br); return; }
+  let i = 0;
+
+  // Tiap KATA dibungkus .rw sendiri. Dulu semua huruf jadi item flex langsung,
+  // sehingga flex-wrap boleh memutus di tengah kata — "SELAMAT" bisa pecah
+  // jadi "SELA" dan "MAT" di baris berbeda. Membungkus per kata membuat
+  // pemutusan hanya terjadi di spasi, seperti teks biasa.
+  const huruf = (ch) => {
     const s = document.createElement('span');
-    s.className = 'rl ' + variants[Math.floor(Math.random()*variants.length)];
+    s.className = 'rl ' + variants[Math.floor(Math.random() * variants.length)];
     s.textContent = ch;
-    s.style.setProperty('--r', (Math.random()*16 - 8).toFixed(1) + 'deg');
-    s.style.setProperty('--d', (i*0.06).toFixed(2) + 's');
-    el.appendChild(s);
+    s.style.setProperty('--r', (Math.random() * 16 - 8).toFixed(1) + 'deg');
+    s.style.setProperty('--d', (i++ * 0.06).toFixed(2) + 's');
+    return s;
+  };
+
+  // Enter dari user = pindah baris.
+  (el.dataset.text || '').split('\n').forEach((baris, bi) => {
+    if (bi) {
+      const br = document.createElement('span');
+      br.style.flexBasis = '100%';
+      el.appendChild(br);
+    }
+    baris.split(' ').forEach((kata, ki) => {
+      // Flexbox membuang spasi teks; nbsp pun tak memberi jarak antar item flex.
+      if (ki) {
+        const sp = document.createElement('span');
+        sp.style.width = '.55em';
+        el.appendChild(sp);
+      }
+      if (!kata) return;
+      const grup = document.createElement('span');
+      grup.className = 'rw';
+      [...kata].forEach((ch) => grup.appendChild(huruf(ch)));
+      el.appendChild(grup);
+    });
   });
   el.classList.add('in');
 };

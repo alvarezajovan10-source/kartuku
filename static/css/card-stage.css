@@ -1,0 +1,41 @@
+/* Kanvas kanonis kartu.
+   ────────────────────────────────────────────────────────────────────────
+   Kartu SELALU ditata pada lebar CSS tetap (--w0, 390px), lalu seluruhnya
+   diskalakan agar pas di layar. Karena tata letaknya dihitung sekali pada
+   lebar yang sama di mana pun, pemenggalan baris identik di HP, tablet,
+   laptop, dan di pratinjau editor — bukan kebetulan, tapi konsekuensi
+   strukturnya.
+
+   Dipakai transform:scale(), bukan zoom. `zoom` menjalankan ulang layout
+   pada ukuran terskala sehingga hasilnya tidak dijamin sama persis;
+   transform menskalakan hasil layout yang sudah jadi.
+
+   --k diisi static/js/card-stage.js. Nilai awal 1 supaya tidak berkedip
+   kalau JS lambat. */
+
+#card-viewport {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#card-stage {
+  /* flex:none wajib — tanpa ini flexbox menyusutkan stage di layar sempit
+     dan lebar kanonisnya hilang. */
+  flex: none;
+  width: var(--w0, 390px);
+  position: relative;
+  transform: scale(var(--k, 1));
+  transform-origin: top center;
+}
+
+/* Mode "frame": dek babak layar penuh (Amplop Merah).
+   Tinggi murni CSS — dibagi --k supaya setelah diskalakan hasilnya persis
+   setinggi layar. Scroll ada di dalam tiap babak, bukan di dokumen. */
+[data-stage="frame"] #card-viewport { position: fixed; inset: 0; }
+[data-stage="frame"] #card-stage { height: calc(100% / var(--k, 1)); }
+
+/* Mode "flow": halaman yang di-scroll (Scrapbook, Kanvas).
+   Tinggi pembungkus disetel JS, karena transform tidak memengaruhi tinggi
+   layout — tanpa itu halaman akan punya ruang kosong atau terpotong. */
+[data-stage="flow"] #card-viewport { height: var(--wrap-h, auto); }

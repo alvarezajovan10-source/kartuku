@@ -37,10 +37,14 @@ cakeWrap.addEventListener('click', () => {
   cakeWrap.classList.add('blown');
   document.getElementById('wish').classList.add('show');
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Konfeti masuk ke dalam kanvas kartu, bukan ke <body>. Kalau di body dengan
+  // position:fixed, ia meledak dari tengah LAYAR — di laptop itu jauh dari
+  // kuenya, karena kartunya cuma kolom di tengah.
+  const host = document.getElementById('card-stage') || document.body;
   for(let i=0;i<24;i++){
     const c=document.createElement('div');
-    c.style.cssText=`position:fixed;top:40%;left:50%;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:99;background:${['#f7d774','#e78ea0','#7fb0d6','#faf2e4'][i%4]}`;
-    document.body.appendChild(c);
+    c.style.cssText=`position:absolute;top:40%;left:50%;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:99;background:${['#f7d774','#e78ea0','#7fb0d6','#faf2e4'][i%4]}`;
+    host.appendChild(c);
     const ang=Math.random()*Math.PI*2, dist=120+Math.random()*160;
     c.animate([
       {transform:'translate(-50%,-50%) rotate(0)',opacity:1},

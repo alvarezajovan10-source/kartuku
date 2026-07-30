@@ -1,5 +1,5 @@
 {% load static card_extras %}<!DOCTYPE html>
-<html lang="id" style="--kv-bg:{{ card.style_clean.bg }}">
+<html lang="id" data-stage="flow" style="{{ card.colors_css }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,13 +9,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="{{ fonts_url }}" rel="stylesheet">
 <link rel="stylesheet" href="{% static_v 'css/kanvas.css' %}">
+{% include "cards/_stage_head.html" %}
 {% if editing %}
 <link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
 <script defer src="{% static_v 'js/card-frame.js' %}"></script>
 {% endif %}
 </head>
 <body{% if editing %} class="is-editing"{% endif %}>
+<!-- Kanvas kanonis — lihat cards/_stage_head.html -->
+<div id="card-viewport"><div id="card-stage">
 {% include "cards/render/_kanvas_body.html" %}
+</div></div>
 {% include "cards/_bgm.html" %}
 {% include "cards/_fullscreen.html" %}
 {% include "cards/_preview_bar.html" %}

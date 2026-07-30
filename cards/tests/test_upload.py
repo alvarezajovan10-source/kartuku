@@ -434,3 +434,118 @@ class FrameAreaTests(TestCase):
             reverse("cards:editor_frame", args=[self.template.slug])
         )
         self.assertContains(response, 'data-frame="hero"')
+
+
+@override_settings(MEDIA_ROOT="/tmp/giftcard-test-media")
+class BerkasYatimTests(TestCase):
+    """FileField tidak menghapus berkas fisiknya sendiri.
+
+    Sebelum ada signal post_delete, berkas hanya terhapus di tiga jalur yang
+    memanggilnya eksplisit. Hapus lewat admin, cascade dari GiftCard, atau
+    .delete() pada queryset meninggalkan berkas yatim yang memakan disk
+    selamanya — itu kebocoran penyimpanan yang sesungguhnya.
+    """
+
+    def setUp(self):
+        self.template = Template.objects.create(
+            slug="t-yatim", name="T", category=CardType.BIRTHDAY,
+            config={"renderer": "birthday"},
+        )
+        self.card = GiftCard.objects.create(
+            template=self.template, category=CardType.BIRTHDAY
+        )
+
+    def _foto(self):
+        photo = GiftPhoto.objects.create(card=self.card, image=make_image())
+        self.assertTrue(photo.image.storage.exists(photo.image.name))
+        return photo, photo.image.name
+
+    def test_hapus_foto_menghapus_berkasnya(self):
+        photo, path = self._foto()
+        storage = photo.image.storage
+        photo.delete()
+        self.assertFalse(storage.exists(path), "berkas tertinggal setelah baris dihapus")
+
+    def test_hapus_kartu_menghapus_berkas_fotonya(self):
+        photo, path = self._foto()
+        storage = photo.image.storage
+        self.card.delete()   # cascade
+        self.assertFalse(storage.exists(path), "cascade meninggalkan berkas yatim")
+
+    def test_hapus_lewat_queryset_menghapus_berkas(self):
+        photo, path = self._foto()
+        storage = photo.image.storage
+        GiftPhoto.objects.filter(pk=photo.pk).delete()
+        self.assertFalse(storage.exists(path), "queryset delete meninggalkan berkas yatim")
+
+
+@override_settings(MEDIA_ROOT="/tmp/giftcard-test-media")
+class PurgeDraftsTests(TestCase):
+    def setUp(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        self.template = Template.objects.create(
+            slug="t-purge", name="T", category=CardType.BIRTHDAY,
+            config={"renderer": "birthday"},
+        )
+        self.lama = timezone.now() - timedelta(days=30)
+        self.timedelta = timedelta
+        self.timezone = timezone
+
+    def _kartu(self, status, umur_jam):
+        card = GiftCard.objects.create(
+            template=self.template, category=CardType.BIRTHDAY, status=status
+        )
+        # updated_at auto_now — harus ditimpa lewat queryset update.
+        GiftCard.objects.filter(pk=card.pk).update(
+            updated_at=self.timezone.now() - self.timedelta(hours=umur_jam)
+        )
+        return card
+
+    def _purge(self, **kwargs):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        call_command("purge_drafts", stdout=StringIO(), **kwargs)
+
+    def test_draft_basi_dihapus(self):
+        card = self._kartu(GiftCard.Status.DRAFT, 48)
+        self._purge()
+        self.assertFalse(GiftCard.objects.filter(pk=card.pk).exists())
+
+    def test_draft_baru_dipertahankan(self):
+        card = self._kartu(GiftCard.Status.DRAFT, 2)
+        self._purge()
+        self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
+
+    def test_pending_basi_dihapus(self):
+        """Dulu PENDING tidak pernah tersapu dan menumpuk selamanya."""
+        card = self._kartu(GiftCard.Status.PENDING, 100)
+        self._purge()
+        self.assertFalse(GiftCard.objects.filter(pk=card.pk).exists())
+
+    def test_pending_diberi_tenggang_lebih_panjang(self):
+        """Pembeli yang baru transfer besok tidak boleh kehilangan kartunya."""
+        card = self._kartu(GiftCard.Status.PENDING, 48)   # > 24 jam, < 72 jam
+        self._purge()
+        self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
+
+    def test_kartu_lunas_tidak_pernah_disentuh(self):
+        card = self._kartu(GiftCard.Status.PAID, 24 * 365)
+        self._purge()
+        self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
+
+    def test_dry_run_tidak_menghapus(self):
+        card = self._kartu(GiftCard.Status.DRAFT, 48)
+        self._purge(dry_run=True)
+        self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
+
+    def test_purge_menghapus_berkas_fotonya(self):
+        card = self._kartu(GiftCard.Status.DRAFT, 48)
+        photo = GiftPhoto.objects.create(card=card, image=make_image())
+        storage, path = photo.image.storage, photo.image.name
+        self._purge()
+        self.assertFalse(storage.exists(path))

@@ -34,7 +34,6 @@ window.cardEditor = function () {
     maxPhotos: init.maxPhotos,
 
     sel: null,
-    device: "phone",
     scenes: [],
     currentScene: "",
     busy: false,
@@ -53,6 +52,7 @@ window.cardEditor = function () {
     songStatus: "",      // hasil uji putar lagu; "" = belum diuji
     songOk: true,
     probePlayer: null,
+    confirmOpen: false,  // dialog "yakin buat link?"
 
     /* ── Turunan dari elemen terpilih ─────────────────────────────────── */
     get spec() { return specByKey[this.sel] || null; },

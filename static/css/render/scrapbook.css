@@ -7,9 +7,12 @@
   --butter:#e9dcae;
   --tcream:#f6efe1;
   --shadow:rgba(0,0,0,.45);
+  /* Lebar kanonis kartu — lihat catatan yang sama di birthday.css. */
+  --w0:390px;
+  --h0:844px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;font-size:16px;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{
   font-family:'Cormorant Garamond',serif;color:var(--tcream);
   background:
@@ -31,10 +34,13 @@ body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 
 /* ---------------- RANSOM HEADERS ---------------- */
 .ransom{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:2px 4px;line-height:1}
+/* Satu kata = satu item flex, supaya pemutusan baris tidak pernah terjadi di
+   tengah kata (lihat buildRansom di js/render/scrapbook.js). */
+.rw{display:inline-flex;gap:2px 4px}
 .rl{
   display:inline-block;rotate:var(--r,0deg);scale:.5;opacity:0;
   padding:.02em .16em;border-radius:3px;
-  font-size:calc(clamp(2.1rem,9vw,3.4rem) * var(--fs,1));
+  font-size:calc(clamp(2.1rem,calc(.09*var(--w0)),3.4rem) * var(--fs,1));
   box-shadow:0 4px 10px -3px var(--shadow);
   transition:scale .5s cubic-bezier(.2,1.5,.4,1) var(--d,0s), opacity .4s ease var(--d,0s);
 }
@@ -51,7 +57,7 @@ body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 .reveal{opacity:0;translate:0 26px;transition:opacity .8s ease, translate .9s cubic-bezier(.2,.7,.3,1)}
 .reveal.in{opacity:1;translate:0 0}
 
-.chapter{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+.chapter{min-height:calc(.88*var(--h0));display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:70px 22px;position:relative}
 .collage{position:relative;width:100%;max-width:520px;display:flex;flex-wrap:wrap;
   align-items:center;justify-content:center;gap:18px}
@@ -111,7 +117,7 @@ body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 @keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
 
 #closing .big-script{font-family:var(--f,'Caveat',cursive);font-weight:var(--fw,700);
-  font-size:calc(clamp(2.4rem,12vw,4rem)*var(--fs,1));
+  font-size:calc(clamp(2.4rem,calc(.12*var(--w0)),4rem)*var(--fs,1));
   color:var(--c,var(--tcream));text-align:var(--al,center);letter-spacing:var(--ls,normal);line-height:var(--lh,1.05)}
 #closing .from{font-family:var(--f,'Caveat',cursive);font-size:calc(1.7rem*var(--fs,1));
   color:var(--c,var(--rose));text-align:var(--al,center);font-weight:var(--fw,400);

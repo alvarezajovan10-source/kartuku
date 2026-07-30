@@ -149,6 +149,26 @@ produk, sekali kamu ganti nama produk atau menambah template, pemetaannya patah.
 
 ---
 
+## 10. Jadwalkan pembersihan penyimpanan
+
+Tab **Tasks** → **Create a scheduled task**, jalankan harian:
+
+```
+/home/kartuku/.virtualenvs/kartuku/bin/python /home/kartuku/giftcard/manage.py purge_drafts
+```
+
+Menghapus kartu yang tidak jadi dibeli beserta fotonya: draft & kedaluwarsa
+lebih dari 24 jam, dan yang menunggu pembayaran lebih dari 72 jam (tenggangnya
+lebih panjang karena pembeli bisa saja baru menyelesaikan transfernya besok).
+**Kartu lunas tidak pernah disentuh** — itu produk yang sudah dibayar dan
+dijanjikan bisa dibuka selamanya.
+
+Tanpa langkah ini, kartu yang ditinggalkan orang menumpuk selamanya dan disk
+512 MB akan penuh oleh sampah, bukan oleh penjualan. Cek dulu dengan
+`purge_drafts --dry-run` untuk melihat berapa yang akan terhapus.
+
+---
+
 ## Alur jualan sehari-hari
 
 Setelah webhook tersambung, kamu tidak melakukan apa-apa:

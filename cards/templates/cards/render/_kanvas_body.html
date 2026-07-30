@@ -3,7 +3,7 @@ Isi kartu "Kanvas". Berkas yang sama dipakai untuk kartu asli dan untuk iframe
 editor — bedanya hanya atribut `data-edit` / `data-frame` yang muncul saat
 `editing`, dan itulah yang membuat elemen bisa diklik di editor.
 {% endcomment %}
-<div class="kv" id="kv-root" style="{{ card.style_css }}">
+<div class="kv" id="kv-root">
   <div class="kv-sheet">
 
     <p class="kv-eyebrow">
@@ -13,7 +13,7 @@ editor — bedanya hanya atribut `data-edit` / `data-frame` yang muncul saat
       {% else %}Untukmu{% endif %}
     </p>
 
-    <h1 class="kv-title"{% if editing %} data-edit="recipient" data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</h1>
+    <h1 class="kv-title"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</h1>
 
     <div class="kv-rule" aria-hidden="true">
       <span></span>
@@ -23,11 +23,11 @@ editor — bedanya hanya atribut `data-edit` / `data-frame` yang muncul saat
 
     {% if editing or card.message %}
       <p class="kv-message{% if not card.message %} kv-empty{% endif %}"
-         {% if editing %}data-edit="message" data-placeholder="Tulis pesanmu di sini..."{% endif %}>{{ card.message|default:"Tulis pesanmu di sini..." }}</p>
+         {% el card editing "message" %}{% if editing %} data-placeholder="Tulis pesanmu di sini..."{% endif %}>{{ card.message|default:"Tulis pesanmu di sini..." }}</p>
     {% endif %}
 
     {% if card.frames %}
-      <div class="kv-frames shape-{{ card.style_clean.photo_shape }}">
+      <div class="kv-frames">
         {% for frame in card.frames %}
           {% with photo=frame_photos|get:frame.key %}
           <figure class="kv-photo{% if editing and not photo %} is-empty{% endif %}"
@@ -45,7 +45,7 @@ editor — bedanya hanya atribut `data-edit` / `data-frame` yang muncul saat
     {% endif %}
 
     {% if editing or gallery_photos %}
-      <div class="kv-photos shape-{{ card.style_clean.photo_shape }}" data-photos
+      <div class="kv-photos" data-photos
            {% if editing %}data-edit="gallery"{% endif %}>
         {% for photo in gallery_photos %}
           <figure class="kv-photo">
@@ -75,7 +75,7 @@ editor — bedanya hanya atribut `data-edit` / `data-frame` yang muncul saat
     {% endif %}
 
     {% if editing or card.sender_name %}
-      <p class="kv-signature"{% if editing %} data-edit="sender" data-placeholder="Namamu"{% endif %}>— {{ card.sender_name|default:"Namamu" }}</p>
+      <p class="kv-signature"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>— {{ card.sender_name|default:"Namamu" }}</p>
     {% endif %}
 
   </div>

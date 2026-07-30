@@ -1,27 +1,19 @@
 /* Kartu "Kanvas".
-   Semua yang bisa diatur user dibaca dari CSS custom property (--title-font,
-   --message-color, dst.) yang di-set server lewat cards.styles.css_variables().
-   Editor cukup menimpa variabel yang sama untuk preview seketika. */
+   Memakai konvensi gaya yang sama dengan birthday & scrapbook: --f (font),
+   --fs (pengali ukuran), --c (warna), --al (perataan), --fw/--fi/--ls/--lh.
+   Semuanya dihasilkan cards/styles.py: element_css(), dan dipasang lewat
+   template tag {% el %}.
+
+   Dulu berkas ini membaca --title-font/--title-size/dst. yang TIDAK PERNAH
+   dihasilkan siapa pun, sehingga setiap pilihan font/ukuran/warna pembeli
+   diabaikan diam-diam. */
 
 .kv {
-  --bg: #FAF2E4;
   --accent: #9E1B32;
-  --title-font: 'Pinyon Script', cursive;
-  --title-color: #7A1526;
-  --title-size: 1;
-  --title-align: center;
-  --message-font: 'Caveat', cursive;
-  --message-color: #4A2530;
-  --message-size: 1;
-  --message-align: left;
-  --signature-font: 'Caveat', cursive;
-  --signature-color: #8A1F2E;
-  --signature-size: 1;
-  --signature-align: right;
 
-  background: var(--bg);
+  background: var(--c-card_bg, #FAF2E4);
   min-height: 100%;
-  padding: 40px 20px 64px;
+  padding: 28px 16px 48px;
   display: flex;
   justify-content: center;
 }
@@ -33,8 +25,8 @@
 
 .kv-eyebrow {
   margin: 0 0 10px;
-  text-align: var(--title-align);
-  font-family: var(--message-font);
+  text-align: center;
+  font-family: 'Caveat', cursive;
   font-size: 1.05rem;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -44,12 +36,14 @@
 
 .kv-title {
   margin: 0;
-  font-family: var(--title-font);
-  color: var(--title-color);
-  text-align: var(--title-align);
-  font-size: calc(3.2rem * var(--title-size));
-  line-height: 1.1;
-  font-weight: 400;
+  font-family: var(--f, 'Pinyon Script', cursive);
+  color: var(--c, #7A1526);
+  text-align: var(--al, center);
+  font-size: calc(2.4rem * var(--fs, 1));
+  line-height: var(--lh, 1.1);
+  font-weight: var(--fw, 400);
+  font-style: var(--fi, normal);
+  letter-spacing: var(--ls, normal);
   overflow-wrap: break-word;
 }
 
@@ -66,11 +60,14 @@
 
 .kv-message {
   margin: 0 0 30px;
-  font-family: var(--message-font);
-  color: var(--message-color);
-  text-align: var(--message-align);
-  font-size: calc(1.35rem * var(--message-size));
-  line-height: 1.6;
+  font-family: var(--f, 'Caveat', cursive);
+  color: var(--c, #4A2530);
+  text-align: var(--al, left);
+  font-size: calc(1.2rem * var(--fs, 1));
+  line-height: var(--lh, 1.6);
+  font-weight: var(--fw, 400);
+  font-style: var(--fi, normal);
+  letter-spacing: var(--ls, normal);
   white-space: pre-wrap;
   overflow-wrap: break-word;
 }
@@ -94,9 +91,9 @@
   background: rgba(0, 0, 0, .06);
 }
 .kv-photo figcaption {
-  font-family: var(--message-font);
+  font-family: 'Caveat', cursive;
   font-size: 1rem;
-  color: var(--message-color);
+  color: #4A2530;
   opacity: .8;
   text-align: center;
   margin-top: 6px;
@@ -132,27 +129,28 @@
   flex: 0 0 auto;
 }
 .kv-track-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.kv-track-title { font-family: var(--message-font); font-size: 1.05rem; font-weight: 600; }
-.kv-track-artist { font-family: var(--message-font); font-size: .9rem; opacity: .75; font-style: italic; }
+.kv-track-title { font-family: 'Caveat', cursive; font-size: 1.05rem; font-weight: 600; }
+.kv-track-artist { font-family: 'Caveat', cursive; font-size: .9rem; opacity: .75; font-style: italic; }
 .kv-signature {
   margin: 0;
-  font-family: var(--signature-font);
-  color: var(--signature-color);
-  text-align: var(--signature-align);
-  font-size: calc(1.5rem * var(--signature-size));
+  font-family: var(--f, 'Caveat', cursive);
+  color: var(--c, #8A1F2E);
+  text-align: var(--al, right);
+  font-size: calc(1.5rem * var(--fs, 1));
+  font-weight: var(--fw, 400);
+  font-style: var(--fi, normal);
+  letter-spacing: var(--ls, normal);
   overflow-wrap: break-word;
 }
 
-@media (max-width: 520px) {
-  .kv { padding: 28px 16px 48px; }
-  .kv-title { font-size: calc(2.4rem * var(--title-size)); }
-  .kv-message { font-size: calc(1.2rem * var(--message-size)); }
-}
-
 /* ── Dipindahkan dari blok <style> di cards/render/kanvas.html ──────────
-   Latar diisi lewat custom property --kv-bg pada <html> (lihat template),
-   karena nilainya berasal dari data kartu. */
-html, body { margin: 0; padding: 0; min-height: 100%; background: var(--kv-bg); }
+   Latar memakai --c-card_bg dari card.colors_css (lihat template). */
+html, body {
+  margin: 0; padding: 0; min-height: 100%; background: var(--c-card_bg, #FAF2E4);
+  /* Kunci ukuran font dasar — lihat catatan yang sama di birthday.css. */
+  font-size: 16px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+}
+:root { --w0: 390px; --h0: 844px; }
 .kv-frames { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; margin-bottom: 26px; }
 .kv-frame-empty { display: block; aspect-ratio: 1; background: rgba(0, 0, 0, .06); border-radius: 12px; }
 .kv-hint { opacity: .5; font-style: italic; text-align: center; padding: 18px 0; }

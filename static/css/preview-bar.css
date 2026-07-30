@@ -17,6 +17,10 @@
 }
 .preview-bar .use{background:#dd9791;color:#fff}
 .preview-bar .back-link{border:1px solid rgba(255,255,255,.35);color:#f7ece7;background:none}
-/* beri ruang supaya isi kartu tidak tertutup bar */
-.scene{padding-bottom:96px}
+/* Beri ruang supaya isi kartu tidak tertutup bar — TAPI dari LUAR kanvas.
+   Dulu ini menambah padding pada .scene, artinya halaman pratinjau me-layout
+   kartunya berbeda dari kartu asli. Itu persis ketidaksesuaian yang sedang
+   kita hilangkan, jadi ruangnya diambil dari pembungkus, bukan dari isi. */
+[data-stage="frame"] #card-viewport{bottom:96px}
+[data-stage="flow"] body{padding-bottom:96px}
 @media (max-width:520px){ .preview-bar .txt{display:none} }

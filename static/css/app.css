@@ -129,6 +129,23 @@ img { max-width: 100%; display: block; }
 .btn-outline:hover { border-color: var(--rose); color: var(--rose); }
 .btn-sm { padding: 11px 22px; font-size: .74rem; }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+/* <label class="btn"> tidak bisa :disabled — kelas ini menirukan tampilannya. */
+.btn.is-disabled { opacity: .5; cursor: not-allowed; transform: none; pointer-events: none; }
+
+/* Input berkas yang tetap DIRENDER tapi tak terlihat. Jangan ganti dengan
+   display:none atau atribut hidden: sebagian WebView Android tidak
+   menampilkan pilihan galeri untuk input yang tidak dirender. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
@@ -458,10 +475,25 @@ img { max-width: 100%; display: block; }
 .ed-idle { color: var(--muted); font-size: .85rem; padding: 30px 4px 16px; }
 .ed-idle p { margin: 0 0 4px; }
 
-/* Kotak lagu tetap di panel — lagu bukan elemen visual kartu. */
-.ed-song { border-top: 1px solid var(--line, #e8ddd3); padding: 16px 4px 0; }
-.ed-song h3 { margin: 0 0 8px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.ed-song .hint { font-size: .78rem; color: var(--muted); margin: 6px 0 0; }
+/* Kotak lagu tetap di panel — lagu bukan elemen visual kartu.
+   Dibuat menonjol: saat diuji ke orang awam, tidak ada yang menemukannya
+   waktu judulnya masih memakai warna --muted yang pucat. */
+.ed-song {
+  margin-top: 6px;
+  padding: 14px;
+  border: 1px solid var(--line, #e8ddd3);
+  border-radius: 12px;
+  background: var(--cream, #fdf9f5);
+}
+.ed-song h3 {
+  margin: 0 0 8px;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.ed-song .hint { font-size: .78rem; color: var(--ink-soft); margin: 6px 0 0; }
 .ed-song-status { font-size: .78rem; margin: 6px 0 0; line-height: 1.45; }
 .ed-song-status.ok { color: #2e7d54; }
 .ed-song-status.bad { color: #b3261e; }
@@ -643,15 +675,21 @@ img { max-width: 100%; display: block; }
   border: 1px solid var(--line); border-radius: 999px;
 }
 .ed-scenes button.is-on { background: var(--blush); color: var(--rose); border-color: var(--rose-soft); }
-.ed-devices { margin-left: auto; display: flex; gap: 5px; }
-
-.ed-stage { flex: 1; padding: 18px; display: flex; justify-content: center; min-height: 0; }
-.ed-stage iframe {
-  width: 100%; height: 100%; border: 0;
-  border-radius: var(--radius); box-shadow: var(--shadow-lg); background: #fff;
+/* Pratinjau memakai lebar kanonis yang sama dengan kartu asli (390px), jadi
+   kesetiaannya bukan sesuatu yang dijaga — melainkan konsekuensi struktur.
+   Tombol HP/Lebar dihapus karena premisnya ("kartu berbeda di lebar
+   berbeda") sudah tidak berlaku. */
+.ed-stage {
+  flex: 1; padding: 18px; display: flex;
+  justify-content: center; align-items: flex-start; min-height: 0;
 }
-.ed-stage.as-phone iframe { max-width: 390px; }
-.ed-stage.as-wide iframe { max-width: 900px; }
+.ed-stage iframe {
+  width: 390px; max-width: 100%;
+  aspect-ratio: 390 / 844;   /* proporsi HP sungguhan, termasuk tingginya */
+  height: auto; max-height: 100%;
+  border: 0; border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); background: #fff;
+}
 
 @media (max-width: 900px) {
   .ed { grid-template-columns: 1fr; height: auto; }
@@ -806,7 +844,6 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   .ed { display: flex; flex-direction: column-reverse; }
   .ed-preview { order: 0; }
   .ed-stage { padding: 10px; }
-  .ed-stage iframe { min-height: 58vh; }
   .ed-panel { max-height: none; padding: 14px 14px 20px; }
   .ed-fontlist { max-height: 220px; }
 }
@@ -838,6 +875,10 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 }
 .crop-box canvas:active { cursor: grabbing; }
 .crop-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+
+/* Dialog konfirmasi "Generate Link" — memakai cangkang .crop-modal. */
+.confirm-box .crop-title { font-size: 1.02rem; margin-bottom: 8px; }
+.confirm-box .hint { font-size: .84rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
 
 /* ═══ Halaman informasi (Template, Cara Kerja, Harga, Testimoni, FAQ) ═════
    Tiap bagian landing kini punya halamannya sendiri; kelas di bawah membuat
@@ -920,3 +961,10 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 .redeem #code { text-transform: uppercase; letter-spacing: .08em; font-family: var(--sans); }
 .redeem .errors { margin-top: 10px; }
 .redeem .hint { margin-top: 12px; }
+
+/* Klaim yang sekarang benar: pratinjau memakai kanvas kanonis yang sama
+   dengan kartu asli, jadi tata letaknya tidak mungkin berbeda. */
+.ed-fidelity {
+  margin: 0; padding: 0 18px 14px;
+  font-size: .74rem; color: var(--muted); text-align: center;
+}

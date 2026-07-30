@@ -486,10 +486,33 @@ class SlugAndMusicTests(TestCase):
         self.set_slug("untuk-nadia")
         self.card.refresh_from_db()
         self.assertEqual(self.card.slug, "untuk-nadia")
+        # Bentuk pendek: /<slug>/ tanpa prefix apa pun.
+        self.assertContains(self.client.get("/untuk-nadia/"), "halo")
+        # UUID tetap jalan sebagai cadangan kalau slug belum diatur.
+        self.assertEqual(self.client.get(f"/{self.card.id}/").status_code, 200)
+
+    def test_link_lama_dengan_prefix_g_dialihkan(self):
+        """Link /g/... sudah terlanjur dikirim ke penerima — tidak boleh mati."""
+        self.set_slug("untuk-nadia")
         response = self.client.get("/g/untuk-nadia/")
-        self.assertContains(response, "halo")
-        # UUID lama tetap jalan
-        self.assertEqual(self.client.get(f"/g/{self.card.id}/").status_code, 200)
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response["Location"], "/untuk-nadia/")
+        self.assertContains(self.client.get(response["Location"]), "halo")
+
+    def test_slug_tidak_boleh_menabrak_halaman_situs(self):
+        """Slug yang sama dengan URL halaman akan rusak diam-diam.
+
+        Django mencocokkan pola halaman lebih dulu, jadi kartunya tidak akan
+        pernah bisa dibuka dan tidak ada pesan error apa pun.
+        """
+        from cards.views import reserved_slugs
+
+        for segmen in ["faq", "harga", "testimoni", "cara-kerja", "kartu-saya"]:
+            with self.subTest(segmen=segmen):
+                self.assertIn(segmen, reserved_slugs())
+                self.set_slug(segmen)
+                self.card.refresh_from_db()
+                self.assertNotEqual(self.card.slug, segmen)
 
     def test_taken_name_still_accepted_with_suffix(self):
         """Nama boleh kembar; URL-nya yang dibedakan pakai akhiran acak."""

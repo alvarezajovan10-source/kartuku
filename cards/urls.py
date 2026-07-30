@@ -47,9 +47,15 @@ urlpatterns = [
     path("pay/<uuid:card_id>/gratis/", views.mark_paid, name="mark_paid"),
     path("pay/<uuid:card_id>/kode/", views.redeem_code, name="redeem_code"),
     path("sukses/<uuid:card_id>/", views.success, name="success"),
-    path("g/<str:ref>/", views.public_card, name="public"),
     path("sukses/<uuid:card_id>/link/", views.set_slug, name="set_slug"),
     path("qr/<uuid:card_id>.png", views.qr_png, name="qr"),
     path("api/cards/<uuid:card_id>/pay/", api.create_charge, name="api_pay"),
     path("api/cards/<uuid:card_id>/status/", api.card_status, name="api_status"),
+    # Bentuk lama /g/<ref>/ dialihkan permanen ke bentuk pendek. JANGAN dihapus:
+    # link ini sudah terlanjur dibagikan ke penerima kartu dan tidak boleh mati.
+    path("g/<str:ref>/", views.public_card_legacy, name="public_legacy"),
+    # Kartu publik dalam bentuk sependek mungkin: /<slug>/ atau /<uuid>/.
+    # WAJIB pola terakhir — apa pun yang ditaruh di bawah ini tidak akan pernah
+    # tercapai, dan slug kartu tidak boleh menelan halaman situs.
+    path("<str:ref>/", views.public_card, name="public"),
 ]

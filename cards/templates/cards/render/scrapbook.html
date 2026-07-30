@@ -1,5 +1,5 @@
 {% load static card_extras %}<!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-stage="flow">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Bevan&family=Bungee&family=Fredericka+the+Great&family=Rye&family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
 {% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
 <link rel="stylesheet" href="{% static_v 'css/render/scrapbook.css' %}">
+{% include "cards/_stage_head.html" %}
 {% if editing %}
 <link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
 <script defer src="{% static_v 'js/card-frame.js' %}"></script>
@@ -19,6 +20,8 @@
 
 <div id="leaves" aria-hidden="true"></div>
 
+<!-- Kanvas kanonis — lihat cards/_stage_head.html -->
+<div id="card-viewport"><div id="card-stage">
 <main class="content">
 
   <!-- ================= COVER ================= -->
@@ -133,6 +136,7 @@
   </section>
 
 </main>
+</div></div>
 
 <script src="{% static_v 'js/render/scrapbook.js' %}"></script>
 {% include "cards/_bgm.html" %}

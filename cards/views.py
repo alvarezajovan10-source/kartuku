@@ -1,5 +1,6 @@
 import logging
 import secrets
+from functools import lru_cache
 from uuid import UUID
 
 from django.conf import settings
@@ -682,6 +683,16 @@ def public_card(request, ref):
     return _render_card(request, card, {"staff_peek": staff_peek})
 
 
+def public_card_legacy(request, ref):
+    """Alihkan bentuk lama /g/<ref>/ ke bentuk pendek /<ref>/.
+
+    Permanen (301) supaya browser dan mesin pencari berhenti memakai bentuk
+    lama. Kartu yang linknya sudah terlanjur dikirim ke penerima tetap terbuka
+    — itu janji produknya, jadi rute ini tidak boleh dihapus.
+    """
+    return redirect("cards:public", ref=ref, permanent=True)
+
+
 def _photo_payload(photo):
     """Bentuk foto yang dikirim ke editor. Sama dengan yang dipakai api_photos."""
     return {
@@ -693,7 +704,34 @@ def _photo_payload(photo):
     }
 
 
-RESERVED_SLUGS = {"admin", "api", "create", "pay", "sukses", "template", "preview", "qr", "g", "static", "media"}
+@lru_cache(maxsize=1)
+def reserved_slugs():
+    """Segmen URL yang tidak boleh diklaim jadi slug kartu.
+
+    Dibangun dari urlpatterns yang sebenarnya, bukan daftar tulisan tangan.
+    Sejak kartu memakai pola satu segmen (/<slug>/), slug yang menabrak halaman
+    situs akan RUSAK DIAM-DIAM: Django mencocokkan pola halaman lebih dulu,
+    jadi kartunya tidak pernah bisa dibuka dan tidak ada pesan error apa pun.
+
+    Daftar literal terbukti mudah basi — lima halaman (kartu-saya, cara-kerja,
+    harga, testimoni, faq) sempat luput karena ditambahkan setelah daftarnya
+    ditulis. Dengan dibangun otomatis, halaman baru ikut terlindungi sendiri.
+    """
+    from django.urls import get_resolver
+
+    reserved = {
+        # Bukan dari urlpatterns cards, tapi tetap harus dijaga.
+        "admin", "static", "media", "g", "robots.txt", "sitemap.xml", "favicon.ico",
+    }
+    for pattern in get_resolver().url_patterns:
+        for sub in getattr(pattern, "url_patterns", [pattern]):
+            route = str(getattr(sub.pattern, "_route", ""))
+            head = route.split("/", 1)[0]
+            # Lewati segmen bervariabel seperti "<str:ref>" — itu polanya
+            # sendiri, bukan halaman yang bisa ditabrak.
+            if head and "<" not in head:
+                reserved.add(head)
+    return frozenset(reserved)
 
 
 def _free_slug(base, card_pk, tries=12):
@@ -732,7 +770,7 @@ def set_slug(request, card_id):
     error = ""
     if not wanted or len(wanted) < 3:
         error = "Minimal 3 karakter (huruf, angka, tanda minus)."
-    elif wanted in RESERVED_SLUGS:
+    elif wanted in reserved_slugs():
         error = "Nama itu tidak bisa dipakai."
     else:
         # _free_slug memeriksa lalu menyimpan, jadi dua permintaan bersamaan

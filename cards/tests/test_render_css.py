@@ -242,3 +242,29 @@ class KanvasMenghormatiGayaTests(TestCase):
             ).read_text()
             for mati in ["card.style_css", "style_clean.bg", "photo_shape"]:
                 self.assertNotIn(mati, isi, f"{nama} masih membaca {mati} yang tidak ada")
+
+
+class KanvasTidakBolehBerumpanBalikTests(TestCase):
+    """Pembungkus kanvas tidak boleh meregangkan stage.
+
+    Bug nyata: tinggi pembungkus dihitung DARI tinggi stage, sementara
+    flexbox bawaan (align-items: stretch) meregangkan stage setinggi
+    pembungkus. Umpan baliknya berputar — ukur, regangkan, ukur lagi —
+    mengalikan faktor skala tiap putaran sampai kartunya menyusut habis.
+
+    Hanya muncul saat skala bukan 1, jadi laptop (skala pas 1,0) terlihat
+    normal sementara HP gelap total tanpa isi.
+    """
+
+    def test_pembungkus_tidak_meregangkan_stage(self):
+        css = baca("css/card-stage.css")
+        blok = re.search(r"#card-viewport\s*\{([^}]*)\}", css).group(1)
+        self.assertIn(
+            "align-items: flex-start", blok,
+            "#card-viewport harus align-items: flex-start — `stretch` bawaan "
+            "membuat tinggi stage dan pembungkus saling mengejar",
+        )
+
+    def test_js_berhenti_kalau_tinggi_tidak_berubah(self):
+        js = (Path(settings.BASE_DIR) / "static" / "js" / "card-stage.js").read_text()
+        self.assertIn("terakhir", js, "penjaga anti-perulangan hilang dari card-stage.js")

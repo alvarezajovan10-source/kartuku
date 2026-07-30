@@ -33,9 +33,17 @@
     var wrap = document.getElementById("card-viewport");
     if (!stage || !wrap) return;
 
+    var terakhir = -1;
     function syncHeight() {
       var k = parseFloat(getComputedStyle(root).getPropertyValue("--k")) || 1;
-      wrap.style.setProperty("--wrap-h", stage.offsetHeight * k + "px");
+      var tinggi = Math.round(stage.offsetHeight * k);
+      // Berhenti kalau tidak berubah berarti. Tanpa penjaga ini, satu
+      // kesalahan tata letak saja bisa membuat ukur → ubah → ukur berputar
+      // tanpa henti dan kartunya menyusut habis (lihat catatan align-items
+      // di card-stage.css).
+      if (Math.abs(tinggi - terakhir) < 2) return;
+      terakhir = tinggi;
+      wrap.style.setProperty("--wrap-h", tinggi + "px");
     }
     syncHeight();
     window.addEventListener("resize", syncHeight);

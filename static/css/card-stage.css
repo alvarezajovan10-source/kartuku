@@ -16,6 +16,13 @@
 #card-viewport {
   display: flex;
   justify-content: center;
+  /* align-items WAJIB flex-start. Dengan `stretch` (bawaan flexbox), stage
+     ikut diregangkan setinggi pembungkus — padahal tinggi pembungkus justru
+     dihitung DARI tinggi stage. Umpan baliknya berputar: ukur → regangkan →
+     ukur lagi, mengalikan skala tiap putaran sampai kartunya menyusut habis.
+     Hanya terlihat saat skala ≠ 1, jadi laptop (skala pas 1,0) aman
+     sementara HP gelap total. */
+  align-items: flex-start;
   overflow: hidden;
 }
 
@@ -23,6 +30,7 @@
   /* flex:none wajib — tanpa ini flexbox menyusutkan stage di layar sempit
      dan lebar kanonisnya hilang. */
   flex: none;
+  align-self: flex-start;   /* penjaga kedua untuk umpan balik di atas */
   width: var(--w0, 390px);
   position: relative;
   transform: scale(var(--k, 1));

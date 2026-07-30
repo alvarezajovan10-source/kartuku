@@ -4,7 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Kartuku — Kartu Ucapan Digital{% endblock %}</title>
-  <meta name="description" content="Buat kartu ucapan digital dengan foto, pesan, dan video YouTube. Rp15.000, bayar QRIS, langsung dapat link untuk dibagikan.">
+  {% comment %}
+    Sengaja tidak menyebut metode bayar: ini teks yang muncul di hasil Google,
+    dan metodenya bisa berganti (Lynk.id sekarang, QRIS kalau Midtrans dinyalakan).
+  {% endcomment %}
+  <meta name="description" content="Buat kartu ucapan digital dengan foto, pesan, dan video YouTube. Rp15.000 sekali bayar, langsung dapat link untuk dibagikan.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
@@ -59,7 +63,12 @@
       <p>Kartu ucapan digital untuk momen yang layak dikenang.</p>
     </div>
     <p class="footer-note">
-      Pembayaran QRIS diproses lewat Midtrans. Kartu aktif setelah pembayaran terkonfirmasi.
+      {% if payment_ready %}
+      Pembayaran QRIS diproses lewat Midtrans.
+      {% else %}
+      Pembayaran diproses lewat Lynk.id.
+      {% endif %}
+      Kartu aktif setelah pembayaran terkonfirmasi.
     </p>
   </div>
 </footer>

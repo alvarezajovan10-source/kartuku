@@ -41,10 +41,17 @@
         </div>
       </article>
     {% empty %}
-      <p class="hint">
-        Belum ada template untuk kategori ini. Tambahkan lewat
-        <a href="/admin/cards/template/">admin</a>.
-      </p>
+      {% comment %}
+        Dulu di sini tertulis pesan untuk developer beserta tautan ke halaman
+        admin — dan yang membacanya justru pembeli.
+      {% endcomment %}
+      <div class="empty-soon">
+        <p class="soon-badge">Coming soon</p>
+        <p>Template {{ category_label }} masih dalam pengerjaan.</p>
+        <a class="btn btn-primary" href="{% url 'cards:gallery' 'birthday' %}">
+          Lihat template Birthday
+        </a>
+      </div>
     {% endfor %}
   </div>
 </section>

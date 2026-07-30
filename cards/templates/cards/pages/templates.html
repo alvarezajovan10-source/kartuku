@@ -9,7 +9,8 @@
 
   <div class="cat-grid">
     {% for item in categories %}
-      <article class="cat-card">
+      <article class="cat-card{% if item.coming_soon %} is-soon{% endif %}">
+        {% if item.coming_soon %}<span class="soon-badge">Coming soon</span>{% endif %}
         <div class="cat-art tint-{{ item.tint }}">
           {% if item.photo %}
             <img src="{% static item.photo %}" alt="{{ item.title }}" loading="lazy">
@@ -27,9 +28,13 @@
         <div class="cat-body">
           <h2>{{ item.title }}</h2>
           <p>{{ item.blurb }}</p>
-          <a class="cat-link" href="{% url 'cards:gallery' item.category %}">
-            Pilih Template <span aria-hidden="true">→</span>
-          </a>
+          {% if item.coming_soon %}
+            <span class="cat-link is-soon">Sedang disiapkan</span>
+          {% else %}
+            <a class="cat-link" href="{% url 'cards:gallery' item.category %}">
+              Pilih Template <span aria-hidden="true">→</span>
+            </a>
+          {% endif %}
         </div>
       </article>
     {% empty %}

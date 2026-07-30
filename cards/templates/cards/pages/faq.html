@@ -39,8 +39,14 @@
     <h2 class="faq-group">Pembayaran</h2>
     <details>
       <summary>Bisa bayar pakai apa saja?</summary>
+      {% if payment_ready %}
       <p>Semua aplikasi yang mendukung QRIS — GoPay, OVO, DANA, ShopeePay, dan
       m-banking bank mana pun.</p>
+      {% else %}
+      <p>Pembayaran ditangani Lynk.id, yang menerima QRIS, e-wallet, dan
+      transfer bank. Sesudahnya kamu dapat email struk berisi REF ID untuk
+      mengaktifkan kartumu.</p>
+      {% endif %}
     </details>
     <details>
       <summary>Kalau saya tutup tab sebelum bayar?</summary>

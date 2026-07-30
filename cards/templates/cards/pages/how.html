@@ -22,10 +22,18 @@
     </li>
     <li>
       <span class="step-no">3</span>
+      {% if payment_ready %}
       <h2>Bayar QRIS</h2>
       <p>Scan dengan e-wallet atau m-banking apa pun. Rp{{ price|floatformat:0 }},
       sekali bayar, tanpa langganan. Kartumu aktif otomatis begitu pembayaran
       terkonfirmasi.</p>
+      {% else %}
+      <h2>Beli lalu aktifkan</h2>
+      <p>Pembelian lewat Lynk.id — Rp{{ price|floatformat:0 }}, sekali bayar,
+      tanpa langganan. Begitu pembayaranmu masuk, kamu menerima email struk.
+      Salin <strong>REF ID</strong> di dalamnya, tempel di kartumu, dan kartunya
+      langsung aktif.</p>
+      {% endif %}
     </li>
     <li>
       <span class="step-no">4</span>

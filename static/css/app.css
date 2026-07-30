@@ -267,6 +267,53 @@ img { max-width: 100%; display: block; }
 .cat-link:hover span { transform: translateX(3px); }
 .cat-link span { transition: transform .15s; }
 
+/* ── Kategori yang templatenya belum jadi ────────────────────────────────
+   Tetap ditampilkan supaya situs tidak terlihat cuma punya satu kategori,
+   tapi jelas belum bisa dipilih — diredupkan, tanpa animasi angkat saat
+   disentuh, dan tautannya diganti teks mati. */
+.cat-card.is-soon { position: relative; }
+.cat-card.is-soon:hover { transform: none; box-shadow: var(--shadow); }
+.cat-card.is-soon .cat-art,
+.cat-card.is-soon .cat-icon { filter: grayscale(.55); opacity: .7; }
+.cat-card.is-soon .cat-body h2,
+.cat-card.is-soon .cat-body h3 { color: var(--ink-soft); }
+
+.soon-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  margin: 0;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid var(--line);
+  color: var(--rose);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow);
+}
+
+.cat-link.is-soon {
+  color: var(--ink-soft);
+  font-style: italic;
+  font-weight: 500;
+  cursor: default;
+}
+
+.empty-soon {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+}
+.empty-soon .soon-badge { position: static; }
+
 /* ── Galeri template per kategori ───────────────────────────────────────── */
 .crumbs {
   display: flex;

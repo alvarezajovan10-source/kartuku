@@ -15,8 +15,8 @@
       </h1>
       <p class="hero-lede">
         Buat kartu ucapan digital cantik dengan foto, pesan, dan video YouTube.
-        Bayar mudah dengan QRIS hanya <strong>Rp{{ price|floatformat:0 }}</strong>,
-        lalu bagikan ke orang tersayang.
+        {% if payment_ready %}Bayar mudah dengan QRIS hanya{% else %}Sekali bayar{% endif %}
+        <strong>Rp{{ price|floatformat:0 }}</strong>, lalu bagikan ke orang tersayang.
       </p>
 
       <div class="hero-actions">
@@ -33,7 +33,7 @@
       <ul class="trust">
         <li>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-          <span><strong>Bayar Aman</strong>QRIS terverifikasi</span>
+          <span><strong>Bayar Aman</strong>{% if payment_ready %}QRIS terverifikasi{% else %}Lewat Lynk.id{% endif %}</span>
         </li>
         <li>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -71,7 +71,8 @@
 
   <div class="cat-grid">
     {% for item in categories %}
-      <article class="cat-card">
+      <article class="cat-card{% if item.coming_soon %} is-soon{% endif %}">
+        {% if item.coming_soon %}<span class="soon-badge">Coming soon</span>{% endif %}
         <div class="cat-art tint-{{ item.tint }}">
           {% if item.photo %}
             <img src="{% static item.photo %}" alt="{{ item.title }}" loading="lazy">
@@ -89,9 +90,13 @@
         <div class="cat-body">
           <h3>{{ item.title }}</h3>
           <p>{{ item.blurb }}</p>
-          <a class="cat-link" href="{% url 'cards:gallery' item.category %}">
-            Pilih Template <span aria-hidden="true">→</span>
-          </a>
+          {% if item.coming_soon %}
+            <span class="cat-link is-soon">Sedang disiapkan</span>
+          {% else %}
+            <a class="cat-link" href="{% url 'cards:gallery' item.category %}">
+              Pilih Template <span aria-hidden="true">→</span>
+            </a>
+          {% endif %}
         </div>
       </article>
     {% empty %}

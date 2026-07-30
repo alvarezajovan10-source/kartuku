@@ -73,6 +73,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "cards.context_processors.payment",
             ],
         },
     },
@@ -98,6 +99,11 @@ LANGUAGE_CODE = "id"
 TIME_ZONE = "Asia/Jakarta"
 USE_I18N = True
 USE_TZ = True
+# Tanpa ini harga tampil "Rp15000" di seluruh situs — locale id sudah punya
+# titik sebagai pemisah ribuan, tapi Django tidak memakainya sampai disuruh.
+# Hanya menyentuh angka >= 1000 di teks; data untuk JavaScript lewat
+# json_script (JSON murni), jadi tidak ikut terformat.
+USE_THOUSAND_SEPARATOR = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static card_extras %}
 
-{% block title %}Pembayaran QRIS{% endblock %}
+{% block title %}{% if payment_ready %}Pembayaran QRIS{% else %}Aktifkan kartumu{% endif %}{% endblock %}
 
 {% block content %}
   <p><a class="ed-back" href="{% url 'cards:editor' card.template.slug %}?card={{ card.id }}">← Kembali mengedit</a></p>
@@ -24,8 +24,8 @@
   </div>
   {% else %}
   <h1>Aktifkan kartumu</h1>
-  <p class="lede">Masukkan kode akses yang dikirim penjual lewat email setelah
-  pembayaranmu diterima.</p>
+  <p class="lede">Sudah membeli di Lynk.id? Buka email struknya, salin
+  <strong>REF ID</strong>, lalu tempel di bawah.</p>
   {% endif %}
 
   <div class="card redeem">
@@ -50,8 +50,13 @@
   </div>
 
   <p class="hint">
+    {% if payment_ready %}
     Jangan tutup halaman ini sampai pembayaran terkonfirmasi. Kalau tertutup,
     kartumu tetap tersimpan.
+    {% else %}
+    Kartumu tersimpan sendiri. Kalau halaman ini tertutup sebelum sempat
+    diaktifkan, buka lagi lewat tautan yang sama — isinya masih utuh.
+    {% endif %}
   </p>
 
   {% if user.is_staff or dev_bypass %}

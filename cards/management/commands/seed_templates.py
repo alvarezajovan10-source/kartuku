@@ -75,24 +75,10 @@ SEEDS = [
             ],
         },
     ),
-    (
-        "klasik-anniversary",
-        "Kanvas Klasik",
-        CardType.ANNIVERSARY,
-        {"accent": "#a8586f", "renderer": "kanvas"},
-    ),
-    (
-        "klasik-love-story",
-        "Kanvas Klasik",
-        CardType.LOVE_STORY,
-        {"accent": "#8d5a8f", "renderer": "kanvas"},
-    ),
-    (
-        "klasik-lamaran",
-        "Kanvas Klasik",
-        CardType.PROPOSAL,
-        {"accent": "#5a6b8d", "renderer": "kanvas"},
-    ),
+    # Anniversary, Love Story, dan Proposal sengaja belum ada isinya.
+    # Kategorinya tetap tampil di situs sebagai "Coming soon" — lihat
+    # _category_cards() di cards/views.py, yang menandai kategori tanpa
+    # template aktif. Tambahkan di sini kalau templatenya sudah jadi.
 ]
 
 

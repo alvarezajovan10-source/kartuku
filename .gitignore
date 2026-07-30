@@ -7,3 +7,7 @@ media/
 staticfiles/
 .DS_Store
 *.log
+
+# Hasil generate design/buat_uji_foto.py — menunjuk ke foto di media/ yang
+# tidak ikut repo, jadi tidak berguna di mesin lain. Buat ulang saat perlu.
+design/coquette-uji.html

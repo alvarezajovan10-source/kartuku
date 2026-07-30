@@ -28,8 +28,14 @@
       hasilnya lebih dulu — pembayaran baru diminta di langkah terakhir.</dd>
 
       <dt>Bagaimana cara bayarnya?</dt>
+      {% if payment_ready %}
       <dd>QRIS. Scan dengan e-wallet atau m-banking apa pun — GoPay, OVO, DANA,
       ShopeePay, atau aplikasi bank yang kamu pakai.</dd>
+      {% else %}
+      <dd>Lewat Lynk.id, yang menerima QRIS, e-wallet, dan transfer bank.
+      Setelah bayar kamu menerima email struk berisi <strong>REF ID</strong> —
+      itu yang kamu tempel di kartumu untuk mengaktifkannya.</dd>
+      {% endif %}
 
       <dt>Ada biaya perpanjangan?</dt>
       <dd>Tidak ada. Sekali bayar, kartunya aktif selamanya.</dd>

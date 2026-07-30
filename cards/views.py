@@ -117,10 +117,19 @@ def _category_cards():
     categories = []
     for entry in CATEGORY_CARDS:
         template = first_by_category.get(entry["category"])
-        if template is None:
-            continue
         photo = _static_if_exists(f"img/cat-{entry['tint']}.jpg")
-        categories.append({**entry, "template": template, "photo": photo})
+        # Kategori tanpa template aktif tetap ditampilkan, tapi sebagai
+        # "Coming soon" dan tidak bisa diklik. Menyembunyikannya sama sekali
+        # membuat situs terlihat cuma punya satu kategori; menampilkannya
+        # sebagai tautan hidup membawa pembeli ke galeri kosong.
+        categories.append(
+            {
+                **entry,
+                "template": template,
+                "photo": photo,
+                "coming_soon": template is None,
+            }
+        )
     return categories
 
 

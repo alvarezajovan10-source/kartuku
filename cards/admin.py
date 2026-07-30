@@ -44,6 +44,16 @@ class GiftCardAdmin(admin.ModelAdmin):
         "created_at",
     ]
     list_filter = ["status", "category", "comped"]
-    search_fields = ["id", "gateway_order_id", "gateway_txn_id", "recipient_name"]
+    # Urutannya mengikuti apa yang paling mungkin dikirim pelanggan saat minta
+    # bantuan: potongan link kartunya (slug), lalu nama-nama di kartu. UUID dan
+    # nomor gateway jarang mereka pegang — itu untuk pelacakan dari sisi kita.
+    search_fields = [
+        "slug",
+        "recipient_name",
+        "sender_name",
+        "id",
+        "gateway_order_id",
+        "gateway_txn_id",
+    ]
     readonly_fields = ["id", "created_at", "updated_at", "paid_at", "gateway_txn_id"]
     inlines = [GiftPhotoInline]

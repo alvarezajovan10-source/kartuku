@@ -4,7 +4,9 @@
 {% block title %}{% if payment_ready %}Pembayaran QRIS{% else %}Aktifkan kartumu{% endif %}{% endblock %}
 
 {% block content %}
+  {% if is_owner %}
   <p><a class="ed-back" href="{% url 'cards:editor' card.template.slug %}?card={{ card.id }}">← Kembali mengedit</a></p>
+  {% endif %}
 
   {% if payment_ready %}
   <h1>Scan untuk bayar</h1>
@@ -47,6 +49,12 @@
       Belum membeli? Kartu ini tetap tersimpan — beli dulu, lalu kembali
       ke halaman ini.
     </p>
+    {% if not is_owner %}
+    <p class="hint">
+      Kamu membuka kartu ini dari perangkat atau browser lain. Isinya masih
+      utuh — begitu diaktifkan, kamu bisa menyuntingnya lagi seperti biasa.
+    </p>
+    {% endif %}
   </div>
 
   <p class="hint">

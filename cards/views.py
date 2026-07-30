@@ -468,18 +468,33 @@ def editor(request, template_slug):
 
 
 def pay(request, card_id):
-    """Halaman QR + polling. Hanya pemilik sesi yang boleh membukanya."""
+    """Halaman aktivasi kartu yang belum lunas.
+
+    Kartu BELUM lunas boleh dibuka siapa pun yang memegang UUID-nya, tidak harus
+    pemilik sesi. Sesi bisa hilang — cookie kedaluwarsa, pembeli ganti perangkat,
+    riwayat browser dibersihkan — dan tanpa jalur ini pembeli yang sudah membayar
+    di Lynk tidak punya cara apa pun kembali ke kartunya. UUID kartu yang belum
+    lunas belum pernah dibagikan (link publik baru diberikan setelah aktif), dan
+    mengaktifkannya tetap menuntut REF ID sah yang harus benar-benar dibayar.
+
+    Kartu SUDAH lunas sengaja dialihkan di baris pertama, sebelum pemeriksaan apa
+    pun. Link publik memakai UUID yang sama (lihat _card_by_ref), jadi UUID kartu
+    lunas sudah ada di tangan penerima kartu — membuka halaman ini untuk mereka
+    berarti penerima bisa mengambil alih kartu pengirimnya.
+
+    Menyunting tetap terkunci `_owns`: `is_owner` dipakai template untuk
+    menyembunyikan tautan editor dari pengunjung yang sedang memulihkan kartunya.
+    """
     card = get_object_or_404(GiftCard, pk=card_id)
     if card.is_paid:
         return redirect("cards:success", card_id=card.id)
-    if not _owns(request, card):
-        return render(request, "cards/not_yours.html", status=403)
     return render(
         request,
         "cards/pay.html",
         {
             "card": card,
             "price": card.amount,
+            "is_owner": _owns(request, card),
             "dev_bypass": settings.DEBUG,
             # Tanpa kunci Midtrans, blok QRIS pasti gagal — jangan ditampilkan
             # supaya pembeli tidak menunggu QR yang tidak akan pernah muncul.
@@ -533,10 +548,14 @@ def redeem_code(request, card_id):
     tidak bisa mengaktifkan dua kartu walau tombolnya diklik berkali-kali.
     """
     card = get_object_or_404(GiftCard, pk=card_id)
-    if not _owns(request, card):
-        return render(request, "cards/not_yours.html", status=403)
+    # Kartu lunas dialihkan lebih dulu — lihat alasannya di `pay`.
     if card.is_paid:
         return redirect("cards:success", card_id=card.id)
+    # Sengaja TANPA cek `_owns`: pembeli yang sesinya hilang harus tetap bisa
+    # mengaktifkan kartunya. Yang menjaga di sini bukan sesi melainkan buktinya
+    # sendiri — REF ID hanya sah kalau webhook Lynk sudah melaporkan
+    # pembayarannya, dan sekali pakai. `_aktifkan` mencatat kartunya ke sesi
+    # yang berhasil, jadi pembeli langsung bisa menyunting lagi sesudahnya.
 
     if _code_attempts_exceeded(request):
         request.session["code_error"] = (

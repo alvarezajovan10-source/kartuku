@@ -95,6 +95,14 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# Sesi hanya menyimpan daftar UUID kartu milik pengunjung — bukan login, bukan
+# data pribadi. Bawaan Django 2 minggu dihitung sejak cookie DIBUAT, bukan sejak
+# kunjungan terakhir, jadi pembeli yang kembali di minggu ketiga kehilangan
+# kartunya tanpa cara apa pun mengambilnya lagi. Diperpanjang jadi setahun dan
+# disegarkan tiap kunjungan.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 365
+SESSION_SAVE_EVERY_REQUEST = True
+
 LANGUAGE_CODE = "id"
 TIME_ZONE = "Asia/Jakarta"
 USE_I18N = True

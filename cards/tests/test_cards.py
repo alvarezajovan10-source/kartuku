@@ -456,12 +456,34 @@ class EditorTests(TestCase):
         )
         self.assertEqual(GiftCard.objects.count(), 0)
 
-    def test_pay_page_blocked_for_other_session(self):
+    def test_halaman_bayar_terbuka_untuk_pemulihan(self):
+        """Kartu belum lunas: siapa pun yang memegang UUID-nya boleh membuka.
+
+        UUID kartu yang belum lunas belum pernah dibagikan — link publik baru
+        diberikan setelah aktif — jadi yang memegangnya adalah pembuatnya, yang
+        sesinya kebetulan hilang.
+        """
         card = GiftCard.objects.create(
             template=self.template, category=CardType.BIRTHDAY
         )
         response = self.client.get(reverse("cards:pay", args=[card.id]))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
+
+    def test_tautan_editor_disembunyikan_dari_bukan_pemilik(self):
+        """Mengaktifkan boleh, menyunting tidak — sampai terbukti pemiliknya."""
+        card = GiftCard.objects.create(
+            template=self.template, category=CardType.BIRTHDAY
+        )
+        editor_url = reverse("cards:editor", args=[self.template.slug])
+
+        asing = self.client.get(reverse("cards:pay", args=[card.id]))
+        self.assertNotContains(asing, f"{editor_url}?card={card.id}")
+
+        sesi = self.client.session
+        sesi["owned_cards"] = [str(card.id)]
+        sesi.save()
+        pemilik = self.client.get(reverse("cards:pay", args=[card.id]))
+        self.assertContains(pemilik, f"{editor_url}?card={card.id}")
 
 
 class SlugAndMusicTests(TestCase):
@@ -850,12 +872,38 @@ class AccessCodeTests(TestCase):
         for haram in "ILO01":
             self.assertNotIn(haram, AccessCode.ALPHABET)
 
-    def test_orang_lain_tidak_bisa_menukarkan(self):
-        other = self.client_class()   # sesi baru, bukan pemilik kartu
-        response = other.post(self.url, {"code": self.code.code})
+    def test_sesi_lain_boleh_mengaktifkan_kartu_belum_lunas(self):
+        """Jalur pemulihan: sesi hilang, pembeli kembali dari perangkat lain.
+
+        Dulu ini dijawab 403, dan akibatnya pembeli yang sudah membayar tidak
+        punya cara apa pun kembali ke kartunya. Yang menjaga di sini bukan sesi
+        melainkan buktinya: kode harus sah dan sekali pakai.
+        """
+        lain = self.client_class()
+        lain.post(self.url, {"code": self.code.code})
         self.card.refresh_from_db()
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(self.card.status, GiftCard.Status.DRAFT)
+        self.assertEqual(self.card.status, GiftCard.Status.PAID)
+        # Yang berhasil mengaktifkan langsung jadi pemilik sesi, supaya bisa
+        # lanjut menyunting tanpa terkunci lagi.
+        self.assertIn(str(self.card.id), lain.session.get("owned_cards", []))
+
+    def test_kartu_lunas_tidak_bisa_diambil_alih(self):
+        """Batas yang tetap dijaga.
+
+        Link publik memakai UUID yang sama dengan URL bayar, jadi UUID kartu
+        lunas sudah ada di tangan penerima kartu. Kalau halaman ini terbuka
+        untuk mereka, penerima bisa merebut kartu pengirimnya.
+        """
+        self.client.post(self.url, {"code": self.code.code})
+        self.card.refresh_from_db()
+        self.assertEqual(self.card.status, GiftCard.Status.PAID)
+
+        penerima = self.client_class()
+        response = penerima.get(reverse("cards:pay", args=[self.card.id]))
+        self.assertRedirects(
+            response, reverse("cards:success", args=[self.card.id])
+        )
+        self.assertNotIn(str(self.card.id), penerima.session.get("owned_cards", []))
 
     def test_percobaan_dibatasi(self):
         for _ in range(15):

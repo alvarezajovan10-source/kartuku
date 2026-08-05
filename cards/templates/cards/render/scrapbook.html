@@ -131,7 +131,18 @@
   <!-- ================= CLOSING ================= -->
   <section class="chapter" id="closing">
     <div class="chap-label ransom reveal" data-text="{% t card 'closing_label' %}"{% el card editing "closing_label" %}></div>
-    <p class="big-script reveal"><span{% el card editing "closing_line" %}>{% t card "closing_line" %}</span> <span{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span></p>
+    {% comment %}
+      Bawaan closing_line sengaja kosong: label bab di atasnya sudah berbunyi
+      "Happy Birthday", jadi mengulanginya terasa dobel — nama penerima berdiri
+      sendiri. Slotnya TIDAK dihapus karena kartu yang sudah terbit menyimpan
+      kalimat penutup mereka sendiri di situ.
+
+      Saat mengedit, elemen kosong harus tetap punya isi. Span tanpa lebar tidak
+      bisa diklik, dan pembeli yang ingin menambahkan kalimatnya kembali jadi
+      kehilangan jalan masuk. Di kartu terbit tetap kosong.
+    {% endcomment %}
+    {% t card "closing_line" as closing_line %}
+    <p class="big-script reveal"><span{% el card editing "closing_line" %}{% if editing %} data-placeholder="Kalimat penutup"{% endif %}>{% if closing_line %}{{ closing_line }}{% elif editing %}Kalimat penutup{% endif %}</span> <span{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</span></p>
     <p class="from reveal"><span{% el card editing "from_line" %}>{% t card "from_line" %}</span> <span{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</span></p>
     <svg class="heart reveal" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-10-9.2C.3 8.6 1.7 5 5 5c2 0 3.2 1.2 4 2.3C9.8 6.2 11 5 13 5c3.3 0 4.7 3.6 3 6.8C19.5 16.1 12 21 12 21z"/></svg>
   </section>

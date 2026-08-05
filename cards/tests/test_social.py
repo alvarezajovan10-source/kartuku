@@ -38,6 +38,56 @@ class PratinjauHalamanJualanTests(TestCase):
         self.assertNotEqual(response["Location"], "/favicon.ico/")
 
 
+class UrlconfTidakMenyentuhStaticfilesTests(TestCase):
+    """`static()` tidak boleh dipanggil saat config/urls.py di-import.
+
+    Memanggilnya di tingkat modul memaksa backend staticfiles disiapkan sebelum
+    Django selesai memuat. Akibatnya `manage.py migrate` ikut gagal kalau
+    backend itu tidak bisa di-import — dan tracebacknya menuding urls.py, jauh
+    dari penyebabnya. Ini pernah mematikan satu deploy: konsol server memakai
+    Python sistem tanpa whitenoise, dan `migrate` berhenti dengan
+    ModuleNotFoundError yang sama sekali tidak menyebut whitenoise di judulnya.
+    """
+
+    def test_static_hanya_dipanggil_di_dalam_fungsi(self):
+        import ast
+        import pathlib
+
+        sumber = pathlib.Path("config/urls.py").read_text(encoding="utf-8")
+        pohon = ast.parse(sumber)
+
+        # Dicocokkan lewat ASAL impornya, bukan namanya. `urls.py` juga memakai
+        # django.conf.urls.static.static — fungsi lain yang kebetulan bernama
+        # sama, dipakai menyajikan media saat DEBUG, dan memang harus di tingkat
+        # modul. Mencocokkan nama saja akan menuduhnya keliru.
+        terlarang = {
+            alias.asname or alias.name
+            for simpul in ast.walk(pohon)
+            if isinstance(simpul, ast.ImportFrom)
+            and simpul.module == "django.templatetags.static"
+            for alias in simpul.names
+        }
+        self.assertTrue(terlarang, "config/urls.py tidak lagi mengimpor tag statis")
+
+        # Buang badan fungsi — sisanya yang berjalan saat modul di-import.
+        tingkat_modul = [
+            simpul for simpul in pohon.body
+            if not isinstance(simpul, (ast.FunctionDef, ast.AsyncFunctionDef))
+        ]
+        dipanggil = {
+            n.func.id
+            for simpul in tingkat_modul
+            for n in ast.walk(simpul)
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+        }
+        bocor = terlarang & dipanggil
+        self.assertFalse(
+            bocor,
+            f"{', '.join(sorted(bocor))}() dipanggil saat config/urls.py di-import. "
+            "Pindahkan ke dalam view supaya dihitung saat permintaan datang.",
+        )
+
+
 class PratinjauKartuTests(TestCase):
     def setUp(self):
         # `config` wajib menyebut renderer. Tanpa itu `_render_card` jatuh ke

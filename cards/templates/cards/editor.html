@@ -133,10 +133,12 @@
         <input type="file" accept="image/*" class="visually-hidden" id="pick-photo"
                :disabled="busy" @change="uploadTo(sel, $event)">
 
-        {# "(opsional)" dulu tertulis di placeholder dan itu terbaca sebagai
-           izin melewatinya — hampir tidak ada pembeli yang mengisinya. Diganti
-           ajakan, ditambah satu baris yang memberi tahu keterangannya muncul
-           di mana; tanpa itu orang tidak tahu apa gunanya. #}
+        {% comment %}
+          "(opsional)" dulu tertulis di placeholder dan itu terbaca sebagai izin
+          melewatinya — hampir tidak ada pembeli yang mengisinya. Diganti ajakan,
+          ditambah satu baris yang memberi tahu keterangannya muncul di mana;
+          tanpa itu orang tidak tahu apa gunanya.
+        {% endcomment %}
         <input type="text" class="ed-input" x-show="photo" maxlength="40" id="cap-bingkai"
                :value="photo && photo.caption" placeholder="Tulis keterangan foto…"
                @change="saveCaption(photo.id, $event.target.value)">

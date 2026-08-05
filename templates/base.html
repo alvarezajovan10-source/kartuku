@@ -43,7 +43,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static_v 'css/app.css' %}">
 </head>
-<body>
+{% comment %}
+  Header dirender di luar {% block body %}, jadi halaman anak tidak punya cara
+  mematikannya. Hook ini memberi jalan itu tanpa memindahkan headernya —
+  bawaannya kosong, jadi tidak ada halaman lain yang berubah.
+{% endcomment %}
+<body class="{% block body_class %}{% endblock %}">
 
 <header class="site-header">
   <div class="header-inner">

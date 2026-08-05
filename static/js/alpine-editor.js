@@ -28,6 +28,15 @@ window.cardEditor = function () {
     fields: init.fields,
     texts: init.texts,
     gallery: init.gallery,
+    /* Foto per bingkai, DI DALAM x-data supaya reaktif.
+       Dulu foto disimpan di `specByKey[key].photo`. `specByKey` adalah variabel
+       closure di luar objek ini, jadi Alpine tidak pernah melacaknya: menulis
+       foto baru ke sana tidak memicu render ulang, dan panel tetap menampilkan
+       tombol "Pilih foto" tanpa thumbnail dan TANPA kolom caption sampai user
+       kebetulan memilih elemen lain lalu kembali. Akibatnya hampir tidak ada
+       pembeli yang tahu kartunya bisa diberi caption.
+       `specByKey` tetap dipakai untuk metadata (label, jenis) yang tidak berubah. */
+    framePhotos: {},
     palettes: init.palettes,
     swatches: init.swatches,
     urls: init.urls,
@@ -76,7 +85,7 @@ window.cardEditor = function () {
       if (this.kind === "text") return this.texts[this.sel] || "";
       return "";
     },
-    get photo() { return this.spec ? this.spec.photo : null; },
+    get photo() { return this.framePhotos[this.sel] || null; },
     /* Alamat iframe dibangun saat DIBUTUHKAN, bukan diikat reaktif —
        dulu :src reaktif membuat preview memuat ulang (dan balik ke sampul)
        begitu draft pertama kali dibuat di server. */
@@ -87,8 +96,38 @@ window.cardEditor = function () {
       return this.urls.frame + (q.length ? "?" + q.join("&") : "");
     },
 
+    /* Mengganti src memuat ulang kartu dari nol, dan posisi gulirnya hilang.
+       `?scene=` hanya menolong template berbabak (Birthday); Scrapbook dan
+       Kanvas adalah kartu gulir panjang tanpa babak, jadi tiap kali foto
+       diunggah atau caption disimpan, kartunya melompat balik ke sampul —
+       user membacanya sebagai "halaman refresh sendiri".
+
+       Posisi gulir disimpan lalu dikembalikan setelah muatan baru siap.
+       Dipulihkan dua kali: saat `load` (isi sudah ada) dan sekali lagi setelah
+       gambar menambah tinggi halaman, karena pemulihan pertama bisa terpotong
+       oleh halaman yang saat itu masih lebih pendek. */
     reloadFrame: function () {
-      if (this.$refs.frame) this.$refs.frame.src = this.frameUrl();
+      var frame = this.$refs.frame;
+      if (!frame) return;
+
+      var y = 0;
+      try {
+        y = (frame.contentWindow && frame.contentWindow.scrollY) || 0;
+      } catch (e) {
+        y = 0; // beda origin — tidak akan terjadi di sini, tapi jangan sampai melempar
+      }
+
+      frame.src = this.frameUrl();
+      if (!y) return;
+
+      frame.addEventListener("load", function pulihkan() {
+        frame.removeEventListener("load", pulihkan);
+        var kembalikan = function () {
+          try { frame.contentWindow.scrollTo(0, y); } catch (e) {}
+        };
+        kembalikan();
+        setTimeout(kembalikan, 180);
+      });
     },
     get filteredFonts() {
       var q = this.fontQuery.toLowerCase().trim();
@@ -116,6 +155,10 @@ window.cardEditor = function () {
       var self = this;
       // Src dipasang sekali di sini; selanjutnya hanya reloadFrame().
       this.$nextTick(function () { self.reloadFrame(); });
+      // Foto yang sudah tersimpan di server dipindahkan ke state reaktif.
+      init.elements.forEach(function (spec) {
+        if (spec.photo) self.framePhotos[spec.key] = spec.photo;
+      });
       if (!this.style.elements) this.style.elements = {};
       if (!this.style.colors) this.style.colors = {};
       // Warna bawaan template jadi titik awal supaya pemilih warna tidak kosong.
@@ -482,11 +525,23 @@ window.cardEditor = function () {
         var slot = self.crop.slot;
         self.sendPhoto(file, slot)
           .then(function (photo) {
-            if (slot) specByKey[slot].photo = photo;
+            if (slot) self.framePhotos[slot] = photo;
             else self.gallery.push(photo);
             self.cropOpen = false;
             self.crop.img = null;
             self.reloadFrame();
+            /* Di HP panel berada DI BAWAH pratinjau (column-reverse di bawah
+               900px), jadi kolom caption yang baru muncul ada di luar layar —
+               mata user sedang di kartu. Tanpa ini perbaikan reaktivitas di
+               atas tetap tidak terlihat oleh pembeli yang datang dari TikTok. */
+            if (slot) {
+              self.$nextTick(function () {
+                var kolom = document.getElementById("cap-bingkai");
+                if (kolom && window.innerWidth <= 900) {
+                  kolom.scrollIntoView({ block: "center", behavior: "smooth" });
+                }
+              });
+            }
             self.nextCrop();
           })
           .catch(function (err) { self.error = err.message; self.cropOpen = false; })
@@ -522,9 +577,9 @@ window.cardEditor = function () {
           self.gallery.forEach(function (p, i) {
             if (p.id === photo.id) self.gallery[i] = photo;
           });
-          Object.keys(specByKey).forEach(function (key) {
-            var spec = specByKey[key];
-            if (spec.photo && spec.photo.id === photo.id) spec.photo = photo;
+          Object.keys(self.framePhotos).forEach(function (key) {
+            var ada = self.framePhotos[key];
+            if (ada && ada.id === photo.id) self.framePhotos[key] = photo;
           });
           self.reloadFrame();
         });
@@ -539,9 +594,9 @@ window.cardEditor = function () {
       })
         .then(function () {
           self.gallery = self.gallery.filter(function (p) { return p.id !== photoId; });
-          Object.keys(specByKey).forEach(function (key) {
-            var spec = specByKey[key];
-            if (spec.photo && spec.photo.id === photoId) spec.photo = null;
+          Object.keys(self.framePhotos).forEach(function (key) {
+            var ada = self.framePhotos[key];
+            if (ada && ada.id === photoId) delete self.framePhotos[key];
           });
           self.reloadFrame();
         })

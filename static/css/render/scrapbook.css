@@ -74,7 +74,14 @@ body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 .note p{font-family:var(--f,'Caveat',cursive);font-size:calc(1.34rem*var(--fs,1));line-height:var(--lh,1.5);
   color:var(--c,var(--ink));text-align:var(--al,left);font-weight:var(--fw,400);font-style:var(--fi,normal);
   letter-spacing:var(--ls,normal);white-space:pre-wrap;overflow-wrap:break-word}
-.note .quote{font-style:var(--fi,italic)}
+/* Bawaannya dulu italic, dan class .quote hanya dipakai SEKALI di seluruh
+   Scrapbook — pesan bab HARAPAN. Jadi satu-satunya kotak kertas yang miring,
+   sementara catatan bab lain tegak. Caveat tidak punya face italic (yang
+   dimuat hanya bobot 500/600/700), sehingga browser memiringkan huruf tegak
+   secara paksa — hasilnya terbaca seperti font yang sama sekali lain, bukan
+   sekadar versi miring. Disamakan dengan .note p; user tetap bisa memilih
+   miring sendiri lewat tombol I di editor karena --fi tetap dihormati. */
+.note .quote{font-style:var(--fi,normal)}
 
 .strip{background:var(--paper);color:var(--c,var(--ink));font-family:var(--f,'Caveat',cursive);
   font-size:calc(1.18rem*var(--fs,1));text-align:var(--al,center);font-weight:var(--fw,400);

@@ -3,6 +3,15 @@
 
 {% block title %}Edit — {{ template.name }}{% endblock %}
 
+{% comment %}
+  Menyembunyikan header situs saat mengedit — lihat aturannya di app.css.
+  Di desktop tombol "Buat Kartu" di pojok kanan atas terbaca sebagai "selesai"
+  atau "buat link", padahal itu tautan ke daftar template: yang mengkliknya
+  terlempar keluar dari editor. Di HP header sudah menggulung sendiri dan tidak
+  mengganggu, jadi tampilannya sengaja dibiarkan apa adanya.
+{% endcomment %}
+{% block body_class %}is-editor{% endblock %}
+
 {% block body %}
 <link href="{{ fonts_url }}" rel="stylesheet">
 {{ editor_init|json_script:"editor-init" }}
@@ -124,9 +133,16 @@
         <input type="file" accept="image/*" class="visually-hidden" id="pick-photo"
                :disabled="busy" @change="uploadTo(sel, $event)">
 
-        <input type="text" class="ed-input" x-show="photo" maxlength="40"
-               :value="photo && photo.caption" placeholder="Caption (opsional)"
+        {# "(opsional)" dulu tertulis di placeholder dan itu terbaca sebagai
+           izin melewatinya — hampir tidak ada pembeli yang mengisinya. Diganti
+           ajakan, ditambah satu baris yang memberi tahu keterangannya muncul
+           di mana; tanpa itu orang tidak tahu apa gunanya. #}
+        <input type="text" class="ed-input" x-show="photo" maxlength="40" id="cap-bingkai"
+               :value="photo && photo.caption" placeholder="Tulis keterangan foto…"
                @change="saveCaption(photo.id, $event.target.value)">
+        <p class="ed-note" x-show="photo && !photo.caption">
+          Muncul sebagai tulisan tangan di bawah foto.
+        </p>
 
         <button type="button" class="ed-more" @click="moreOpen = !moreOpen"
                 x-show="photo" x-text="moreOpen ? '▾ Lebih sedikit' : '▸ Lainnya'"></button>
@@ -161,7 +177,7 @@
         <template x-for="p in gallery" :key="p.id">
           <div class="cap-row">
             <img :src="p.url" alt="">
-            <input type="text" maxlength="40" :value="p.caption" placeholder="Caption"
+            <input type="text" maxlength="40" :value="p.caption" placeholder="Keterangan foto…"
                    @change="saveCaption(p.id, $event.target.value)">
             <button type="button" @click="removePhoto(p.id)" title="Hapus">×</button>
           </div>

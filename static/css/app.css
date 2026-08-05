@@ -895,6 +895,33 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   .ed-fontlist { max-height: 220px; }
 }
 
+/* ── Editor di desktop: tanpa header situs ───────────────────────────────
+   Tombol "Buat Kartu" di pojok kanan atas terbaca sebagai "selesai"/"buat
+   link", padahal itu tautan ke daftar template — yang mengkliknya terlempar
+   keluar dari editor di tengah pekerjaannya. Draf-nya sendiri tersimpan
+   (autosave), tapi user tidak punya jalan kembali: URL editor tidak membawa
+   ?card=, dan /kartu-saya/ tertutup untuk pembeli biasa.
+
+   941px, BUKAN 900px seperti breakpoint tata letak editor. Tombol pemicunya
+   adalah .header-cta, yang sudah display:none di dalam @media (max-width:940px)
+   — jadi di bawah 941px jebakannya memang tidak ada, dan header di sana masih
+   berguna sebagai navigasi. Memakai 901px akan menyembunyikan header di
+   rentang 901–940px tanpa alasan.
+
+   Tingginya WAJIB ikut disesuaikan. `.ed` memakai calc(100vh - 72px) karena
+   memperhitungkan header; tanpa baris kedua, editor jadi 72px lebih pendek
+   dari layar dan footer menyembul di bawahnya.
+
+   Jalan keluar dari editor tetap ada di panel kiri ("← Template lain"). */
+@media (min-width: 941px) {
+  body.is-editor .site-header { display: none; }
+  /* Footer juga dirender di luar {% block body %}. Tanpa baris ini editor
+     tetap bukan layar penuh — footer gelap menggantung di bawah dan halaman
+     jadi bisa digulir menjauh dari kartunya. */
+  body.is-editor .site-footer { display: none; }
+  body.is-editor .ed { height: 100vh; }
+}
+
 .ed-crop img {
   position: absolute;
   inset: 0;

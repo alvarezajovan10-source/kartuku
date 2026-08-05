@@ -80,7 +80,15 @@ function makeSVG(kind){
   return svg;
 }
 
+/* Batas jumlah yang melayang bersamaan. Kerapatan ditentukan interval dibagi
+   umur (~450ms : 9-16 detik = 20-35 buah), jadi batas ini bukan pengatur
+   kerapatan melainkan jaring pengaman: di tab yang tidak aktif animasi berhenti
+   sehingga onfinish tidak pernah jalan, dan tanpa batas elemennya menumpuk
+   terus sampai tabnya dibuka lagi. */
+const MAX_JATUH = 36;
+
 function spawn(){
+  if (document.hidden || layer.childElementCount >= MAX_JATUH) return;
   const roll=Math.random();
   const kind = roll<0.72 ? 'leaf' : roll<0.9 ? 'petal' : 'heart';
   const size = kind==='leaf' ? 16+Math.random()*16 : 12+Math.random()*8;
@@ -98,8 +106,10 @@ function spawn(){
 }
 
 if(!reduce){
-  for(let i=0;i<10;i++) setTimeout(spawn, Math.random()*4000);
-  setInterval(spawn, 900);
+  // Sebaran awal supaya kartu tidak terasa kosong di detik-detik pertama —
+  // tanpa ini butuh belasan detik sebelum daunnya terlihat ramai.
+  for(let i=0;i<20;i++) setTimeout(spawn, Math.random()*3000);
+  setInterval(spawn, 450);
 } else {
-  for(let i=0;i<5;i++) spawn();
+  for(let i=0;i<8;i++) spawn();
 }

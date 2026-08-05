@@ -1,0 +1,29 @@
+{% load static %}{% comment %}
+  Pratinjau kartu saat linknya dikirim lewat WhatsApp/DM.
+
+  Ini momen pertama penerima melihat kartunya. Tanpa tag ini yang sampai cuma
+  URL telanjang, dan kejutan yang sudah dibayar pembeli jatuh sebelum dibuka.
+
+  Gambarnya sengaja memakai gambar merek, BUKAN foto di dalam kartu. Foto itu
+  milik pembeli dan pasangannya; menaruhnya di sini berarti server WhatsApp,
+  Instagram, dan Facebook ikut mengambil dan menyimpannya, dan kalau linknya
+  diteruskan ke grup, fotonya ikut terpampang di daftar chat semua orang.
+  Nama penerima sudah cukup membuat pratinjaunya terasa personal, dan itu
+  memang teks yang sengaja ditulis pembeli untuk dibaca.
+
+  `noindex` di halaman kartu tidak menghalangi pratinjau: pengambil pratinjau
+  tidak mengindeks, ia hanya membaca tag saat linknya dibagikan.
+{% endcomment %}
+<meta property="og:site_name" content="Kartuku">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="id_ID">
+<meta property="og:title" content="Ada kartu untuk {{ card.recipient_name|default:"kamu" }} ♥">
+<meta property="og:description" content="{% if card.sender_name %}Dari {{ card.sender_name }} — sebuah{% else %}Sebuah{% endif %} kartu ucapan digital, khusus untukmu. Ketuk untuk membukanya.">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-default.jpg' %}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
+<link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+<meta name="theme-color" content="#c9736e">

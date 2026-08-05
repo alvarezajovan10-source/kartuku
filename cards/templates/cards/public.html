@@ -2,6 +2,13 @@
 
 {% block title %}Untuk {{ card.recipient_name|default:"kamu" }}{% endblock %}
 
+{% comment %}
+  Template cadangan, dipakai kalau config template tidak menyebut renderer.
+  Pratinjaunya harus ikut personal seperti renderer sungguhan — kalau tidak,
+  penerima kartu lewat jalur ini menerima pratinjau iklan halaman depan.
+{% endcomment %}
+{% block social %}{% include "cards/_card_head.html" %}{% endblock %}
+
 {% block content %}
   <h1>Untuk {{ card.recipient_name|default:"kamu" }}</h1>
 

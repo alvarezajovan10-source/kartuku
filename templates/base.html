@@ -8,7 +8,36 @@
     Sengaja tidak menyebut metode bayar: ini teks yang muncul di hasil Google,
     dan metodenya bisa berganti (Lynk.id sekarang, QRIS kalau Midtrans dinyalakan).
   {% endcomment %}
-  <meta name="description" content="Buat kartu ucapan digital dengan foto, pesan, dan video YouTube. Rp15.000 sekali bayar, langsung dapat link untuk dibagikan.">
+  <meta name="description" content="{% block description %}Buat kartu ucapan digital dengan foto, pesan, dan video YouTube. Rp15.000 sekali bayar, langsung dapat link untuk dibagikan.{% endblock %}">
+
+  {% comment %}
+    Tanpa tag ini, link yang dikirim lewat WhatsApp/DM tampil sebagai URL
+    telanjang — tanpa gambar, tanpa judul. Untuk produk yang dijual lewat
+    visual di TikTok itu memotong konversi, karena sebagian besar orang
+    menerima linknya dari teman, bukan dari bio.
+
+    URL gambar HARUS mutlak: pengambil pratinjau (WhatsApp, Instagram,
+    Facebook) mengambilnya dari servernya sendiri, jadi jalur relatif tidak
+    akan ketemu.
+  {% endcomment %}
+  {% block social %}
+  <meta property="og:site_name" content="Kartuku">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="id_ID">
+  <meta property="og:title" content="{% block og_title %}Kartuku — Ucapan tulus, hadiah berkesan{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Kartu ucapan digital dengan foto, pesan, dan lagu. Rp15.000 sekali bayar, langsung dapat link untuk dibagikan.{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-default.jpg' %}{% endblock %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  {% endblock %}
+
+  <link rel="icon" href="{% static_v 'img/favicon.ico' %}" sizes="any">
+  <link rel="icon" href="{% static_v 'img/favicon-512.png' %}" type="image/png">
+  <link rel="apple-touch-icon" href="{% static_v 'img/apple-touch-icon.png' %}">
+  <meta name="theme-color" content="#c9736e">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">

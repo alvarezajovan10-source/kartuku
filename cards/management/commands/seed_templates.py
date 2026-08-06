@@ -118,7 +118,8 @@ SEEDS = [
                 {"key": "level_head", "label": "Judul naik level", "default": "LEVEL UP!"},
                 {"key": "level_stat", "label": "Statistik level", "default": "HP +100  LOVE +999"},
                 {"key": "wish_head", "label": "Judul wishes", "default": "WISHES"},
-                {"key": "wish_title", "label": "Harapan utama", "default": "MAKE A WISH"},
+                # Satu kolom untuk seluruh harapan. Sempat dua (judul + catatan),
+                # dan yang di luar kotak tumpah keluar kartu kalau panjang.
                 {"key": "wish_note", "label": "Isi harapan", "default": "semoga tahun ini sebaik kamu memperlakukan orang lain, dan semoga aku masih di sampingmu waktu itu terjadi."},
                 {"key": "peluk_btn", "label": "Tombol peluk", "default": "HUG"},
                 {"key": "power_head", "label": "Judul power up", "default": "POWER UPS"},

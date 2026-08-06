@@ -175,16 +175,19 @@
     sama: kotak dialog RPG dengan potret pembicara di kiri.
   {% endcomment %}
   <section class="scene" id="dialog">
-    <div class="isi tengah gulir">
+    <div class="isi tengah">
       <div class="kotak-dialog">
         <div class="potret" aria-hidden="true">
           <svg viewBox="0 0 12 12"><use href="#s-kucing"/></svg>
         </div>
         <div class="ucap">
           <p class="pembicara"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</p>
-          <p class="surat"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis suratmu di sini..."{% endif %}>{{ card.message|default:"Tulis suratmu di sini..." }}</p>
+          {# Suratnya digulir DI DALAM kotak ini; kotaknya sendiri tidak bergeser. #}
+          <div class="bagan-isi" data-gulir>
+            <p class="surat"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis suratmu di sini..."{% endif %}>{{ card.message|default:"Tulis suratmu di sini..." }}</p>
+          </div>
         </div>
-        <span class="panah" aria-hidden="true">▼</span>
+        <span class="panah-gulir" aria-hidden="true">▼</span>
       </div>
     </div>
   </section>
@@ -198,19 +201,20 @@
     peluk() di game8bit.js.
   {% endcomment %}
   <section class="scene" id="wishes">
-    <div class="isi tengah gulir">
+    <div class="isi tengah">
       <h2 class="kepala"{% el card editing "wish_head" %}>{% t card "wish_head" %}</h2>
+      <svg class="ikon-besar pantul" viewBox="0 0 14 11" aria-hidden="true"><use href="#s-kue"/></svg>
       {% comment %}
-        Judul dan tombol tetap di tempat; hanya bagian tengah ini yang
-        menyusut lalu digulir kalau harapannya panjang. Tombol yang ikut
-        terdorong turun oleh teks panjang sama saja dengan tombol yang hilang.
+        SATU bagan untuk seluruh harapan. Sempat dua tempat menulis (judul di
+        dalam kotak, catatan di luarnya) — dan catatan yang di luar itulah
+        yang tumpah keluar kartu waktu pembeli menulis panjang. Sekarang
+        semuanya di dalam kotak, dan yang panjang digulir di dalamnya.
       {% endcomment %}
-      <div class="gulung">
-        <svg class="ikon-besar pantul" viewBox="0 0 14 11" aria-hidden="true"><use href="#s-kue"/></svg>
-        <div class="panel">
-          <p class="panel-teks"{% el card editing "wish_title" %}>{% t card "wish_title" %}</p>
+      <div class="panel">
+        <div class="bagan-isi" data-gulir>
+          <p class="panel-teks"{% el card editing "wish_note" %}>{% t card "wish_note" %}</p>
         </div>
-        <p class="kecil"{% el card editing "wish_note" %}>{% t card "wish_note" %}</p>
+        <span class="panah-gulir" aria-hidden="true">▼</span>
       </div>
       <button class="mulai peluk" id="pelukBtn" type="button"{% el card editing "peluk_btn" %}>{% t card "peluk_btn" %}</button>
     </div>

@@ -179,6 +179,35 @@ function naikLevel() {
   }, 1150);
 }
 
+/* ---------- penanda "masih ada lanjutannya" ----------
+   Panah di dasar bagan hanya menyala selama masih ada teks di bawah yang
+   belum terlihat, dan padam begitu penerima sampai ke bawah. Tanpa penanda,
+   tidak ada alasan bagi penerima menduga suratnya masih berlanjut — dan
+   bagian yang tidak terbaca sama saja dengan tidak ditulis. */
+function tandaGulir(kotak) {
+  const panah = kotak.parentElement.querySelector('.panah-gulir')
+    || kotak.closest('.panel, .kotak-dialog')?.querySelector('.panah-gulir');
+  if (!panah) return;
+  const segarkan = () => {
+    const sisa = kotak.scrollHeight - kotak.clientHeight - kotak.scrollTop;
+    panah.classList.toggle('tampak', sisa > 4);
+  };
+  kotak.addEventListener('scroll', segarkan, { passive: true });
+  window.addEventListener('resize', segarkan);
+  // Teks yang diubah pembeli di editor mengubah tingginya juga.
+  if (window.MutationObserver) {
+    new MutationObserver(segarkan).observe(kotak, {
+      subtree: true, childList: true, characterData: true,
+    });
+  }
+  segarkan();
+}
+document.querySelectorAll('[data-gulir]').forEach(tandaGulir);
+// Font permainan dimuat belakangan dan mengubah tinggi teks; hitung ulang.
+window.addEventListener('load', () => {
+  document.querySelectorAll('[data-gulir]').forEach((k) => k.dispatchEvent(new Event('scroll')));
+});
+
 /* ---------- ajakan memiringkan HP ----------
    Lapisannya hanya tampil di layar tegak (diatur CSS). Tombolnya menutup
    pilihan itu untuk seterusnya — penerima yang memang ingin membaca sambil

@@ -28,8 +28,8 @@ const PANJANG =
   // Isi teks sepanjang yang ditulis pembeli sungguhan.
   await page.evaluate((t) => {
     document.querySelector('#dialog .surat').textContent = t;
-    document.querySelector('#wishes .kecil').textContent = t;
-    document.querySelector('#wishes .panel-teks').textContent = 'MAKE A WISH';
+    document.querySelector('#wishes .panel-teks').textContent = t;
+
   }, PANJANG);
 
   const hasil = {};
@@ -44,8 +44,18 @@ const PANJANG =
       return {
         meluberAtas: +(stage.top - kotak.top).toFixed(1),
         meluberBawah: +(kotak.bottom - stage.bottom).toFixed(1),
-        bisaDigulir: [...scene.querySelectorAll('.gulung, .ucap, .isi')]
+        bisaDigulir: [...scene.querySelectorAll('[data-gulir]')]
           .some((el) => el.scrollHeight > el.clientHeight + 1),
+        panahMenyala: !!scene.querySelector('.panah-gulir.tampak'),
+        teksKeluarKotak: [...scene.querySelectorAll('[data-gulir]')].some((el) => {
+          const kotak = el.closest('.panel, .kotak-dialog').getBoundingClientRect();
+          const r = el.getBoundingClientRect();
+          return r.bottom > kotak.bottom + 2 || r.top < kotak.top - 2;
+        }),
+        baganDiDalamKartu: [...scene.querySelectorAll('.panel, .kotak-dialog')].every((el) => {
+          const r = el.getBoundingClientRect();
+          return r.top >= stage.top - 1 && r.bottom <= stage.bottom + 1;
+        }),
         semuaTerlihat: [...scene.querySelectorAll('.kepala, .mulai')].every((el) => {
           const r = el.getBoundingClientRect();
           return r.top >= stage.top - 1 && r.bottom <= stage.bottom + 1;

@@ -109,7 +109,7 @@ img{image-rendering:auto}
 .teman .sprite{
   position:absolute;inset:0;display:block;
   background-repeat:no-repeat;
-  background-size:calc(102px*6) calc(138px*10);
+  background-size:calc(102px*6) calc(138px*11);
   /* Wajib: tanpa ini browser menghaluskan sprite saat diperbesar dan
      piksel-artnya jadi buram. */
   image-rendering:pixelated;
@@ -368,7 +368,10 @@ img{image-rendering:auto}
   animation:kedip 1s steps(2) infinite}
 
 /* ---------- PENCAPAIAN ---------- */
-.piala{width:86px;height:102px}
+.ikon-besar{width:118px;height:93px}
+/* Tombol peluk khusus babak WISHES — warnanya dibedakan supaya tidak
+   tertukar dengan tombol lanjut. */
+.mulai.peluk{background:linear-gradient(180deg,#ff9ec9,var(--ceri));color:var(--putih)}
 .pantul{animation:pantul 1.5s steps(6) infinite}
 @keyframes pantul{0%,100%{translate:0 0}50%{translate:0 -14px}}
 .panel{

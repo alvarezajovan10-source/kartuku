@@ -20,7 +20,7 @@ window.cardEditor = function () {
     // Game 8-Bit. Tanpa entri di sini, pemilih babak di editor menampilkan
     // id mentah ("powerups") alih-alih nama yang bisa dibaca pembeli.
     title: "Layar Judul", player: "Pilih Pemain", levelup: "Naik Level",
-    dialog: "Surat", achievement: "Pencapaian", powerups: "Power Ups",
+    dialog: "Surat", wishes: "Wishes", powerups: "Power Ups",
     scores: "Skor", gameover: "Penutup",
   };
 

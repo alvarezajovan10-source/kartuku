@@ -189,15 +189,23 @@
     </div>
   </section>
 
-  <!-- ================= 5. PENCAPAIAN ================= -->
-  <section class="scene" id="achievement">
+  <!-- ================= 5. WISHES ================= -->
+  {% comment %}
+    Satu-satunya babak yang punya tombol peluk. Tombolnya sengaja hanya di
+    sini: kalau ada di semua babak, pelukannya jadi hal biasa dan kehilangan
+    artinya. Yang dilakukan tombol ini bukan memutar animasi di tempat —
+    kedua karakter BERJALAN saling mendekat dulu, baru berpelukan. Lihat
+    peluk() di game8bit.js.
+  {% endcomment %}
+  <section class="scene" id="wishes">
     <div class="isi tengah">
-      <h2 class="kepala dua-baris"{% el card editing "ach_head" %}>{% t card "ach_head" %}</h2>
-      <svg class="piala pantul" viewBox="0 0 11 13" aria-hidden="true"><use href="#s-piala"/></svg>
+      <h2 class="kepala"{% el card editing "wish_head" %}>{% t card "wish_head" %}</h2>
+      <svg class="ikon-besar pantul" viewBox="0 0 14 11" aria-hidden="true"><use href="#s-kue"/></svg>
       <div class="panel">
-        <p class="panel-teks"{% el card editing "ach_name" %}>{% t card "ach_name" %}</p>
+        <p class="panel-teks"{% el card editing "wish_title" %}>{% t card "wish_title" %}</p>
       </div>
-      <p class="kecil"{% el card editing "ach_note" %}>{% t card "ach_note" %}</p>
+      <p class="kecil"{% el card editing "wish_note" %}>{% t card "wish_note" %}</p>
+      <button class="mulai peluk" id="pelukBtn" type="button"{% el card editing "peluk_btn" %}>{% t card "peluk_btn" %}</button>
     </div>
   </section>
 

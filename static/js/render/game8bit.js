@@ -183,6 +183,7 @@ const ANIM = {
   sleep: { baris: 7, frames: 2, dur: 2.2 },
   jump: { baris: 8, frames: 3, dur: .5 },
   celebrate: { baris: 9, frames: 4, dur: .48 },
+  hug: { baris: 10, frames: 2, dur: 1.4 },
 };
 
 const TINGGI_FRAME = 138;
@@ -196,7 +197,7 @@ const PANGGUNG = {
   player:      { x: [.19, .78], laku: 'happy' },
   levelup:     { x: [.22, .75], laku: 'celebrate' },
   dialog:      { x: [.06, .91], laku: 'sit' },
-  achievement: { x: [.13, .85], laku: 'surprised' },
+  wishes:      { x: [.13, .85], laku: 'surprised' },
   powerups:    { x: [.05, .92], laku: 'idle' },
   scores:      { x: [.10, .88], laku: 'happy' },
   gameover:    { x: [.25, .71], laku: 'celebrate' },
@@ -212,6 +213,7 @@ function Teman(el, mula) {
   this.hadap = 1;
   this.anim = '';
   this.laku = 'idle';          // yang dimainkan setelah sampai
+  this.kunci = null;           // arah hadap yang dipaksa, kalau ada
   this.sekali = null;          // animasi sekali jalan (mis. dari klik)
   this.sampai = 0;
   this.pasang('idle');
@@ -257,6 +259,7 @@ Teman.prototype.langkah = function (dt, now) {
   }
 
   this.x = this.tujuan;
+  if (this.kunci !== null) this.hadap = this.kunci;
   if (this.sekali) {
     if (now < this.sampai) return;
     this.sekali = null;
@@ -294,6 +297,7 @@ if (temanCowok && temanCewek) {
       regu.forEach((t) => { t.laku = 'sleep'; });
     }
     regu.forEach((t) => t.langkah(dt, now));
+    cekPeluk();
     requestAnimationFrame(putar);
   })(lalu);
 }
@@ -329,6 +333,44 @@ if (temanCowok && temanCewek) {
   }
 })();
 
+/* ---------- berpelukan ----------
+   Dipanggil tombol di babak WISHES. Mereka tidak langsung berpelukan di
+   tempat — masing-masing BERJALAN saling mendekat dulu, lalu berhadapan.
+   Itu syarat yang sama dengan aturan tidak boleh teleport: gerak yang tidak
+   ditempuh tidak pernah terbaca sebagai gerak sungguhan.
+
+   Titik temunya digeser ke kiri dari tengah karena tombol navigasi duduk di
+   tengah bawah; berpelukan tepat di sana membuat mereka tertutup tombol. */
+let memeluk = false;
+let hatiPeluk = false;
+
+function peluk() {
+  if (!regu.length) return;
+  sentuhTerakhir = performance.now();
+  memeluk = true;
+  hatiPeluk = false;
+  regu[0].tujuan = W_KANVAS * .22 - LEBAR_TEMAN / 2;
+  regu[1].tujuan = W_KANVAS * .31 - LEBAR_TEMAN / 2;
+  regu[0].kunci = 1;    // yang kiri menghadap kanan
+  regu[1].kunci = -1;   // yang kanan menghadap kiri
+  regu.forEach((t) => { t.laku = 'hug'; t.sekali = null; });
+}
+
+const pelukBtn = document.getElementById('pelukBtn');
+if (pelukBtn) pelukBtn.addEventListener('click', peluk);
+
+/* Hati baru muncul setelah keduanya benar-benar sampai dan berpelukan —
+   kalau dipicu bersamaan dengan tombol, hatinya meletup di tempat kosong
+   sementara mereka masih dalam perjalanan. */
+function cekPeluk() {
+  if (!memeluk || hatiPeluk) return;
+  if (!regu.every((t) => Math.abs(t.x - t.tujuan) < 2)) return;
+  hatiPeluk = true;
+  const a = regu[0].el.getBoundingClientRect();
+  const b = regu[1].el.getBoundingClientRect();
+  hamburkan((a.right + b.left) / 2, a.top + a.height * .45, 10);
+}
+
 /* Dipanggil dari ke() tiap babak berganti. */
 function temaniBabak(id) {
   if (!regu.length) return;
@@ -338,7 +380,10 @@ function temaniBabak(id) {
     t.tujuan = W_KANVAS * p.x[i] - LEBAR_TEMAN / 2;
     t.laku = p.laku;
     t.sekali = null;
+    t.kunci = null;
   });
+  // Pindah babak membatalkan pelukan: mereka punya urusan lain di sana.
+  memeluk = false;
 }
 
 /* Babak awal. Saat MENGEDIT, layar judul dilewati supaya pembeli tidak harus

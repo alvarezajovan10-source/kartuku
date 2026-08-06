@@ -185,8 +185,8 @@ const ANIM = {
   celebrate: { baris: 9, frames: 4, dur: .48 },
 };
 
-const TINGGI_FRAME = 120;
-const LEBAR_TEMAN = 96;
+const TINGGI_FRAME = 138;
+const LEBAR_TEMAN = 102;
 const W_KANVAS = 960;          // lebar kanonis; sama dengan --w0 di CSS
 
 /* Ke mana mereka berdiri di tiap babak, dan sedang apa. Posisi dalam pecahan

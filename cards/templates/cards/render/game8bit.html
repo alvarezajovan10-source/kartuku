@@ -86,8 +86,20 @@
     cukup supaya isi kartu tidak pernah tertimpa badan mereka.
   {% endcomment %}
   <div class="lantai" aria-hidden="true"></div>
-  <div class="teman cowok" id="temanCowok" role="img" aria-label="Karakter cowok"></div>
-  <div class="teman cewek" id="temanCewek" role="img" aria-label="Karakter cewek"></div>
+  {% comment %}
+    Nama dipisah dari sprite dengan sengaja. Sprite dibalik mendatar
+    (scaleX -1) waktu menghadap kiri; kalau namanya ikut di dalamnya,
+    tulisannya ikut terbalik jadi cermin. Jadi pembungkus yang bergeser,
+    sprite yang berbalik, nama tetap tegak.
+  {% endcomment %}
+  <div class="teman cowok" id="temanCowok">
+    <span class="nama-teman" id="namaCowok">{{ card.recipient_name|default:"" }}</span>
+    <i class="sprite" role="img" aria-label="Karakter cowok"></i>
+  </div>
+  <div class="teman cewek" id="temanCewek">
+    <span class="nama-teman" id="namaCewek">{{ card.sender_name|default:"" }}</span>
+    <i class="sprite" role="img" aria-label="Karakter cewek"></i>
+  </div>
 
   <!-- ================= 1. LAYAR JUDUL ================= -->
   <section class="scene active" id="title">
@@ -121,7 +133,7 @@
               {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
             </div>
           </div>
-          <p class="nama"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</p>
+          <p class="nama" id="nama1p"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</p>
         </div>
         {% endwith %}
 
@@ -136,7 +148,7 @@
               {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
             </div>
           </div>
-          <p class="nama"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</p>
+          <p class="nama" id="nama2p"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</p>
         </div>
         {% endwith %}
       </div>

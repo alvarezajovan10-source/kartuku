@@ -92,42 +92,61 @@ img{image-rendering:auto}
    celebrate). JS hanya menggeser baris dan mengatur jumlah frame; kolomnya
    dijalankan CSS dengan steps() supaya tidak ada perhitungan tiap frame. */
 .lantai{
-  position:absolute;left:0;right:0;bottom:0;height:76px;z-index:16;
+  position:absolute;left:0;right:0;bottom:0;height:96px;z-index:16;
   pointer-events:none;
   background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.5) 55%, rgba(255,255,255,.72) 100%);
   border-top:var(--px) solid rgba(43,15,34,.14);
 }
 .teman{
-  position:absolute;left:0;bottom:14px;z-index:19;
-  width:72px;height:90px;
-  background-repeat:no-repeat;
-  background-size:calc(72px*6) calc(90px*10);
-  /* Wajib: tanpa ini browser menghaluskan sprite saat diperbesar dan
-     piksel-artnya jadi buram. */
-  image-rendering:pixelated;
-  transform:translateX(var(--x,0px)) scaleX(var(--hadap,1));
-  transform-origin:center bottom;
-  animation:jalan-sprite var(--dur,.9s) steps(var(--frames,2)) infinite;
+  position:absolute;left:0;bottom:12px;z-index:19;
+  width:96px;height:120px;
+  transform:translateX(var(--x,0px));
   will-change:transform;
   cursor:pointer;pointer-events:auto;
 }
+/* Sprite dipisah dari pembungkus: yang berbalik arah hanya lapisan ini,
+   supaya papan nama di atasnya tidak ikut jadi tulisan cermin. */
+.teman .sprite{
+  position:absolute;inset:0;display:block;
+  background-repeat:no-repeat;
+  background-size:calc(96px*6) calc(120px*10);
+  /* Wajib: tanpa ini browser menghaluskan sprite saat diperbesar dan
+     piksel-artnya jadi buram. */
+  image-rendering:pixelated;
+  transform:scaleX(var(--hadap,1));
+  transform-origin:center bottom;
+  animation:jalan-sprite var(--dur,.9s) steps(var(--frames,2)) infinite;
+}
+/* Nama yang diisi di 1P/2P ikut berjalan di atas kepala pemiliknya. */
+.nama-teman{
+  position:absolute;left:50%;bottom:calc(100% - 4px);z-index:2;
+  transform:translateX(-50%);
+  font-family:'Press Start 2P',monospace;font-size:.6rem;line-height:1;
+  color:var(--putih);white-space:nowrap;pointer-events:none;
+  text-shadow:
+    3px 0 0 var(--tinta), -3px 0 0 var(--tinta),
+    0 3px 0 var(--tinta), 0 -3px 0 var(--tinta),
+    3px 3px 0 var(--tinta), -3px 3px 0 var(--tinta);
+}
+/* Belum ada nama = tidak ada papan kosong menggantung. */
+.nama-teman:empty{display:none}
 /* Kolom sheet dijalankan di sini. Barisnya (background-position-y) disetel
    JS lewat gaya sebaris, jadi dua sumbunya tidak saling menimpa. */
 @keyframes jalan-sprite{
   from{background-position-x:0}
-  to{background-position-x:calc(-72px * var(--frames,2))}
+  to{background-position-x:calc(-96px * var(--frames,2))}
 }
-.teman.cowok{background-image:url("../../img/render/8bit-cowok.png")}
-.teman.cewek{background-image:url("../../img/render/8bit-cewek.png")}
+.teman.cowok .sprite{background-image:url("../../img/render/8bit-cowok.png")}
+.teman.cewek .sprite{background-image:url("../../img/render/8bit-cewek.png")}
 /* Bayangan kecil supaya mereka berpijak, bukan melayang. */
 .teman::after{
-  content:"";position:absolute;left:50%;bottom:-6px;
-  width:40px;height:8px;transform:translateX(-50%);
+  content:"";position:absolute;left:50%;bottom:-7px;
+  width:54px;height:10px;transform:translateX(-50%);
   background:rgba(43,15,34,.16);border-radius:50%;
 }
 
 @media (prefers-reduced-motion: reduce){
-  .teman{animation:none}
+  .teman .sprite{animation:none}
 }
 
 /* ---------- BABAK ----------
@@ -137,7 +156,7 @@ img{image-rendering:auto}
 .scene{
   position:absolute;inset:0;z-index:10;
   display:flex;align-items:center;justify-content:center;
-  padding:24px 40px 106px;
+  padding:22px 40px 134px;
   opacity:0;visibility:hidden;
   transition:opacity .001s steps(1) .12s, visibility .001s steps(1) .12s;
 }
@@ -349,7 +368,7 @@ img{image-rendering:auto}
   animation:kedip 1s steps(2) infinite}
 
 /* ---------- PENCAPAIAN ---------- */
-.piala{width:104px;height:123px}
+.piala{width:86px;height:102px}
 .pantul{animation:pantul 1.5s steps(6) infinite}
 @keyframes pantul{0%,100%{translate:0 0}50%{translate:0 -14px}}
 .panel{

@@ -185,26 +185,28 @@ const ANIM = {
   celebrate: { baris: 9, frames: 4, dur: .48 },
 };
 
-const TINGGI_FRAME = 90;
+const TINGGI_FRAME = 120;
+const LEBAR_TEMAN = 96;
 const W_KANVAS = 960;          // lebar kanonis; sama dengan --w0 di CSS
 
 /* Ke mana mereka berdiri di tiap babak, dan sedang apa. Posisi dalam pecahan
    lebar kanvas supaya gampang dibaca. */
 const PANGGUNG = {
-  title:       { x: [.34, .58], laku: 'wave' },
-  player:      { x: [.24, .74], laku: 'happy' },
-  levelup:     { x: [.30, .68], laku: 'celebrate' },
-  dialog:      { x: [.09, .90], laku: 'sit' },
-  achievement: { x: [.16, .84], laku: 'surprised' },
-  powerups:    { x: [.07, .93], laku: 'idle' },
-  scores:      { x: [.13, .87], laku: 'happy' },
-  gameover:    { x: [.36, .62], laku: 'celebrate' },
+  title:       { x: [.24, .72], laku: 'wave' },
+  player:      { x: [.19, .78], laku: 'happy' },
+  levelup:     { x: [.22, .75], laku: 'celebrate' },
+  dialog:      { x: [.06, .91], laku: 'sit' },
+  achievement: { x: [.13, .85], laku: 'surprised' },
+  powerups:    { x: [.05, .92], laku: 'idle' },
+  scores:      { x: [.10, .88], laku: 'happy' },
+  gameover:    { x: [.25, .71], laku: 'celebrate' },
 };
 
 const JEDA_TIDUR = 20000;      // diam selama ini -> mereka ketiduran
 
 function Teman(el, mula) {
   this.el = el;
+  this.sprite = el.querySelector('.sprite');
   this.x = mula;
   this.tujuan = mula;
   this.hadap = 1;
@@ -220,14 +222,14 @@ Teman.prototype.pasang = function (nama) {
   if (this.anim === nama) return;
   const a = ANIM[nama] || ANIM.idle;
   this.anim = nama;
-  this.el.style.setProperty('--frames', a.frames);
-  this.el.style.setProperty('--dur', a.dur + 's');
-  this.el.style.backgroundPositionY = -(a.baris * TINGGI_FRAME) + 'px';
+  this.sprite.style.setProperty('--frames', a.frames);
+  this.sprite.style.setProperty('--dur', a.dur + 's');
+  this.sprite.style.backgroundPositionY = -(a.baris * TINGGI_FRAME) + 'px';
 };
 
 Teman.prototype.gambar = function () {
   this.el.style.setProperty('--x', this.x.toFixed(1) + 'px');
-  this.el.style.setProperty('--hadap', this.hadap);
+  this.sprite.style.setProperty('--hadap', this.hadap);
 };
 
 /* Animasi sekali jalan, lalu kembali ke perilaku babak. */
@@ -270,8 +272,8 @@ let sentuhTerakhir = performance.now();
 
 if (temanCowok && temanCewek) {
   regu = [
-    new Teman(temanCowok, W_KANVAS * 0.34 - 36),
-    new Teman(temanCewek, W_KANVAS * 0.58 - 36),
+    new Teman(temanCowok, W_KANVAS * PANGGUNG.title.x[0] - LEBAR_TEMAN / 2),
+    new Teman(temanCewek, W_KANVAS * PANGGUNG.title.x[1] - LEBAR_TEMAN / 2),
   ];
 
   regu.forEach((t, i) => {
@@ -296,13 +298,44 @@ if (temanCowok && temanCewek) {
   })(lalu);
 }
 
+/* Nama di papan atas kepala mengambil dari isian 1P dan 2P: 1P milik cowok,
+   2P milik cewek. Disalin, bukan diedit langsung di sini — kalau papan ini
+   ikut jadi sasaran klik editor, pembeli punya dua tempat berbeda untuk
+   mengubah satu nama yang sama.
+
+   MutationObserver dipakai supaya papannya ikut berubah SAAT pembeli
+   mengetik di editor; tanpa itu namanya baru muncul setelah pratinjau
+   dimuat ulang. */
+(function cerminNama() {
+  const pasangan = [
+    [document.getElementById('nama1p'), document.getElementById('namaCowok')],
+    [document.getElementById('nama2p'), document.getElementById('namaCewek')],
+  ].filter(([a, b]) => a && b);
+  if (!pasangan.length) return;
+
+  const salin = () => pasangan.forEach(([sumber, papan]) => {
+    const t = (sumber.textContent || '').trim();
+    // Teks contoh di editor ("Nama penerima") bukan nama sungguhan —
+    // menampilkannya di atas kepala malah terbaca seperti nama karakter.
+    papan.textContent = (t === 'Nama penerima' || t === 'Namamu') ? '' : t;
+  });
+  salin();
+
+  const babakPlayer = document.getElementById('player');
+  if (babakPlayer && window.MutationObserver) {
+    new MutationObserver(salin).observe(babakPlayer, {
+      subtree: true, childList: true, characterData: true,
+    });
+  }
+})();
+
 /* Dipanggil dari ke() tiap babak berganti. */
 function temaniBabak(id) {
   if (!regu.length) return;
   const p = PANGGUNG[id] || PANGGUNG.powerups;
   sentuhTerakhir = performance.now();
   regu.forEach((t, i) => {
-    t.tujuan = W_KANVAS * p.x[i] - 36;
+    t.tujuan = W_KANVAS * p.x[i] - LEBAR_TEMAN / 2;
     t.laku = p.laku;
     t.sekali = null;
   });

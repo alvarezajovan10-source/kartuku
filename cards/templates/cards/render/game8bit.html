@@ -115,42 +115,34 @@
 
   <!-- ================= 2. PILIH PEMAIN ================= -->
   {% comment %}
-    Desain aslinya memakai dua kucing piksel. Di sini keduanya jadi SLOT
-    FOTO — kartu ini dijual untuk memajang wajah pembeli dan pasangannya,
-    dan desain Canva memang belum punya tempat foto sama sekali. Kucingnya
-    tetap muncul sebagai bingkai kalau fotonya belum diisi.
+    Kedua kotak di sini SENGAJA bukan slot foto, dan sengaja tidak bisa
+    diganti pembeli. Isinya potret dari lembar sprite yang sama dengan
+    karakter yang berjalan di bawah — itu justru gunanya: begitu melihat
+    wajahnya, pengedit langsung tahu kolom nama yang sedang diisi milik
+    karakter yang mana. Kalau kotaknya boleh ditempeli foto sendiri,
+    petunjuk itu hilang dan halaman ini kembali jadi tebak-tebakan.
   {% endcomment %}
   <section class="scene" id="player">
     <div class="isi tengah">
       <h2 class="kepala"{% el card editing "player_head" %}>{% t card "player_head" %}</h2>
       <div class="pemain">
-        {% with photo=frame_photos|get:"p1" %}
         <div class="slot">
           <span class="tag"{% el card editing "player_1p" %}>{% t card "player_1p" %}</span>
-          <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "p1" %}>
-            <div class="ph">
-              {% if photo %}<img src="{{ photo.image.url }}" alt="">
-              {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
-            </div>
+          <div class="bingkai kotak-tokoh">
+            <div class="ph"><i class="tokoh cowok" role="img" aria-label="Karakter cowok"></i></div>
           </div>
           <p class="nama" id="nama1p"{% el card editing "nama1" %}>{% t card "nama1" %}</p>
         </div>
-        {% endwith %}
 
         <svg class="hati denyut" viewBox="0 0 9 8" aria-hidden="true"><use href="#s-hati"/></svg>
 
-        {% with photo=frame_photos|get:"p2" %}
         <div class="slot">
           <span class="tag"{% el card editing "player_2p" %}>{% t card "player_2p" %}</span>
-          <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "p2" %}>
-            <div class="ph">
-              {% if photo %}<img src="{{ photo.image.url }}" alt="">
-              {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
-            </div>
+          <div class="bingkai kotak-tokoh">
+            <div class="ph"><i class="tokoh cewek" role="img" aria-label="Karakter cewek"></i></div>
           </div>
           <p class="nama" id="nama2p"{% el card editing "nama2" %}>{% t card "nama2" %}</p>
         </div>
-        {% endwith %}
       </div>
     </div>
   </section>

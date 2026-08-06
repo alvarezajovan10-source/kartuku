@@ -363,6 +363,35 @@ img{image-rendering:auto}
 .bingkai .ph img{width:100%;height:100%;object-fit:cover;display:block}
 .isi-kosong{width:104px;height:104px;opacity:.85}
 
+/* Potret 1P/2P. Perbesarannya BULAT (4x dari petak asli 34x46): perbesaran
+   pecahan membuat lebar piksel jadi tidak sama rata dan piksel-artnya
+   terlihat goyah.
+
+   Kotaknya lebih pendek dari petak sprite-nya dengan sengaja, dan tokohnya
+   dirapatkan ke DASAR: petak sprite menyisakan belasan baris kosong di atas
+   kepala sebagai ruang untuk animasi lompat, dan kalau ditampilkan utuh
+   ruang kosong itu ikut terbawa — tokohnya jadi terlihat melorot di kotak
+   yang setengahnya hampa.
+
+   JANGAN memberinya nama kelas .potret — nama itu sudah dipakai potret
+   pembicara 88x88 di kotak dialog, dan kalau dipakai lagi di sini kedua
+   aturannya bertabrakan: bingkainya menyusut jadi 88 piksel dan tokohnya
+   tumpah keluar. */
+.bingkai.kotak-tokoh .ph{aspect-ratio:auto;height:156px;display:block}
+/* Ditambatkan, bukan diratakan lewat place-items: perataan "end" pada anak
+   yang LEBIH TINGGI dari wadahnya tidak ditepati browser — hasilnya malah
+   tergantung di atas dan kaki tokohnya yang terpotong. */
+.bingkai.kotak-tokoh .tokoh{position:absolute;left:50%;bottom:0;transform:translateX(-50%)}
+.tokoh{
+  display:block;width:136px;height:184px;
+  background-repeat:no-repeat;
+  background-position:0 0;                       /* baris diam, petak pertama */
+  background-size:calc(136px*6) calc(184px*11);
+  image-rendering:pixelated;
+}
+.tokoh.cowok{background-image:url("../../img/render/8bit-cowok.png")}
+.tokoh.cewek{background-image:url("../../img/render/8bit-cewek.png")}
+
 /* ---------- BAR XP (halaman naik level) ---------- */
 .xp{
   width:420px;height:26px;background:var(--putih);padding:var(--px);

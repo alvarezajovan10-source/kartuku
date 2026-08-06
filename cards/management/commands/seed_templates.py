@@ -90,11 +90,11 @@ SEEDS = [
             # mengikuti desain Canva aslinya yang 1376x768.
             "renderer": "game8bit",
             "frames": [
-                # Desain aslinya tidak punya slot foto sama sekali; dua kucing
-                # piksel di halaman PLAYER SELECT dijadikan slot pemain, dan
-                # keempat ubin POWER UPS dijadikan kenangan.
-                {"key": "p1", "label": "Foto pemain 1", "area": "player"},
-                {"key": "p2", "label": "Foto pemain 2", "area": "player"},
+                # Desain aslinya tidak punya slot foto sama sekali; keempat
+                # ubin POWER UPS dijadikan kenangan. Halaman PLAYER SELECT
+                # sempat punya slot foto juga, lalu dicabut: kotak di sana
+                # memajang potret kedua karakter supaya jelas kolom nama mana
+                # milik siapa, dan foto pembeli menghapus petunjuk itu.
                 {"key": "g1", "label": "Power up 1", "area": "powerups"},
                 {"key": "g2", "label": "Power up 2", "area": "powerups"},
                 {"key": "g3", "label": "Power up 3", "area": "powerups"},

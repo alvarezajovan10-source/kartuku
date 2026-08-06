@@ -168,14 +168,17 @@ function naikLevel() {
   // dari nol — tanpa ini browser menggabung dua penulisan jadi satu.
   void xpIsi.offsetWidth;
   requestAnimationFrame(() => { xpIsi.style.width = '100%'; });
-  // Semburan pertama begitu babaknya dibuka: karakternya yang memulai
-  // pesta, bar XP-nya menyusul.
-  pestaBerdua();
+  // Semburan pembuka begitu babaknya dibuka: karakternya yang memulai
+  // pesta, bar XP-nya menyusul. Sengaja SATU letupan saja — puncaknya
+  // bukan di sini, dan menumpahkan semuanya di depan membuat "LEVEL UP!"
+  // yang menyusul terasa datar.
+  pestaBerdua(1);
   timerLevel = setTimeout(() => {
     popLevel.classList.add('meletup');
     const r = popLevel.getBoundingClientRect();
-    hamburkan(r.left + r.width / 2, r.top + r.height / 2, 12);
-    pestaBerdua();
+    hamburkan(r.left + r.width / 2, r.top + r.height / 2, 16);
+    // Puncaknya: tepat waktu tulisannya meletup, semburan penuh.
+    pestaBerdua(LETUPAN);
   }, 1150);
 }
 
@@ -427,23 +430,49 @@ if (temanCowok && temanCewek) {
    mereka, bukan muncul begitu saja di udara. */
 const WARNA_PESTA = ['#ffd23f', '#ff6bb5', '#a8e6cf', '#b9a5e3', '#ffffff', '#ff2d8a'];
 
-function pesta(x, y, jumlah) {
+/* Isi semburannya tidak seragam. Kertas polos saja terbaca rata dan murah;
+   beberapa hati dan bintang kerlip di antaranya yang membuatnya terbaca
+   sebagai perayaan. Porsinya sengaja timpang — hati dan bintang hanya
+   selingan, kalau sama banyak dengan kertas hasilnya jadi ramai tanpa
+   bentuk. Keduanya SVG, yang lebih mahal digambar daripada kotak polos,
+   jadi jumlahnya juga ditahan demi HP lama. */
+function butirPesta(i) {
+  const undi = i % 8;
+  if (undi === 3 || undi === 6) return { lambang: '#s-hati', vb: '0 0 9 8', sisi: 15 + Math.random() * 12 };
+  if (undi === 5) return { lambang: '#s-kilau', vb: '0 0 7 7', sisi: 13 + Math.random() * 10 };
+  return null;
+}
+
+function pesta(x, y, jumlah, tunda) {
   if (kurangiGerak || !taman) return;
   const kotak = taman.getBoundingClientRect();
   const k = skalaKartu();
   for (let i = 0; i < jumlah; i++) {
-    const el = document.createElement('i');
-    const sisi = 5 + Math.floor(Math.random() * 6);
-    el.style.cssText =
-      'position:absolute;width:' + sisi + 'px;height:' + (sisi + Math.round(Math.random() * 4)) + 'px;' +
-      'background:' + WARNA_PESTA[i % WARNA_PESTA.length] + ';' +
-      'left:' + (x - kotak.left) / k + 'px;top:' + (y - kotak.top) / k + 'px;pointer-events:none';
+    const bentuk = butirPesta(i);
+    let el;
+    if (bentuk) {
+      el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      el.setAttribute('viewBox', bentuk.vb);
+      el.innerHTML = '<use href="' + bentuk.lambang + '"/>';
+      el.style.cssText =
+        'position:absolute;width:' + bentuk.sisi + 'px;height:' + bentuk.sisi + 'px;' +
+        'shape-rendering:crispEdges;' +
+        'left:' + (x - kotak.left) / k + 'px;top:' + (y - kotak.top) / k + 'px;pointer-events:none';
+    } else {
+      el = document.createElement('i');
+      const sisi = 5 + Math.floor(Math.random() * 6);
+      el.style.cssText =
+        'position:absolute;width:' + sisi + 'px;height:' + (sisi + Math.round(Math.random() * 4)) + 'px;' +
+        'background:' + WARNA_PESTA[i % WARNA_PESTA.length] + ';' +
+        'left:' + (x - kotak.left) / k + 'px;top:' + (y - kotak.top) / k + 'px;pointer-events:none';
+    }
     taman.appendChild(el);
 
-    const miring = (Math.random() - .5) * 150;   // sebaran mendatar saat naik
-    const tinggi = 190 + Math.random() * 200;
+    const miring = (Math.random() - .5) * 210;  // sebaran mendatar saat naik
+    const tinggi = 190 + Math.random() * 260;
     el.animate([
-      { transform: 'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity: 1 },
+      { transform: 'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity: 0 },
+      { transform: 'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity: 1, offset: .001 },
       {
         transform: 'translate(calc(-50% + ' + miring * .5 + 'px), calc(-50% - ' + tinggi + 'px))' +
           ' scale(1) rotate(' + (Math.random() * 260 - 130) + 'deg)',
@@ -456,6 +485,11 @@ function pesta(x, y, jumlah) {
       },
     ], {
       duration: 1500 + Math.random() * 900,
+      // Butir yang belum berangkat harus TIDAK TERLIHAT, bukan menumpuk
+      // sebagai gumpalan diam di mulut semburan — itu sebabnya bingkai
+      // pertama memakai opacity 0 dan isian mundurnya dikunci.
+      delay: (tunda || 0) + Math.random() * 190,
+      fill: 'backwards',
       easing: 'cubic-bezier(.16,.72,.4,1)',
     }).onfinish = () => el.remove();
   }
@@ -463,12 +497,24 @@ function pesta(x, y, jumlah) {
 
 /* Kedua karakter menyemburkan pestanya sekaligus. Dipanggil tiap babak
    LEVEL UP dibuka, jadi penerima yang mundur lalu maju lagi tetap
-   kebagian. */
-function pestaBerdua() {
+   kebagian.
+
+   Tiga letupan beruntun, bukan satu tumpahan besar: sekali semprot habis
+   dalam sekejap dan yang tertinggal cuma kertas jatuh. Jeda 380 ms membuat
+   semburan berikutnya berangkat waktu gelombang sebelumnya masih di puncak,
+   jadi udaranya penuh terus selama babaknya dibaca. */
+const LETUPAN = 3;
+const ISI_LETUPAN = 16;
+const JEDA_LETUPAN = 380;
+
+function pestaBerdua(letupan) {
   if (!regu.length) return;
+  const kali = letupan || LETUPAN;
   regu.forEach((t) => {
     const r = t.el.getBoundingClientRect();
-    pesta(r.left + r.width / 2, r.top + r.height * .3, 16);
+    for (let n = 0; n < kali; n++) {
+      pesta(r.left + r.width / 2, r.top + r.height * .3, ISI_LETUPAN, n * JEDA_LETUPAN);
+    }
   });
 }
 

@@ -10,9 +10,10 @@
      diatur hanya lapisan ajakan DI LUAR kanvas, bukan tata letak kartu.)
    - Tiap ukuran font yang bisa disunting WAJIB mengalikan var(--fs).
 
-   Tidak ada satu pun berkas gambar di sini. Sinar, titik halftone, garis
-   pindai, dan seluruh bingkai bergerigi dibuat dari gradien dan bayangan
-   kotak — jadi kartunya ringan dan tetap tajam di layar sebesar apa pun.
+   Tidak ada satu pun berkas gambar di sini. Langit, awan, pohon, pelangi,
+   kerlip, dan seluruh bingkai bergerigi dibuat dari gradien, bayangan
+   kotak, dan SVG piksel — jadi kartunya ringan dan tetap tajam di layar
+   sebesar apa pun.
    ============================================================ */
 :root{
   /* Diambil langsung dari gambar desainnya, bukan ditebak. */
@@ -40,50 +41,70 @@
 html{font-size:16px;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{
   font-family:'Press Start 2P',monospace;color:var(--tinta);
-  background:var(--pink-tua);
+  /* Bidang di luar kartu 16:9. Sengaja gelap netral, bukan pink: kartu
+     mendatar hampir selalu menyisakan pita atas-bawah, dan pita berwarna
+     terang terbaca seperti halaman rusak, sementara gelap terbaca sebagai
+     bingkai layar. */
+  background:#3b2233;
   min-height:100vh;overflow:hidden;position:relative;
 }
 .svg-defs{position:absolute;width:0;height:0;overflow:hidden}
 svg{shape-rendering:crispEdges}
 img{image-rendering:auto}
 
-/* ---------- BINGKAI LAYAR ---------- */
+/* ---------- LANGIT PASTEL ----------
+   Menggantikan sinar berputar versi pertama. Dua alasan, dua-duanya nyata:
+   pola garis yang berputar bikin pusing dilihat lama, dan
+   repeating-conic-gradient seukuran layar harus digambar ulang tiap frame
+   sehingga kartunya tersendat. Di sini yang bergerak hanya transform awan —
+   itu dikerjakan kartu grafis, bukan prosesor. */
 #card-stage{
-  background:var(--pink-muda);
+  background:linear-gradient(180deg,
+    #bfe3f7 0%, #d9e6fa 26%, #f3dcf0 52%, #ffd8e6 74%, #ffe6d5 100%);
   overflow:hidden;
   box-shadow:0 0 0 var(--px) var(--tinta), 0 30px 70px -30px rgba(43,15,34,.75);
 }
+.langit{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 
-/* Sinar matahari terbit. repeating-conic-gradient memberi tepi yang tajam —
-   persis yang dibutuhkan gaya piksel; gradien halus justru merusaknya. */
-.sinar{
-  position:absolute;inset:-30%;z-index:1;pointer-events:none;
-  background:repeating-conic-gradient(from 0deg at 50% 50%,
-    var(--pink-muda) 0deg 9deg, var(--pink-tua) 9deg 18deg);
-  animation:berputar 44s linear infinite;
-}
-@keyframes berputar{to{rotate:360deg}}
+.awan{position:absolute;height:auto;opacity:.95;
+  animation:hanyut linear infinite;will-change:transform}
+.a1{width:210px;top:9%;left:-24%;animation-duration:78s}
+.a2{width:150px;top:23%;left:-30%;animation-duration:104s;animation-delay:-30s;opacity:.85}
+.a3{width:265px;top:38%;left:-34%;animation-duration:126s;animation-delay:-70s;opacity:.75}
+.a4{width:120px;top:6%;left:-16%;animation-duration:92s;animation-delay:-52s;opacity:.8}
+.a5{width:185px;top:31%;left:-22%;animation-duration:142s;animation-delay:-96s;opacity:.7}
+@keyframes hanyut{to{transform:translateX(1360px)}}
 
-/* Titik halftone — dua sudut yang berlawanan, seperti di desainnya. */
-.titik{
-  position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.5;
-  background:
-    radial-gradient(circle at 6% 8%, var(--ceri) 0 34%, transparent 36%) 0 0 / 14px 14px,
-    radial-gradient(circle at 6% 8%, var(--ceri) 0 34%, transparent 36%) 7px 7px / 14px 14px;
-  -webkit-mask-image:
-    radial-gradient(60% 70% at 0% 0%, #000 0%, transparent 70%),
-    radial-gradient(60% 70% at 100% 100%, #000 0%, transparent 70%);
-  mask-image:
-    radial-gradient(60% 70% at 0% 0%, #000 0%, transparent 70%),
-    radial-gradient(60% 70% at 100% 100%, #000 0%, transparent 70%);
+.pelangi{position:absolute;width:132px;top:7%;right:8%;opacity:.85}
+
+/* Deretan pohon di kaki langit. Kecil dan pucat — ini latar, bukan isi. */
+.tanah{
+  position:absolute;left:0;right:0;bottom:0;height:118px;
+  background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,244,250,.9));
 }
-/* Garis pindai layar tabung. Sangat tipis — kalau terlalu tegas, teks
-   kecil jadi susah dibaca di HP. */
-.pindai{
-  position:absolute;inset:0;z-index:26;pointer-events:none;opacity:.16;
-  background:repeating-linear-gradient(180deg,
-    rgba(43,15,34,.5) 0 2px, transparent 2px 4px);
+.pohon{position:absolute;bottom:16px;width:52px;opacity:.72}
+.t1{left:3%;width:44px}
+.t2{left:15%}
+.t3{left:29%;width:60px;bottom:12px}
+.t4{right:27%}
+.t5{right:13%;width:46px}
+.t6{right:2%;width:58px;bottom:12px}
+
+/* Kerlip — kotak putih kecil yang berkedip, bukan gambar. */
+.kerlip{
+  position:absolute;width:8px;height:8px;background:var(--putih);
+  box-shadow:0 -8px 0 -2px var(--putih), 0 8px 0 -2px var(--putih),
+             -8px 0 0 -2px var(--putih), 8px 0 0 -2px var(--putih);
+  animation:kerlip 3.4s steps(2) infinite;
 }
+@keyframes kerlip{0%,60%{opacity:.15}70%,100%{opacity:.9}}
+.k1{top:12%;left:12%}
+.k2{top:20%;right:22%;animation-delay:-.9s}
+.k3{top:34%;left:26%;animation-delay:-1.8s}
+.k4{top:8%;left:42%;animation-delay:-2.4s}
+.k5{top:44%;right:9%;animation-delay:-1.2s}
+.k6{top:27%;left:57%;animation-delay:-2.9s}
+
 #taman{position:absolute;inset:0;z-index:27;pointer-events:none;overflow:hidden}
 
 /* ---------- BABAK ----------
@@ -101,13 +122,18 @@ img{image-rendering:auto}
 /* Kedipan putih sekejap saat berganti babak — kilatan khas layar konsol. */
 .scene.active .isi{animation:masuk .34s steps(4) both}
 @keyframes masuk{
-  0%{opacity:0;transform:translateY(10px) scale(.98)}
-  50%{opacity:1;filter:brightness(1.6)}
-  100%{opacity:1;transform:none;filter:none}
+  0%{opacity:0;transform:translateY(10px)}
+  100%{opacity:1;transform:none}
 }
 
 .isi{position:relative;z-index:10;width:100%;max-width:820px}
-.isi.tengah{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.isi.tengah{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+/* Ledakan putih .pop::before duduk di dasar .isi; semua saudara kandungnya
+   diangkat satu lapis supaya terbaca di atasnya, bukan tertimbun.
+   .pop DIKECUALIKAN dengan sengaja: memberinya z-index membuatnya jadi
+   konteks penumpukan sendiri, dan ledakannya ikut terangkat lagi —
+   persis bug yang sedang diperbaiki. */
+.isi.tengah>*:not(.pop){position:relative;z-index:1}
 
 /* ---------- TIPOGRAFI ----------
    'Press Start 2P' untuk judul dan label; 'VT323' untuk teks panjang —
@@ -139,9 +165,15 @@ img{image-rendering:auto}
 }
 .kepala.dua-baris{font-size:calc(1.5rem*var(--fs,1))}
 .kepala.kecil-spasi{font-size:calc(1.05rem*var(--fs,1));letter-spacing:var(--ls,.06em)}
-/* Tulisan meledak — LEVEL UP! dan NEVER! */
+/* Tulisan meledak — LEVEL UP! dan NEVER!
+   TANPA z-index. Sempat ada `z-index:2` di sini, dan itu penyebab elemen
+   tumpang tindih: z-index membuat .pop jadi konteks penumpukan sendiri,
+   sehingga ledakan putih di ::before (yang seharusnya di lapisan paling
+   bawah) ikut terangkat bersama .pop dan menutupi teks di atas dan di
+   bawahnya. Tanpa z-index, ::before turun ke dasar .isi — persis seperti
+   di desain aslinya, tempat semua teks duduk DI ATAS ledakan putih. */
 .pop{
-  position:relative;z-index:2;
+  position:relative;
   font-family:var(--f,'Press Start 2P'),monospace;
   font-size:calc(2.6rem*var(--fs,1));
   color:var(--c,var(--ceri));text-align:var(--al,center);
@@ -159,7 +191,7 @@ img{image-rendering:auto}
    bintang yang terlalu rapi terbaca seperti gir mesin, bukan ledakan. */
 .pop::before{
   content:"";position:absolute;left:50%;top:50%;z-index:-1;
-  width:190%;height:340%;transform:translate(-50%,-50%);
+  width:172%;height:250%;transform:translate(-50%,-50%);
   background:var(--putih);
   clip-path:polygon(50.0% 0.7%,55.8% 24.7%,68.3% 11.9%,68.9% 26.4%,83.0% 23.7%,73.4% 38.8%,98.0% 39.0%,75.9% 50.0%,91.2% 59.4%,77.2% 63.1%,83.0% 76.3%,66.2% 70.3%,71.4% 94.4%,55.8% 75.3%,50.0% 92.2%,43.3% 79.5%,31.7% 88.1%,33.8% 70.3%,11.5% 80.7%,26.6% 61.2%,8.8% 59.4%,19.8% 50.0%,8.8% 40.6%,26.6% 38.8%,11.5% 19.3%,33.8% 29.7%,31.7% 11.9%,43.3% 20.5%);
 }
@@ -190,6 +222,8 @@ img{image-rendering:auto}
   color:var(--c,var(--tinta));text-align:var(--al,center);
   font-weight:var(--fw,400);font-style:var(--fi,normal);
   letter-spacing:var(--ls,.1em);line-height:var(--lh,1.5);
+  text-shadow:3px 0 0 var(--putih), -3px 0 0 var(--putih),
+    0 3px 0 var(--putih), 0 -3px 0 var(--putih);
   overflow-wrap:break-word;
 }
 .kecil{
@@ -309,7 +343,7 @@ img{image-rendering:auto}
 }
 
 /* ---------- POWER UPS ---------- */
-.kisi{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:660px}
+.kisi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:100%;max-width:560px}
 .ubin{
   position:relative;aspect-ratio:1;background:var(--pink-pucat);
   display:grid;place-items:center;cursor:pointer;overflow:hidden;
@@ -387,7 +421,10 @@ img{image-rendering:auto}
 }
 .mulai:active{translate:0 6px}
 .kedip{animation:kedip 1.05s steps(2) infinite}
-@keyframes kedip{0%,49%{opacity:1}50%,100%{opacity:.25}}
+/* Turun ke .25 membuat tombolnya benar-benar lenyap sekejap — di layar
+   terang itu terbaca sebagai tombol yang tidak ada. .62 sudah cukup
+   untuk memberi kesan berkedip tanpa menghilangkannya. */
+@keyframes kedip{0%,49%{opacity:1}50%,100%{opacity:.62}}
 
 /* ---------- NAVIGASI ---------- */
 .nav{
@@ -439,7 +476,7 @@ body.is-editing .putar-hp{display:none}
 }
 
 @media (prefers-reduced-motion: reduce){
-  .sinar,.stik,.pantul,.denyut,.kedip,.panah,.putar-hp svg{animation:none}
+  .awan,.kerlip,.stik,.pantul,.denyut,.kedip,.panah,.putar-hp svg{animation:none}
   .scene.active .isi{animation:none}
   .pop.meletup{animation:none}
 }

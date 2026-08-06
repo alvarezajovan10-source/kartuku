@@ -27,10 +27,13 @@
     // meluber horizontal di desktop yang scrollbar-nya memakan tempat.
     var w = root.clientWidth || window.innerWidth || W0;
     if (root.dataset.stage === "lebar") {
+      // TANPA K_MAX. Batas 1,15 itu masuk akal untuk kartu tegak — kartu
+      // selebar HP tidak perlu dibesarkan sampai memenuhi layar laptop.
+      // Untuk kartu mendatar justru kebalikannya: bentuknya sudah sama
+      // dengan layar, jadi dibatasi 1,15 ia tampil sebagai kotak kecil di
+      // tengah dan penerima harus memperbesar sendiri.
       var h = root.clientHeight || window.innerHeight || H0_LEBAR;
-      root.style.setProperty(
-        "--k", Math.min(w / W0_LEBAR, h / H0_LEBAR, K_MAX)
-      );
+      root.style.setProperty("--k", Math.min(w / W0_LEBAR, h / H0_LEBAR));
       return;
     }
     root.style.setProperty("--k", Math.min(w / W0, K_MAX));

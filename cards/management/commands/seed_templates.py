@@ -92,13 +92,13 @@ SEEDS = [
             "frames": [
                 # Desain aslinya tidak punya slot foto sama sekali; dua kucing
                 # piksel di halaman PLAYER SELECT dijadikan slot pemain, dan
-                # empat ubin POWER UPS dijadikan kenangan.
+                # dua ubin POWER UPS dijadikan kenangan. Empat foto total —
+                # sengaja sedikit, karena kotak yang dibiarkan kosong pembeli
+                # merusak halamannya.
                 {"key": "p1", "label": "Foto pemain 1", "area": "player"},
                 {"key": "p2", "label": "Foto pemain 2", "area": "player"},
                 {"key": "g1", "label": "Power up 1", "area": "powerups"},
                 {"key": "g2", "label": "Power up 2", "area": "powerups"},
-                {"key": "g3", "label": "Power up 3", "area": "powerups"},
-                {"key": "g4", "label": "Power up 4", "area": "powerups"},
             ],
             "texts": [
                 # Bawaan = contoh nada yang bisa ditiru pembeli, bukan perintah.

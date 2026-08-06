@@ -130,6 +130,10 @@ img{image-rendering:auto}
 }
 /* Belum ada nama = tidak ada papan kosong menggantung. */
 .nama-teman:empty{display:none}
+/* Saat berpelukan mereka berdiri berdempetan, dan dua papan nama saling
+   menimpa jadi satu tulisan berantakan. Disembunyikan sebentar. */
+.nama-teman{transition:opacity .3s}
+.teman.merapat .nama-teman{opacity:0}
 /* Kolom sheet dijalankan di sini. Barisnya (background-position-y) disetel
    JS lewat gaya sebaris, jadi dua sumbunya tidak saling menimpa. */
 @keyframes jalan-sprite{

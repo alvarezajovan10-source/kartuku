@@ -239,6 +239,7 @@ function Teman(el, mula) {
   this.sprite = el.querySelector('.sprite');
   this.x = mula;
   this.tujuan = mula;
+  this.lari = false;
   this.hadap = 1;
   this.anim = '';
   this.laku = 'idle';          // yang dimainkan setelah sampai
@@ -256,6 +257,15 @@ Teman.prototype.pasang = function (nama) {
   this.sprite.style.setProperty('--frames', a.frames);
   this.sprite.style.setProperty('--dur', a.dur + 's');
   this.sprite.style.backgroundPositionY = -(a.baris * TINGGI_FRAME) + 'px';
+};
+
+/* Sekali berangkat, sekali diputuskan: berjalan atau berlari. Sempat
+   diputuskan ulang tiap frame dari sisa jarak, dan hasilnya pejalan yang
+   melambat sendiri di tengah jalan — perjalanan panjang jadi memakan lima
+   detik dan terbaca seperti macet. */
+Teman.prototype.pergiKe = function (x) {
+  this.lari = Math.abs(x - this.x) > 200;
+  this.tujuan = x;
 };
 
 Teman.prototype.gambar = function () {
@@ -277,8 +287,8 @@ Teman.prototype.langkah = function (dt, now) {
   if (jarak > 2) {
     // Jarak jauh ditempuh berlari — orang tidak berjalan santai menyeberangi
     // layar, dan langkah pelan sejauh itu terlihat seperti benda digeser.
-    const lari = jarak > 300;
-    const laju = (lari ? 210 : 96) * dt;
+    const lari = this.lari;
+    const laju = (lari ? 260 : 104) * dt;
     this.x += Math.sign(beda) * Math.min(laju, jarak);
     this.hadap = beda < 0 ? -1 : 1;
     this.pasang(lari ? 'run' : 'walk');
@@ -301,6 +311,16 @@ const temanCowok = document.getElementById('temanCowok');
 const temanCewek = document.getElementById('temanCewek');
 let regu = [];
 let sentuhTerakhir = performance.now();
+
+/* Keadaan pelukan sengaja dideklarasikan DI SINI, jauh sebelum peluk()
+   dipakai di bawah. Sempat ditaruh dekat fungsinya, dan akibatnya fatal:
+   loop animasi di bawah mulai berjalan seketika dan langsung memanggil
+   cekPeluk(), yang membaca `memeluk` sebelum baris `let`-nya sempat jalan.
+   JavaScript melempar ReferenceError di situ, dan SELURUH sisa berkas ini
+   berhenti dieksekusi — pesta, penyalin nama, dan perintah pelukan ikut
+   mati, walau tidak ada yang salah dengan kodenya sendiri. */
+let memeluk = false;
+let hatiPeluk = false;
 
 if (temanCowok && temanCewek) {
   regu = [
@@ -431,19 +451,16 @@ function pestaBerdua() {
 
    Titik temunya digeser ke kiri dari tengah karena tombol navigasi duduk di
    tengah bawah; berpelukan tepat di sana membuat mereka tertutup tombol. */
-let memeluk = false;
-let hatiPeluk = false;
-
 function peluk() {
   if (!regu.length) return;
   sentuhTerakhir = performance.now();
   memeluk = true;
   hatiPeluk = false;
-  regu[0].tujuan = W_KANVAS * .22 - LEBAR_TEMAN / 2;
-  regu[1].tujuan = W_KANVAS * .31 - LEBAR_TEMAN / 2;
+  regu[0].pergiKe(W_KANVAS * .22 - LEBAR_TEMAN / 2);
+  regu[1].pergiKe(W_KANVAS * .31 - LEBAR_TEMAN / 2);
   regu[0].kunci = 1;    // yang kiri menghadap kanan
   regu[1].kunci = -1;   // yang kanan menghadap kiri
-  regu.forEach((t) => { t.laku = 'hug'; t.sekali = null; });
+  regu.forEach((t) => { t.laku = 'hug'; t.sekali = null; t.el.classList.add('merapat'); });
 }
 
 /* Hati baru muncul setelah keduanya benar-benar sampai dan berpelukan —
@@ -464,10 +481,11 @@ function temaniBabak(id) {
   const p = PANGGUNG[id] || PANGGUNG.powerups;
   sentuhTerakhir = performance.now();
   regu.forEach((t, i) => {
-    t.tujuan = W_KANVAS * p.x[i] - LEBAR_TEMAN / 2;
+    t.pergiKe(W_KANVAS * p.x[i] - LEBAR_TEMAN / 2);
     t.laku = p.laku;
     t.sekali = null;
     t.kunci = null;
+    t.el.classList.remove('merapat');
   });
   // Pindah babak membatalkan pelukan: mereka punya urusan lain di sana.
   memeluk = false;

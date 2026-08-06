@@ -92,7 +92,7 @@ img{image-rendering:auto}
    celebrate). JS hanya menggeser baris dan mengatur jumlah frame; kolomnya
    dijalankan CSS dengan steps() supaya tidak ada perhitungan tiap frame. */
 .lantai{
-  position:absolute;left:0;right:0;bottom:0;height:104px;z-index:16;
+  position:absolute;left:0;right:0;bottom:0;height:104px;z-index:2;
   pointer-events:none;
   background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.5) 55%, rgba(255,255,255,.72) 100%);
   border-top:var(--px) solid rgba(43,15,34,.14);
@@ -180,6 +180,40 @@ img{image-rendering:auto}
    konteks penumpukan sendiri, dan ledakannya ikut terangkat lagi —
    persis bug yang sedang diperbaiki. */
 .isi.tengah>*:not(.pop){position:relative;z-index:1}
+/* Teks panjang dari pembeli tidak boleh meluber keluar kartu — di kartu
+   mendatar ruang tingginya mepet, dan surat panjang langsung tembus ke atas
+   dan ke bawah layar.
+
+   Yang digulir BUKAN seluruh babak. Dua alasan, dua-duanya ketahuan waktu
+   dicoba di browser sungguhan:
+   - Isi yang dipusatkan (justify-content:center) lalu meluber tidak bisa
+     digulir ke ATAS — bagian atasnya terpotong permanen. Jebakan lama
+     flexbox.
+   - Judul dan tombol ikut hanyut. Tombol HUG yang terdorong ke bawah garis
+     pandang sama saja dengan tombol yang tidak ada.
+   Jadi judul dan tombol dipatok, dan hanya bagian tengah yang menyusut. */
+.isi.gulir{height:100%}
+.gulung{
+  width:100%;min-height:0;flex:0 1 auto;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  overflow-y:auto;overscroll-behavior:contain;padding:2px 10px 2px 2px;
+}
+/* Isi kolom yang menyusut TIDAK boleh ikut menyusut. Tanpa ini flexbox
+   memepatkan anak-anaknya lebih dulu sebelum memunculkan gulir — gambar
+   kuenya sempat hilang sama sekali karena dipepatkan sampai setinggi nol. */
+.gulung>*{flex:none}
+/* Surat panjang digulir DI DALAM kotak dialognya, bukan menggeser kotaknya. */
+#dialog .kotak-dialog{flex:0 1 auto;min-height:0}
+#dialog .ucap{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:8px}
+
+.gulung::-webkit-scrollbar,
+#dialog .ucap::-webkit-scrollbar{width:10px}
+.gulung::-webkit-scrollbar-track,
+#dialog .ucap::-webkit-scrollbar-track{background:rgba(255,255,255,.45);
+  box-shadow:inset 0 0 0 2px var(--tinta)}
+.gulung::-webkit-scrollbar-thumb,
+#dialog .ucap::-webkit-scrollbar-thumb{background:var(--ceri);
+  box-shadow:inset 0 0 0 2px var(--tinta)}
 
 /* ---------- TIPOGRAFI ----------
    'Press Start 2P' untuk judul dan label; 'VT323' untuk teks panjang —

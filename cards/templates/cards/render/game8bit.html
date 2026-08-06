@@ -175,7 +175,7 @@
     sama: kotak dialog RPG dengan potret pembicara di kiri.
   {% endcomment %}
   <section class="scene" id="dialog">
-    <div class="isi tengah">
+    <div class="isi tengah gulir">
       <div class="kotak-dialog">
         <div class="potret" aria-hidden="true">
           <svg viewBox="0 0 12 12"><use href="#s-kucing"/></svg>
@@ -198,13 +198,20 @@
     peluk() di game8bit.js.
   {% endcomment %}
   <section class="scene" id="wishes">
-    <div class="isi tengah">
+    <div class="isi tengah gulir">
       <h2 class="kepala"{% el card editing "wish_head" %}>{% t card "wish_head" %}</h2>
-      <svg class="ikon-besar pantul" viewBox="0 0 14 11" aria-hidden="true"><use href="#s-kue"/></svg>
-      <div class="panel">
-        <p class="panel-teks"{% el card editing "wish_title" %}>{% t card "wish_title" %}</p>
+      {% comment %}
+        Judul dan tombol tetap di tempat; hanya bagian tengah ini yang
+        menyusut lalu digulir kalau harapannya panjang. Tombol yang ikut
+        terdorong turun oleh teks panjang sama saja dengan tombol yang hilang.
+      {% endcomment %}
+      <div class="gulung">
+        <svg class="ikon-besar pantul" viewBox="0 0 14 11" aria-hidden="true"><use href="#s-kue"/></svg>
+        <div class="panel">
+          <p class="panel-teks"{% el card editing "wish_title" %}>{% t card "wish_title" %}</p>
+        </div>
+        <p class="kecil"{% el card editing "wish_note" %}>{% t card "wish_note" %}</p>
       </div>
-      <p class="kecil"{% el card editing "wish_note" %}>{% t card "wish_note" %}</p>
       <button class="mulai peluk" id="pelukBtn" type="button"{% el card editing "peluk_btn" %}>{% t card "peluk_btn" %}</button>
     </div>
   </section>

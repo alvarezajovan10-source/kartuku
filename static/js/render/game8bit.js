@@ -124,10 +124,14 @@ function naikLevel() {
   // dari nol — tanpa ini browser menggabung dua penulisan jadi satu.
   void xpIsi.offsetWidth;
   requestAnimationFrame(() => { xpIsi.style.width = '100%'; });
+  // Semburan pertama begitu babaknya dibuka: karakternya yang memulai
+  // pesta, bar XP-nya menyusul.
+  pestaBerdua();
   timerLevel = setTimeout(() => {
     popLevel.classList.add('meletup');
     const r = popLevel.getBoundingClientRect();
     hamburkan(r.left + r.width / 2, r.top + r.height / 2, 12);
+    pestaBerdua();
   }, 1150);
 }
 
@@ -318,10 +322,7 @@ if (temanCowok && temanCewek) {
   if (!pasangan.length) return;
 
   const salin = () => pasangan.forEach(([sumber, papan]) => {
-    const t = (sumber.textContent || '').trim();
-    // Teks contoh di editor ("Nama penerima") bukan nama sungguhan —
-    // menampilkannya di atas kepala malah terbaca seperti nama karakter.
-    papan.textContent = (t === 'Nama penerima' || t === 'Namamu') ? '' : t;
+    papan.textContent = (sumber.textContent || '').trim();
   });
   salin();
 
@@ -332,6 +333,57 @@ if (temanCowok && temanCewek) {
     });
   }
 })();
+
+/* ---------- pesta meriah ----------
+   Kertas warna yang disemburkan kedua karakter LURUS KE ATAS, lalu jatuh
+   melebar. Bukan meletup ke segala arah: yang menyemburkan adalah karakter
+   di lantai, jadi arah naik itulah yang membuatnya terbaca datang dari
+   mereka, bukan muncul begitu saja di udara. */
+const WARNA_PESTA = ['#ffd23f', '#ff6bb5', '#a8e6cf', '#b9a5e3', '#ffffff', '#ff2d8a'];
+
+function pesta(x, y, jumlah) {
+  if (kurangiGerak || !taman) return;
+  const kotak = taman.getBoundingClientRect();
+  for (let i = 0; i < jumlah; i++) {
+    const el = document.createElement('i');
+    const sisi = 5 + Math.floor(Math.random() * 6);
+    el.style.cssText =
+      'position:absolute;width:' + sisi + 'px;height:' + (sisi + Math.round(Math.random() * 4)) + 'px;' +
+      'background:' + WARNA_PESTA[i % WARNA_PESTA.length] + ';' +
+      'left:' + (x - kotak.left) + 'px;top:' + (y - kotak.top) + 'px;pointer-events:none';
+    taman.appendChild(el);
+
+    const miring = (Math.random() - .5) * 150;   // sebaran mendatar saat naik
+    const tinggi = 190 + Math.random() * 200;
+    el.animate([
+      { transform: 'translate(-50%,-50%) scale(.4) rotate(0deg)', opacity: 1 },
+      {
+        transform: 'translate(calc(-50% + ' + miring * .5 + 'px), calc(-50% - ' + tinggi + 'px))' +
+          ' scale(1) rotate(' + (Math.random() * 260 - 130) + 'deg)',
+        opacity: 1, offset: .42,
+      },
+      {
+        transform: 'translate(calc(-50% + ' + miring * 1.8 + 'px), calc(-50% + ' + (170 + Math.random() * 120) + 'px))' +
+          ' scale(.9) rotate(' + (Math.random() * 500 - 250) + 'deg)',
+        opacity: 0,
+      },
+    ], {
+      duration: 1500 + Math.random() * 900,
+      easing: 'cubic-bezier(.16,.72,.4,1)',
+    }).onfinish = () => el.remove();
+  }
+}
+
+/* Kedua karakter menyemburkan pestanya sekaligus. Dipanggil tiap babak
+   LEVEL UP dibuka, jadi penerima yang mundur lalu maju lagi tetap
+   kebagian. */
+function pestaBerdua() {
+  if (!regu.length) return;
+  regu.forEach((t) => {
+    const r = t.el.getBoundingClientRect();
+    pesta(r.left + r.width / 2, r.top + r.height * .3, 16);
+  });
+}
 
 /* ---------- berpelukan ----------
    Dipanggil tombol di babak WISHES. Mereka tidak langsung berpelukan di

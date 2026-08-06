@@ -108,13 +108,19 @@ SEEDS = [
                 {"key": "player_head", "label": "Judul pilih pemain", "default": "PLAYER SELECT"},
                 {"key": "player_1p", "label": "Label pemain 1", "default": "1P"},
                 {"key": "player_2p", "label": "Label pemain 2", "default": "2P"},
+                # Nama karakter, TERPISAH dari nama penerima di layar judul.
+                # Sempat memakai kolom yang sama, dan akibatnya mengetik nama
+                # di layar judul ikut mengubah nama pemain 1 — dua hal beda
+                # yang tidak boleh saling menyeret.
+                {"key": "nama1", "label": "Nama karakter 1P", "default": "PLAYER 1"},
+                {"key": "nama2", "label": "Nama karakter 2P", "default": "PLAYER 2"},
                 {"key": "level_kick", "label": "Pembuka naik level", "default": "pengalaman bertambah..."},
                 {"key": "level_head", "label": "Judul naik level", "default": "LEVEL UP!"},
                 {"key": "level_stat", "label": "Statistik level", "default": "HP +100  LOVE +999"},
                 {"key": "wish_head", "label": "Judul wishes", "default": "WISHES"},
                 {"key": "wish_title", "label": "Harapan utama", "default": "MAKE A WISH"},
                 {"key": "wish_note", "label": "Isi harapan", "default": "semoga tahun ini sebaik kamu memperlakukan orang lain, dan semoga aku masih di sampingmu waktu itu terjadi."},
-                {"key": "peluk_btn", "label": "Tombol peluk", "default": "PELUK DIA"},
+                {"key": "peluk_btn", "label": "Tombol peluk", "default": "HUG"},
                 {"key": "power_head", "label": "Judul power up", "default": "POWER UPS"},
                 {"key": "power_note", "label": "Catatan power up", "default": "ketuk tiap kotak buat lihat isinya"},
                 {"key": "score_head", "label": "Judul skor", "default": "HIGH SCORES"},

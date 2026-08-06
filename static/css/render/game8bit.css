@@ -384,7 +384,9 @@ img{image-rendering:auto}
   color:var(--c,var(--tinta));text-align:var(--al,center);
   font-weight:var(--fw,400);font-style:var(--fi,normal);
   letter-spacing:var(--ls,.04em);line-height:var(--lh,1.4);
-  overflow-wrap:break-word;
+  /* pre-wrap supaya kotak putihnya bisa diisi tulisan beberapa baris,
+     bukan cuma satu baris pendek. */
+  white-space:pre-wrap;overflow-wrap:break-word;
 }
 
 /* ---------- POWER UPS ---------- */

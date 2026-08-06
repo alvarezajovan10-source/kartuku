@@ -93,11 +93,11 @@
     sprite yang berbalik, nama tetap tegak.
   {% endcomment %}
   <div class="teman cowok" id="temanCowok">
-    <span class="nama-teman" id="namaCowok">{{ card.recipient_name|default:"" }}</span>
+    <span class="nama-teman" id="namaCowok">{% t card "nama1" %}</span>
     <i class="sprite" role="img" aria-label="Karakter cowok"></i>
   </div>
   <div class="teman cewek" id="temanCewek">
-    <span class="nama-teman" id="namaCewek">{{ card.sender_name|default:"" }}</span>
+    <span class="nama-teman" id="namaCewek">{% t card "nama2" %}</span>
     <i class="sprite" role="img" aria-label="Karakter cewek"></i>
   </div>
 
@@ -133,7 +133,7 @@
               {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
             </div>
           </div>
-          <p class="nama" id="nama1p"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</p>
+          <p class="nama" id="nama1p"{% el card editing "nama1" %}>{% t card "nama1" %}</p>
         </div>
         {% endwith %}
 
@@ -148,7 +148,7 @@
               {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
             </div>
           </div>
-          <p class="nama" id="nama2p"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</p>
+          <p class="nama" id="nama2p"{% el card editing "nama2" %}>{% t card "nama2" %}</p>
         </div>
         {% endwith %}
       </div>

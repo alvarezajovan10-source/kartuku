@@ -80,6 +80,56 @@ SEEDS = [
             ],
         },
     ),
+    (
+        "game-8bit",
+        "Game 8-Bit",
+        CardType.BIRTHDAY,
+        {
+            "accent": "#ff2d8a",
+            # Satu-satunya renderer MENDATAR 16:9 (data-stage="lebar"),
+            # mengikuti desain Canva aslinya yang 1376x768.
+            "renderer": "game8bit",
+            "frames": [
+                # Desain aslinya tidak punya slot foto sama sekali; dua kucing
+                # piksel di halaman PLAYER SELECT dijadikan slot pemain, dan
+                # empat ubin POWER UPS dijadikan kenangan.
+                {"key": "p1", "label": "Foto pemain 1", "area": "player"},
+                {"key": "p2", "label": "Foto pemain 2", "area": "player"},
+                {"key": "g1", "label": "Power up 1", "area": "powerups"},
+                {"key": "g2", "label": "Power up 2", "area": "powerups"},
+                {"key": "g3", "label": "Power up 3", "area": "powerups"},
+                {"key": "g4", "label": "Power up 4", "area": "powerups"},
+            ],
+            "texts": [
+                # Bawaan = contoh nada yang bisa ditiru pembeli, bukan perintah.
+                # Huruf besar disengaja: itu bahasa layar permainan 8-bit.
+                {"key": "title_main", "label": "Judul utama", "default": "HAPPY BIRTHDAY"},
+                {"key": "title_start", "label": "Tombol mulai", "default": "PRESS START"},
+                {"key": "player_head", "label": "Judul pilih pemain", "default": "PLAYER SELECT"},
+                {"key": "player_1p", "label": "Label pemain 1", "default": "1P"},
+                {"key": "player_2p", "label": "Label pemain 2", "default": "2P"},
+                {"key": "level_kick", "label": "Pembuka naik level", "default": "pengalaman bertambah..."},
+                {"key": "level_head", "label": "Judul naik level", "default": "LEVEL UP!"},
+                {"key": "level_stat", "label": "Statistik level", "default": "HP +100  LOVE +999"},
+                {"key": "ach_head", "label": "Judul pencapaian", "default": "ACHIEVEMENT UNLOCKED"},
+                {"key": "ach_name", "label": "Nama pencapaian", "default": "SOULMATE FOUND"},
+                {"key": "ach_note", "label": "Catatan pencapaian", "default": "dicapai pada hari kita ketemu, dan belum pernah dilepas sejak itu."},
+                {"key": "power_head", "label": "Judul power up", "default": "POWER UPS"},
+                {"key": "power_note", "label": "Catatan power up", "default": "ketuk tiap kotak buat lihat isinya"},
+                {"key": "score_head", "label": "Judul skor", "default": "HIGH SCORES"},
+                {"key": "score_l1", "label": "Skor 1: nama", "default": "LOVE"},
+                {"key": "score_v1", "label": "Skor 1: angka", "default": "99999"},
+                {"key": "score_l2", "label": "Skor 2: nama", "default": "JOY"},
+                {"key": "score_v2", "label": "Skor 2: angka", "default": "88888"},
+                {"key": "score_l3", "label": "Skor 3: nama", "default": "CUTE"},
+                {"key": "score_v3", "label": "Skor 3: angka", "default": "77777"},
+                {"key": "over_head", "label": "Judul penutup (dicoret)", "default": "GAME OVER?"},
+                {"key": "over_big", "label": "Jawaban penutup", "default": "NEVER!"},
+                {"key": "over_note", "label": "Kalimat penutup", "default": "CONTINUE TOGETHER FOREVER"},
+                {"key": "over_btn", "label": "Tombol main lagi", "default": "PLAY AGAIN"},
+            ],
+        },
+    ),
     # Anniversary, Love Story, dan Proposal sengaja belum ada isinya.
     # Kategorinya tetap tampil di situs sebagai "Coming soon" — lihat
     # _category_cards() di cards/views.py, yang menandai kategori tanpa

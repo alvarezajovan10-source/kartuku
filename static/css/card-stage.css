@@ -43,6 +43,19 @@
 [data-stage="frame"] #card-viewport { position: fixed; inset: 0; }
 [data-stage="frame"] #card-stage { height: calc(100% / var(--k, 1)); }
 
+/* Mode "lebar": kartu MENDATAR 16:9 (Game 8-Bit).
+   Harus muat UTUH — terpotong sedikit saja, isi babaknya hilang. Karena itu
+   JS membatasi skalanya dari lebar DAN tinggi, dan kartunya dipusatkan
+   vertikal. transform-origin ikut pindah ke tengah: dengan `top center`,
+   kartu yang sudah dipusatkan flexbox justru menyusut ke arah atas dan
+   terlihat menempel di langit-langit layar. */
+[data-stage="lebar"] #card-viewport { position: fixed; inset: 0; align-items: center; }
+[data-stage="lebar"] #card-stage {
+  height: var(--h0, 540px);
+  align-self: center;
+  transform-origin: center center;
+}
+
 /* Mode "flow": halaman yang di-scroll (Scrapbook, Kanvas).
    Tinggi pembungkus disetel JS, karena transform tidak memengaruhi tinggi
    layout — tanpa itu halaman akan punya ruang kosong atau terpotong. */

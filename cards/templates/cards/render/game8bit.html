@@ -1,0 +1,257 @@
+{% load static card_extras %}<!DOCTYPE html>
+<html lang="id" data-stage="lebar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk {{ card.recipient_name|default:"kamu" }} ♥</title>
+<meta name="robots" content="noindex, nofollow">
+{% include "cards/_card_head.html" %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+{% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
+<link rel="stylesheet" href="{% static_v 'css/render/game8bit.css' %}">
+{% include "cards/_stage_head.html" %}
+{% if editing %}
+<link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
+<script defer src="{% static_v 'js/card-frame.js' %}"></script>
+{% endif %}
+</head>
+<body{% if editing %} class="is-editing"{% endif %}>
+
+{% comment %}
+  GAME 8-BIT — kartu MENDATAR 16:9 (data-stage="lebar"), dari desain Canva
+  milik pemilik situs.
+
+  Rasionya mengikuti desain aslinya yang 1376x768. Konsekuensinya tata letak
+  di sini selalu memakai lebar: kisi mendatar, dua pemain berdampingan,
+  papan skor melebar. Di HP yang dipegang tegak kartu ini kecil — itu sifat
+  bawaan 16:9, dan penerima diminta memiringkan HP lewat lapisan .putar-hp
+  di bawah, yang sengaja DI LUAR kanvas supaya tidak ikut diskalakan.
+
+  Seluruh piksel-art digambar ulang sebagai SVG (lihat blok <symbol> di
+  bawah), bukan menempel PNG dari Canva: tiap halaman PNG itu ~1,3 MB dan
+  pecah kalau diperbesar, sementara bentuk vektor tetap tajam, ringan, dan
+  bisa dianimasikan — melompat, berkedip, meledak.
+
+  Latar sinar dan titik halftone murni CSS (lihat game8bit.css), jadi tidak
+  ada satu pun berkas gambar yang perlu diunduh penerima.
+{% endcomment %}
+
+<!-- ======== BENTUK PIKSEL YANG DIPAKAI ULANG ======== -->
+<svg class="svg-defs" aria-hidden="true" shape-rendering="crispEdges">
+  <symbol id="s-hati" viewBox="0 0 9 8"><rect x="1" y="0" width="2" height="1" fill="#2b0f22"/><rect x="6" y="0" width="2" height="1" fill="#2b0f22"/><rect x="0" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="3" y="1" width="1" height="1" fill="#2b0f22"/><rect x="5" y="1" width="1" height="1" fill="#2b0f22"/><rect x="6" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="0" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="2" width="1" height="1" fill="#ffffff"/><rect x="3" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="4" y="2" width="1" height="1" fill="#2b0f22"/><rect x="5" y="2" width="3" height="1" fill="#ff6bb5"/><rect x="8" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="7" height="1" fill="#ff6bb5"/><rect x="8" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="4" width="5" height="1" fill="#ff6bb5"/><rect x="7" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="5" width="1" height="1" fill="#2b0f22"/><rect x="3" y="5" width="3" height="1" fill="#ff6bb5"/><rect x="6" y="5" width="1" height="1" fill="#2b0f22"/><rect x="3" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="6" width="1" height="1" fill="#ff6bb5"/><rect x="5" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="7" width="1" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-piala" viewBox="0 0 11 13"><rect x="2" y="0" width="7" height="1" fill="#2b0f22"/><rect x="1" y="1" width="1" height="1" fill="#2b0f22"/><rect x="2" y="1" width="7" height="1" fill="#ffd23f"/><rect x="9" y="1" width="1" height="1" fill="#2b0f22"/><rect x="0" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#e8951e"/><rect x="2" y="2" width="7" height="1" fill="#ffd23f"/><rect x="9" y="2" width="1" height="1" fill="#e8951e"/><rect x="10" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="1" height="1" fill="#e8951e"/><rect x="2" y="3" width="1" height="1" fill="#2b0f22"/><rect x="3" y="3" width="5" height="1" fill="#ffd23f"/><rect x="8" y="3" width="1" height="1" fill="#2b0f22"/><rect x="9" y="3" width="1" height="1" fill="#e8951e"/><rect x="10" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#e8951e"/><rect x="2" y="4" width="1" height="1" fill="#2b0f22"/><rect x="3" y="4" width="5" height="1" fill="#ffd23f"/><rect x="8" y="4" width="1" height="1" fill="#2b0f22"/><rect x="9" y="4" width="1" height="1" fill="#e8951e"/><rect x="10" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="2" height="1" fill="#2b0f22"/><rect x="3" y="5" width="5" height="1" fill="#ffd23f"/><rect x="8" y="5" width="2" height="1" fill="#2b0f22"/><rect x="3" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="6" width="3" height="1" fill="#ffd23f"/><rect x="7" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="7" width="1" height="1" fill="#2b0f22"/><rect x="5" y="7" width="1" height="1" fill="#ffd23f"/><rect x="6" y="7" width="1" height="1" fill="#2b0f22"/><rect x="4" y="8" width="1" height="1" fill="#2b0f22"/><rect x="5" y="8" width="1" height="1" fill="#ffd23f"/><rect x="6" y="8" width="1" height="1" fill="#2b0f22"/><rect x="3" y="9" width="1" height="1" fill="#2b0f22"/><rect x="4" y="9" width="3" height="1" fill="#ffd23f"/><rect x="7" y="9" width="1" height="1" fill="#2b0f22"/><rect x="2" y="10" width="1" height="1" fill="#2b0f22"/><rect x="3" y="10" width="5" height="1" fill="#e8951e"/><rect x="8" y="10" width="1" height="1" fill="#2b0f22"/><rect x="1" y="11" width="1" height="1" fill="#2b0f22"/><rect x="2" y="11" width="7" height="1" fill="#e8951e"/><rect x="9" y="11" width="1" height="1" fill="#2b0f22"/><rect x="2" y="12" width="7" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kue" viewBox="0 0 14 11"><rect x="6" y="0" width="2" height="1" fill="#2b0f22"/><rect x="5" y="1" width="1" height="1" fill="#2b0f22"/><rect x="6" y="1" width="2" height="1" fill="#ff2d8a"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="6" y="2" width="2" height="1" fill="#2b0f22"/><rect x="2" y="3" width="10" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="4" width="10" height="1" fill="#ffffff"/><rect x="12" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="12" height="1" fill="#ffffff"/><rect x="13" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="12" height="1" fill="#ff6bb5"/><rect x="13" y="6" width="1" height="1" fill="#2b0f22"/><rect x="0" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="7" width="1" height="1" fill="#e0348c"/><rect x="3" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="5" y="7" width="1" height="1" fill="#e0348c"/><rect x="6" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="8" y="7" width="1" height="1" fill="#e0348c"/><rect x="9" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="11" y="7" width="1" height="1" fill="#e0348c"/><rect x="12" y="7" width="1" height="1" fill="#ff6bb5"/><rect x="13" y="7" width="1" height="1" fill="#2b0f22"/><rect x="0" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="12" height="1" fill="#ff6bb5"/><rect x="13" y="8" width="1" height="1" fill="#2b0f22"/><rect x="0" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="12" height="1" fill="#ff6bb5"/><rect x="13" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="12" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kado" viewBox="0 0 12 12"><rect x="2" y="0" width="1" height="1" fill="#2b0f22"/><rect x="9" y="0" width="1" height="1" fill="#2b0f22"/><rect x="1" y="1" width="1" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#ffffff"/><rect x="3" y="1" width="1" height="1" fill="#2b0f22"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="9" y="1" width="1" height="1" fill="#ffffff"/><rect x="10" y="1" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="1" height="1" fill="#2b0f22"/><rect x="3" y="2" width="1" height="1" fill="#ffffff"/><rect x="4" y="2" width="1" height="1" fill="#2b0f22"/><rect x="7" y="2" width="1" height="1" fill="#2b0f22"/><rect x="8" y="2" width="1" height="1" fill="#ffffff"/><rect x="9" y="2" width="1" height="1" fill="#2b0f22"/><rect x="3" y="3" width="1" height="1" fill="#2b0f22"/><rect x="4" y="3" width="1" height="1" fill="#ffffff"/><rect x="5" y="3" width="2" height="1" fill="#2b0f22"/><rect x="7" y="3" width="1" height="1" fill="#ffffff"/><rect x="8" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="10" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="5" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="5" width="2" height="1" fill="#2b0f22"/><rect x="7" y="5" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="10" height="1" fill="#2b0f22"/><rect x="1" y="7" width="1" height="1" fill="#2b0f22"/><rect x="2" y="7" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="7" width="2" height="1" fill="#2b0f22"/><rect x="7" y="7" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="8" width="2" height="1" fill="#2b0f22"/><rect x="7" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="1" height="1" fill="#2b0f22"/><rect x="2" y="9" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="9" width="2" height="1" fill="#2b0f22"/><rect x="7" y="9" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="1" height="1" fill="#2b0f22"/><rect x="2" y="10" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="10" width="2" height="1" fill="#2b0f22"/><rect x="7" y="10" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="10" width="1" height="1" fill="#2b0f22"/><rect x="1" y="11" width="10" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-topi" viewBox="0 0 11 12"><rect x="5" y="0" width="1" height="1" fill="#ffd23f"/><rect x="4" y="1" width="1" height="1" fill="#2b0f22"/><rect x="5" y="1" width="1" height="1" fill="#ffd23f"/><rect x="6" y="1" width="1" height="1" fill="#2b0f22"/><rect x="4" y="2" width="1" height="1" fill="#2b0f22"/><rect x="5" y="2" width="1" height="1" fill="#ffd23f"/><rect x="6" y="2" width="1" height="1" fill="#2b0f22"/><rect x="4" y="3" width="1" height="1" fill="#2b0f22"/><rect x="5" y="3" width="1" height="1" fill="#ff6bb5"/><rect x="6" y="3" width="1" height="1" fill="#2b0f22"/><rect x="3" y="4" width="1" height="1" fill="#2b0f22"/><rect x="4" y="4" width="3" height="1" fill="#ff6bb5"/><rect x="7" y="4" width="1" height="1" fill="#2b0f22"/><rect x="3" y="5" width="1" height="1" fill="#2b0f22"/><rect x="4" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="5" y="5" width="1" height="1" fill="#ffffff"/><rect x="6" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="7" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="6" width="1" height="1" fill="#2b0f22"/><rect x="3" y="6" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="6" width="1" height="1" fill="#2b0f22"/><rect x="2" y="7" width="1" height="1" fill="#2b0f22"/><rect x="3" y="7" width="1" height="1" fill="#ff6bb5"/><rect x="4" y="7" width="1" height="1" fill="#ffffff"/><rect x="5" y="7" width="3" height="1" fill="#ff6bb5"/><rect x="8" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="1" height="1" fill="#2b0f22"/><rect x="2" y="9" width="1" height="1" fill="#ff6bb5"/><rect x="3" y="9" width="1" height="1" fill="#ffffff"/><rect x="4" y="9" width="3" height="1" fill="#ff6bb5"/><rect x="7" y="9" width="1" height="1" fill="#ffffff"/><rect x="8" y="9" width="1" height="1" fill="#ff6bb5"/><rect x="9" y="9" width="1" height="1" fill="#2b0f22"/><rect x="0" y="10" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="10" width="1" height="1" fill="#2b0f22"/><rect x="0" y="11" width="11" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-balon" viewBox="0 0 11 14"><rect x="3" y="0" width="5" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="3" y="2" width="1" height="1" fill="#ffffff"/><rect x="4" y="2" width="5" height="1" fill="#ff6bb5"/><rect x="9" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="1" height="1" fill="#2b0f22"/><rect x="2" y="3" width="1" height="1" fill="#ff6bb5"/><rect x="3" y="3" width="1" height="1" fill="#ffffff"/><rect x="4" y="3" width="5" height="1" fill="#ff6bb5"/><rect x="9" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="1" height="1" fill="#2b0f22"/><rect x="2" y="7" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="9" width="1" height="1" fill="#2b0f22"/><rect x="3" y="9" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="9" width="1" height="1" fill="#2b0f22"/><rect x="3" y="10" width="1" height="1" fill="#2b0f22"/><rect x="4" y="10" width="3" height="1" fill="#ff6bb5"/><rect x="7" y="10" width="1" height="1" fill="#2b0f22"/><rect x="4" y="11" width="1" height="1" fill="#2b0f22"/><rect x="5" y="11" width="1" height="1" fill="#ff6bb5"/><rect x="6" y="11" width="1" height="1" fill="#2b0f22"/><rect x="5" y="12" width="1" height="1" fill="#2b0f22"/><rect x="4" y="13" width="1" height="1" fill="#2b0f22"/><rect x="6" y="13" width="1" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-stik" viewBox="0 0 20 12"><rect x="3" y="0" width="3" height="1" fill="#2b0f22"/><rect x="14" y="0" width="3" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="3" height="1" fill="#a8e6cf"/><rect x="6" y="1" width="1" height="1" fill="#2b0f22"/><rect x="13" y="1" width="1" height="1" fill="#2b0f22"/><rect x="14" y="1" width="3" height="1" fill="#a8e6cf"/><rect x="17" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="18" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="18" height="1" fill="#ffc2d6"/><rect x="19" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="3" height="1" fill="#ffc2d6"/><rect x="4" y="4" width="1" height="1" fill="#b9a5e3"/><rect x="5" y="4" width="9" height="1" fill="#ffc2d6"/><rect x="14" y="4" width="1" height="1" fill="#ffd23f"/><rect x="15" y="4" width="4" height="1" fill="#ffc2d6"/><rect x="19" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#ffc2d6"/><rect x="2" y="5" width="5" height="1" fill="#b9a5e3"/><rect x="7" y="5" width="6" height="1" fill="#ffc2d6"/><rect x="13" y="5" width="1" height="1" fill="#a8e6cf"/><rect x="14" y="5" width="1" height="1" fill="#ffc2d6"/><rect x="15" y="5" width="1" height="1" fill="#b9a5e3"/><rect x="16" y="5" width="3" height="1" fill="#ffc2d6"/><rect x="19" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="3" height="1" fill="#ffc2d6"/><rect x="4" y="6" width="1" height="1" fill="#b9a5e3"/><rect x="5" y="6" width="9" height="1" fill="#ffc2d6"/><rect x="14" y="6" width="1" height="1" fill="#a8e6cf"/><rect x="15" y="6" width="4" height="1" fill="#ffc2d6"/><rect x="19" y="6" width="1" height="1" fill="#2b0f22"/><rect x="0" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="6" height="1" fill="#ffc2d6"/><rect x="7" y="7" width="4" height="1" fill="#a8e6cf"/><rect x="11" y="7" width="8" height="1" fill="#ffc2d6"/><rect x="19" y="7" width="1" height="1" fill="#2b0f22"/><rect x="0" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="18" height="1" fill="#ffc2d6"/><rect x="19" y="8" width="1" height="1" fill="#2b0f22"/><rect x="0" y="9" width="2" height="1" fill="#2b0f22"/><rect x="2" y="9" width="16" height="1" fill="#ffc2d6"/><rect x="18" y="9" width="2" height="1" fill="#2b0f22"/><rect x="1" y="10" width="3" height="1" fill="#2b0f22"/><rect x="4" y="10" width="3" height="1" fill="#ffc2d6"/><rect x="7" y="10" width="4" height="1" fill="#2b0f22"/><rect x="11" y="10" width="3" height="1" fill="#ffc2d6"/><rect x="14" y="10" width="4" height="1" fill="#2b0f22"/><rect x="2" y="11" width="5" height="1" fill="#2b0f22"/><rect x="11" y="11" width="5" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kilau" viewBox="0 0 7 7"><rect x="3" y="0" width="1" height="1" fill="#ffffff"/><rect x="3" y="1" width="1" height="1" fill="#ffffff"/><rect x="2" y="2" width="3" height="1" fill="#ffffff"/><rect x="0" y="3" width="7" height="1" fill="#ffffff"/><rect x="2" y="4" width="3" height="1" fill="#ffffff"/><rect x="3" y="5" width="1" height="1" fill="#ffffff"/><rect x="3" y="6" width="1" height="1" fill="#ffffff"/></symbol>
+  <symbol id="s-kucing" viewBox="0 0 12 12"><rect x="1" y="0" width="2" height="1" fill="#2b0f22"/><rect x="9" y="0" width="2" height="1" fill="#2b0f22"/><rect x="0" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="3" y="1" width="1" height="1" fill="#2b0f22"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="9" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="11" y="1" width="1" height="1" fill="#2b0f22"/><rect x="0" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="2" width="1" height="1" fill="#ffffff"/><rect x="3" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="4" y="2" width="4" height="1" fill="#2b0f22"/><rect x="8" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="9" y="2" width="1" height="1" fill="#ffffff"/><rect x="10" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="11" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="5" width="1" height="1" fill="#2b0f22"/><rect x="3" y="5" width="6" height="1" fill="#ff6bb5"/><rect x="9" y="5" width="1" height="1" fill="#2b0f22"/><rect x="10" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="11" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="6" width="1" height="1" fill="#2b0f22"/><rect x="0" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="3" y="7" width="1" height="1" fill="#2b0f22"/><rect x="4" y="7" width="4" height="1" fill="#ffffff"/><rect x="8" y="7" width="1" height="1" fill="#2b0f22"/><rect x="9" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="11" y="7" width="1" height="1" fill="#2b0f22"/><rect x="0" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="4" y="8" width="4" height="1" fill="#ffffff"/><rect x="8" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="11" y="8" width="1" height="1" fill="#2b0f22"/><rect x="0" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="1" height="1" fill="#2b0f22"/><rect x="2" y="10" width="8" height="1" fill="#ff6bb5"/><rect x="10" y="10" width="1" height="1" fill="#2b0f22"/><rect x="2" y="11" width="8" height="1" fill="#2b0f22"/></symbol>
+</svg>
+
+<!-- Kanvas kanonis mendatar — lihat cards/_stage_head.html -->
+<div id="card-viewport"><div id="card-stage">
+
+  <div class="sinar" aria-hidden="true"></div>
+  <div class="titik" aria-hidden="true"></div>
+  <div class="pindai" aria-hidden="true"></div>
+  <div id="taman" aria-hidden="true"></div>
+
+  <!-- ================= 1. LAYAR JUDUL ================= -->
+  <section class="scene active" id="title">
+    <div class="isi tengah">
+      <svg class="stik" viewBox="0 0 20 12" aria-hidden="true"><use href="#s-stik"/></svg>
+      <div class="papan-judul">
+        <h1 class="judul"{% el card editing "title_main" %}>{% t card "title_main" %}</h1>
+      </div>
+      <p class="untuk"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</p>
+      <button class="mulai kedip" id="startBtn" type="button"{% el card editing "title_start" %}>{% t card "title_start" %}</button>
+    </div>
+  </section>
+
+  <!-- ================= 2. PILIH PEMAIN ================= -->
+  {% comment %}
+    Desain aslinya memakai dua kucing piksel. Di sini keduanya jadi SLOT
+    FOTO — kartu ini dijual untuk memajang wajah pembeli dan pasangannya,
+    dan desain Canva memang belum punya tempat foto sama sekali. Kucingnya
+    tetap muncul sebagai bingkai kalau fotonya belum diisi.
+  {% endcomment %}
+  <section class="scene" id="player">
+    <div class="isi tengah">
+      <h2 class="kepala"{% el card editing "player_head" %}>{% t card "player_head" %}</h2>
+      <div class="pemain">
+        {% with photo=frame_photos|get:"p1" %}
+        <div class="slot">
+          <span class="tag"{% el card editing "player_1p" %}>{% t card "player_1p" %}</span>
+          <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "p1" %}>
+            <div class="ph">
+              {% if photo %}<img src="{{ photo.image.url }}" alt="">
+              {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
+            </div>
+          </div>
+          <p class="nama"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</p>
+        </div>
+        {% endwith %}
+
+        <svg class="hati denyut" viewBox="0 0 9 8" aria-hidden="true"><use href="#s-hati"/></svg>
+
+        {% with photo=frame_photos|get:"p2" %}
+        <div class="slot">
+          <span class="tag"{% el card editing "player_2p" %}>{% t card "player_2p" %}</span>
+          <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "p2" %}>
+            <div class="ph">
+              {% if photo %}<img src="{{ photo.image.url }}" alt="">
+              {% else %}<svg class="isi-kosong" viewBox="0 0 12 12" aria-hidden="true"><use href="#s-kucing"/></svg>{% endif %}
+            </div>
+          </div>
+          <p class="nama"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</p>
+        </div>
+        {% endwith %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. NAIK LEVEL ================= -->
+  <section class="scene" id="levelup">
+    <div class="isi tengah">
+      <p class="kecil"{% el card editing "level_kick" %}>{% t card "level_kick" %}</p>
+      {# Bar XP terisi dulu, baru tulisannya meledak — lihat game8bit.js. #}
+      <div class="xp" aria-hidden="true"><i id="xpIsi"></i></div>
+      <h2 class="pop" id="popLevel"{% el card editing "level_head" %}>{% t card "level_head" %}</h2>
+      <p class="stat"{% el card editing "level_stat" %}>{% t card "level_stat" %}</p>
+      <svg class="hati kiri-bawah" viewBox="0 0 9 8" aria-hidden="true"><use href="#s-hati"/></svg>
+      <svg class="kilau kanan-atas" viewBox="0 0 7 7" aria-hidden="true"><use href="#s-kilau"/></svg>
+    </div>
+  </section>
+
+  <!-- ================= 4. KOTAK DIALOG (surat) ================= -->
+  {% comment %}
+    Babak tambahan — desain Canva tidak punya tempat untuk surat, padahal
+    itu isi utama tiap kartu yang dijual. Dibuat memakai bahasa visual yang
+    sama: kotak dialog RPG dengan potret pembicara di kiri.
+  {% endcomment %}
+  <section class="scene" id="dialog">
+    <div class="isi tengah">
+      <div class="kotak-dialog">
+        <div class="potret" aria-hidden="true">
+          <svg viewBox="0 0 12 12"><use href="#s-kucing"/></svg>
+        </div>
+        <div class="ucap">
+          <p class="pembicara"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</p>
+          <p class="surat"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis suratmu di sini..."{% endif %}>{{ card.message|default:"Tulis suratmu di sini..." }}</p>
+        </div>
+        <span class="panah" aria-hidden="true">▼</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. PENCAPAIAN ================= -->
+  <section class="scene" id="achievement">
+    <div class="isi tengah">
+      <h2 class="kepala dua-baris"{% el card editing "ach_head" %}>{% t card "ach_head" %}</h2>
+      <svg class="piala pantul" viewBox="0 0 11 13" aria-hidden="true"><use href="#s-piala"/></svg>
+      <div class="panel">
+        <p class="panel-teks"{% el card editing "ach_name" %}>{% t card "ach_name" %}</p>
+      </div>
+      <p class="kecil"{% el card editing "ach_note" %}>{% t card "ach_note" %}</p>
+    </div>
+  </section>
+
+  <!-- ================= 6. POWER UPS ================= -->
+  {% comment %}
+    Kisi 8 ubin: 4 slot foto + 4 ikon piksel, semuanya tertutup tanda "?"
+    sampai diketuk. Desain aslinya menampilkan ikon terbuka; ditutup di sini
+    supaya penerima punya sesuatu untuk dilakukan, bukan cuma dilihat.
+  {% endcomment %}
+  <section class="scene" id="powerups">
+    <div class="isi tengah">
+      <h2 class="kepala"{% el card editing "power_head" %}>{% t card "power_head" %}</h2>
+      <div class="kisi" id="kisi">
+        {% frames_in card "powerups" as panel_power %}
+        {% for f in panel_power %}
+        {% with photo=frame_photos|get:f.key %}
+        <div class="ubin foto{% if editing and not photo %} is-empty{% endif %}" {% frame card editing f.key %}>
+          <span class="tanya" aria-hidden="true">?</span>
+          <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+        <div class="ubin"><span class="tanya" aria-hidden="true">?</span><svg viewBox="0 0 14 11"><use href="#s-kue"/></svg></div>
+        <div class="ubin"><span class="tanya" aria-hidden="true">?</span><svg viewBox="0 0 12 12"><use href="#s-kado"/></svg></div>
+        <div class="ubin"><span class="tanya" aria-hidden="true">?</span><svg viewBox="0 0 11 12"><use href="#s-topi"/></svg></div>
+        <div class="ubin"><span class="tanya" aria-hidden="true">?</span><svg viewBox="0 0 11 14"><use href="#s-balon"/></svg></div>
+      </div>
+      <p class="kecil"{% el card editing "power_note" %}>{% t card "power_note" %}</p>
+    </div>
+  </section>
+
+  <!-- ================= 7. SKOR TERTINGGI ================= -->
+  <section class="scene" id="scores">
+    <div class="isi tengah">
+      <h2 class="kepala"{% el card editing "score_head" %}>{% t card "score_head" %}</h2>
+      <div class="papan-skor">
+        <div class="baris">
+          <span class="skor-label"{% el card editing "score_l1" %}>{% t card "score_l1" %}</span>
+          <span class="skor-nilai"{% el card editing "score_v1" %}>{% t card "score_v1" %}</span>
+        </div>
+        <div class="baris">
+          <span class="skor-label"{% el card editing "score_l2" %}>{% t card "score_l2" %}</span>
+          <span class="skor-nilai"{% el card editing "score_v2" %}>{% t card "score_v2" %}</span>
+        </div>
+        <div class="baris">
+          <span class="skor-label"{% el card editing "score_l3" %}>{% t card "score_l3" %}</span>
+          <span class="skor-nilai"{% el card editing "score_v3" %}>{% t card "score_v3" %}</span>
+        </div>
+      </div>
+      <svg class="hati kiri-atas" viewBox="0 0 9 8" aria-hidden="true"><use href="#s-hati"/></svg>
+      <svg class="hati kanan-bawah" viewBox="0 0 9 8" aria-hidden="true"><use href="#s-hati"/></svg>
+    </div>
+  </section>
+
+  <!-- ================= 8. GAME OVER? NEVER! ================= -->
+  <section class="scene" id="gameover">
+    <div class="isi tengah">
+      <p class="dicoret"{% el card editing "over_head" %}>{% t card "over_head" %}</p>
+      <h2 class="pop besar"{% el card editing "over_big" %}>{% t card "over_big" %}</h2>
+      <div class="sepasang" aria-hidden="true">
+        <svg class="hati" viewBox="0 0 9 8"><use href="#s-hati"/></svg>
+        <span class="silang">×</span>
+        <svg class="hati" viewBox="0 0 9 8"><use href="#s-hati"/></svg>
+      </div>
+      <p class="kepala kecil-spasi"{% el card editing "over_note" %}>{% t card "over_note" %}</p>
+      <button class="mulai" id="ulangBtn" type="button"{% el card editing "over_btn" %}>{% t card "over_btn" %}</button>
+    </div>
+  </section>
+
+  <!-- ======== NAVIGASI BABAK ======== -->
+  <nav class="nav" aria-label="Babak kartu">
+    <button id="prev" type="button" aria-label="Babak sebelumnya">◀</button>
+    <div class="dots" id="dots"></div>
+    <button id="next" type="button" aria-label="Babak berikutnya">▶</button>
+  </nav>
+
+</div></div>
+
+{% comment %}
+  Ajakan memiringkan HP. DI LUAR kanvas, sama seperti tombol musik dan layar
+  penuh: kalau di dalam, ia ikut diperkecil bersama kartu dan justru tidak
+  terbaca di layar yang paling membutuhkannya.
+{% endcomment %}
+<div class="putar-hp" id="putarHp">
+  <svg viewBox="0 0 48 48" aria-hidden="true">
+    <rect x="17" y="6" width="14" height="26" rx="2.5"/>
+    <path d="M9 34a15 15 0 0 0 30 0"/>
+    <path d="M39 34l-4-4M39 34l4-4"/>
+  </svg>
+  <p>MIRINGKAN HP-MU</p>
+  <button type="button" id="putarLanjut">LANJUT SAJA</button>
+</div>
+
+<script src="{% static_v 'js/render/game8bit.js' %}"></script>
+{% include "cards/_bgm.html" %}
+{% include "cards/_fullscreen.html" %}
+{% include "cards/_preview_bar.html" %}
+</body>
+</html>

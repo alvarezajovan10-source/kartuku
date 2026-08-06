@@ -9,8 +9,16 @@
  * salah ke ukuran benar.
  */
 (function () {
-  var W0 = 390;      // lebar kanonis, harus sama dengan --w0 di CSS
+  var W0 = 390;      // lebar kanonis kartu tegak, harus sama dengan --w0 di CSS
   var K_MAX = 1.15;  // batas pembesaran di layar lebar
+
+  // Kartu mendatar 16:9 punya kanvas kanonisnya sendiri. Bedanya bukan cuma
+  // angka: kartu tegak hanya dibatasi lebar layar (tingginya boleh lebih
+  // panjang, isinya digulir), sedangkan kartu mendatar harus muat UTUH —
+  // memotong tingginya berarti memotong isi babak. Jadi skalanya dibatasi
+  // dari dua sisi sekaligus.
+  var W0_LEBAR = 960;
+  var H0_LEBAR = 540;
 
   var root = document.documentElement;
 
@@ -18,6 +26,13 @@
     // clientWidth sudah tidak termasuk scrollbar, jadi kartu tidak akan
     // meluber horizontal di desktop yang scrollbar-nya memakan tempat.
     var w = root.clientWidth || window.innerWidth || W0;
+    if (root.dataset.stage === "lebar") {
+      var h = root.clientHeight || window.innerHeight || H0_LEBAR;
+      root.style.setProperty(
+        "--k", Math.min(w / W0_LEBAR, h / H0_LEBAR, K_MAX)
+      );
+      return;
+    }
     root.style.setProperty("--k", Math.min(w / W0, K_MAX));
   }
 

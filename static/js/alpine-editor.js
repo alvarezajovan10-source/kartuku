@@ -17,6 +17,11 @@ window.cardEditor = function () {
   var SCENE_LABELS = {
     cover: "Sampul", hero: "Ucapan", hub: "Hadiah", message: "Surat",
     flower: "Bunga", cake: "Kue", song: "Lagu", gallery: "Kenangan",
+    // Game 8-Bit. Tanpa entri di sini, pemilih babak di editor menampilkan
+    // id mentah ("powerups") alih-alih nama yang bisa dibaca pembeli.
+    title: "Layar Judul", player: "Pilih Pemain", levelup: "Naik Level",
+    dialog: "Surat", achievement: "Pencapaian", powerups: "Power Ups",
+    scores: "Skor", gameover: "Penutup",
   };
 
   var specByKey = {};

@@ -31,6 +31,7 @@ function ke(n) {
   // Layar judul hanya bisa dilewati lewat PRESS START.
   navEl.classList.toggle('sembunyi', babak[idx].id === 'title');
   if (babak[idx].id === 'levelup') naikLevel();
+  temaniBabak(babak[idx].id);
 }
 
 /* Dipanggil editor lewat postMessage untuk melompat ke babak tertentu. */
@@ -157,6 +158,154 @@ const putarEl = document.getElementById('putarHp');
 const putarBtn = document.getElementById('putarLanjut');
 if (putarBtn && putarEl) {
   putarBtn.addEventListener('click', () => putarEl.classList.add('pergi'));
+}
+
+/* ================= TEMAN ==================================================
+   Dua karakter yang menemani penerima sepanjang kartu.
+
+   Aturannya: selalu terlihat, tidak pernah teleport, geraknya wajar. Karena
+   babak berganti dengan potongan tegas, mereka TIDAK boleh tinggal di dalam
+   babak — mereka hidup di lapisan sendiri, dan tiap babak berganti mereka
+   BERJALAN ke posisi barunya. Jarak jauh ditempuh sambil berlari, jarak
+   dekat sambil berjalan; itu yang membuat perpindahannya terbaca wajar
+   alih-alih seperti benda yang digeser.
+
+   Barisnya harus sama persis dengan URUTAN di pembuat sheet-nya. Kalau
+   urutan di sana diubah, ubah juga di sini. */
+const ANIM = {
+  idle: { baris: 0, frames: 2, dur: 1.1 },
+  walk: { baris: 1, frames: 4, dur: .62 },
+  run: { baris: 2, frames: 4, dur: .42 },
+  wave: { baris: 3, frames: 3, dur: .66 },
+  happy: { baris: 4, frames: 2, dur: .5 },
+  surprised: { baris: 5, frames: 2, dur: .7 },
+  sit: { baris: 6, frames: 2, dur: 1.5 },
+  sleep: { baris: 7, frames: 2, dur: 2.2 },
+  jump: { baris: 8, frames: 3, dur: .5 },
+  celebrate: { baris: 9, frames: 4, dur: .48 },
+};
+
+const TINGGI_FRAME = 90;
+const W_KANVAS = 960;          // lebar kanonis; sama dengan --w0 di CSS
+
+/* Ke mana mereka berdiri di tiap babak, dan sedang apa. Posisi dalam pecahan
+   lebar kanvas supaya gampang dibaca. */
+const PANGGUNG = {
+  title:       { x: [.34, .58], laku: 'wave' },
+  player:      { x: [.24, .74], laku: 'happy' },
+  levelup:     { x: [.30, .68], laku: 'celebrate' },
+  dialog:      { x: [.09, .90], laku: 'sit' },
+  achievement: { x: [.16, .84], laku: 'surprised' },
+  powerups:    { x: [.07, .93], laku: 'idle' },
+  scores:      { x: [.13, .87], laku: 'happy' },
+  gameover:    { x: [.36, .62], laku: 'celebrate' },
+};
+
+const JEDA_TIDUR = 20000;      // diam selama ini -> mereka ketiduran
+
+function Teman(el, mula) {
+  this.el = el;
+  this.x = mula;
+  this.tujuan = mula;
+  this.hadap = 1;
+  this.anim = '';
+  this.laku = 'idle';          // yang dimainkan setelah sampai
+  this.sekali = null;          // animasi sekali jalan (mis. dari klik)
+  this.sampai = 0;
+  this.pasang('idle');
+  this.gambar();
+}
+
+Teman.prototype.pasang = function (nama) {
+  if (this.anim === nama) return;
+  const a = ANIM[nama] || ANIM.idle;
+  this.anim = nama;
+  this.el.style.setProperty('--frames', a.frames);
+  this.el.style.setProperty('--dur', a.dur + 's');
+  this.el.style.backgroundPositionY = -(a.baris * TINGGI_FRAME) + 'px';
+};
+
+Teman.prototype.gambar = function () {
+  this.el.style.setProperty('--x', this.x.toFixed(1) + 'px');
+  this.el.style.setProperty('--hadap', this.hadap);
+};
+
+/* Animasi sekali jalan, lalu kembali ke perilaku babak. */
+Teman.prototype.mainkan = function (nama, lama) {
+  this.sekali = nama;
+  this.sampai = performance.now() + lama;
+  this.pasang(nama);
+};
+
+Teman.prototype.langkah = function (dt, now) {
+  const beda = this.tujuan - this.x;
+  const jarak = Math.abs(beda);
+
+  if (jarak > 2) {
+    // Jarak jauh ditempuh berlari — orang tidak berjalan santai menyeberangi
+    // layar, dan langkah pelan sejauh itu terlihat seperti benda digeser.
+    const lari = jarak > 300;
+    const laju = (lari ? 210 : 96) * dt;
+    this.x += Math.sign(beda) * Math.min(laju, jarak);
+    this.hadap = beda < 0 ? -1 : 1;
+    this.pasang(lari ? 'run' : 'walk');
+    this.sekali = null;
+    this.gambar();
+    return;
+  }
+
+  this.x = this.tujuan;
+  if (this.sekali) {
+    if (now < this.sampai) return;
+    this.sekali = null;
+  }
+  this.pasang(this.laku);
+  this.gambar();
+};
+
+const temanCowok = document.getElementById('temanCowok');
+const temanCewek = document.getElementById('temanCewek');
+let regu = [];
+let sentuhTerakhir = performance.now();
+
+if (temanCowok && temanCewek) {
+  regu = [
+    new Teman(temanCowok, W_KANVAS * 0.34 - 36),
+    new Teman(temanCewek, W_KANVAS * 0.58 - 36),
+  ];
+
+  regu.forEach((t, i) => {
+    t.el.addEventListener('click', () => {
+      sentuhTerakhir = performance.now();
+      // Yang diketuk melompat, pasangannya ikut melambai — mereka sepasang,
+      // jadi menanggapi berdua terasa lebih hidup daripada sendiri-sendiri.
+      t.mainkan('jump', 700);
+      regu[1 - i].mainkan('wave', 900);
+    });
+  });
+
+  let lalu = performance.now();
+  (function putar(now) {
+    const dt = Math.min((now - lalu) / 1000, .05);   // lompatan waktu saat
+    lalu = now;                                       // tab ditinggal dibuang
+    if (now - sentuhTerakhir > JEDA_TIDUR) {
+      regu.forEach((t) => { t.laku = 'sleep'; });
+    }
+    regu.forEach((t) => t.langkah(dt, now));
+    requestAnimationFrame(putar);
+  })(lalu);
+}
+
+/* Dipanggil dari ke() tiap babak berganti. */
+function temaniBabak(id) {
+  if (!regu.length) return;
+  const p = PANGGUNG[id] || PANGGUNG.powerups;
+  sentuhTerakhir = performance.now();
+  regu.forEach((t, i) => {
+    t.tujuan = W_KANVAS * p.x[i] - 36;
+    t.laku = p.laku;
+    t.sekali = null;
+  });
 }
 
 /* Babak awal. Saat MENGEDIT, layar judul dilewati supaya pembeli tidak harus

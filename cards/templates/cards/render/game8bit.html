@@ -72,6 +72,23 @@
   <div class="langit" aria-hidden="true"></div>
   <div id="taman" aria-hidden="true"></div>
 
+  {% comment %}
+    TEMAN — dua karakter yang menemani penerima sepanjang kartu.
+
+    Letaknya DI LUAR semua <section class="scene">, dan itu bukan kerapian
+    melainkan syarat. Babak di kartu ini berganti dengan potongan tegas;
+    kalau karakternya ikut di dalam babak, dia lenyap di satu tempat dan
+    muncul di tempat lain tiap halaman berganti — teleport, persis yang
+    tidak boleh terjadi. Di lapisan sendiri, dia bertahan melintasi
+    pergantian babak dan BERJALAN ke posisi barunya.
+
+    Mereka hidup di pita lantai bawah, dan .scene diberi ruang bawah yang
+    cukup supaya isi kartu tidak pernah tertimpa badan mereka.
+  {% endcomment %}
+  <div class="lantai" aria-hidden="true"></div>
+  <div class="teman cowok" id="temanCowok" role="img" aria-label="Karakter cowok"></div>
+  <div class="teman cewek" id="temanCewek" role="img" aria-label="Karakter cewek"></div>
+
   <!-- ================= 1. LAYAR JUDUL ================= -->
   <section class="scene active" id="title">
     <div class="isi tengah">

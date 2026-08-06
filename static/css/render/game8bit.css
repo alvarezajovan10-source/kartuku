@@ -81,6 +81,55 @@ img{image-rendering:auto}
 
 #taman{position:absolute;inset:0;z-index:27;pointer-events:none;overflow:hidden}
 
+/* ---------- TEMAN ----------
+   Dua karakter yang menemani penerima. Sengaja di luar .scene: babak
+   berganti dengan potongan tegas, jadi kalau mereka ikut di dalamnya
+   mereka akan lenyap lalu muncul di tempat lain — teleport. Di lapisan
+   sendiri, mereka bertahan dan BERJALAN ke posisi barunya.
+
+   Semua animasi memakai sprite sheet: satu PNG per karakter, 6 kolom x 10
+   baris (idle, walk, run, wave, happy, surprised, sit, sleep, jump,
+   celebrate). JS hanya menggeser baris dan mengatur jumlah frame; kolomnya
+   dijalankan CSS dengan steps() supaya tidak ada perhitungan tiap frame. */
+.lantai{
+  position:absolute;left:0;right:0;bottom:0;height:76px;z-index:16;
+  pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.5) 55%, rgba(255,255,255,.72) 100%);
+  border-top:var(--px) solid rgba(43,15,34,.14);
+}
+.teman{
+  position:absolute;left:0;bottom:14px;z-index:19;
+  width:72px;height:90px;
+  background-repeat:no-repeat;
+  background-size:calc(72px*6) calc(90px*10);
+  /* Wajib: tanpa ini browser menghaluskan sprite saat diperbesar dan
+     piksel-artnya jadi buram. */
+  image-rendering:pixelated;
+  transform:translateX(var(--x,0px)) scaleX(var(--hadap,1));
+  transform-origin:center bottom;
+  animation:jalan-sprite var(--dur,.9s) steps(var(--frames,2)) infinite;
+  will-change:transform;
+  cursor:pointer;pointer-events:auto;
+}
+/* Kolom sheet dijalankan di sini. Barisnya (background-position-y) disetel
+   JS lewat gaya sebaris, jadi dua sumbunya tidak saling menimpa. */
+@keyframes jalan-sprite{
+  from{background-position-x:0}
+  to{background-position-x:calc(-72px * var(--frames,2))}
+}
+.teman.cowok{background-image:url("../../img/render/8bit-cowok.png")}
+.teman.cewek{background-image:url("../../img/render/8bit-cewek.png")}
+/* Bayangan kecil supaya mereka berpijak, bukan melayang. */
+.teman::after{
+  content:"";position:absolute;left:50%;bottom:-6px;
+  width:40px;height:8px;transform:translateX(-50%);
+  background:rgba(43,15,34,.16);border-radius:50%;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .teman{animation:none}
+}
+
 /* ---------- BABAK ----------
    Perpindahannya sengaja MEMATAH, bukan memudar: konsol 8-bit tidak punya
    transisi halus, dan potongan tegas itulah yang membuat kartunya terasa
@@ -88,7 +137,7 @@ img{image-rendering:auto}
 .scene{
   position:absolute;inset:0;z-index:10;
   display:flex;align-items:center;justify-content:center;
-  padding:26px 40px 62px;
+  padding:24px 40px 106px;
   opacity:0;visibility:hidden;
   transition:opacity .001s steps(1) .12s, visibility .001s steps(1) .12s;
 }

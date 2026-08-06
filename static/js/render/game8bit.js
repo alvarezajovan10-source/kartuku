@@ -61,10 +61,25 @@ document.addEventListener('touchend', (e) => {
   if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) ke(idx + (dx < 0 ? 1 : -1));
 }, { passive: true });
 
+/* Seluruh kartu diskalakan transform (lihat card-stage.js), jadi
+   getBoundingClientRect memberi ukuran LAYAR sementara left/top yang kita
+   tulis dibaca dalam ukuran KARTU. Selisihnya harus dibagi skala.
+
+   Tanpa ini partikel meleset makin jauh makin besar skalanya: di layar lebar
+   (skala ~2,8) hati dan kertas pesta terlempar ratusan piksel ke luar kanvas,
+   lalu dipotong overflow:hidden — jadi terlihat seperti tidak ada apa-apa
+   yang keluar sama sekali. Dulu tidak kentara karena kartu tegak dibatasi
+   1,15x; kartu mendatar melepas batas itu, dan bug lamanya baru muncul. */
+function skalaKartu() {
+  if (!taman || !taman.offsetWidth) return 1;
+  return taman.getBoundingClientRect().width / taman.offsetWidth || 1;
+}
+
 /* ---------- hati piksel yang berhamburan ---------- */
 function hamburkan(x, y, jumlah) {
   if (kurangiGerak || !taman) return;
   const kotak = taman.getBoundingClientRect();
+  const k = skalaKartu();
   for (let i = 0; i < jumlah; i++) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     el.setAttribute('viewBox', '0 0 9 8');
@@ -72,7 +87,7 @@ function hamburkan(x, y, jumlah) {
     const ukuran = 18 + Math.random() * 22;
     el.style.cssText =
       'position:absolute;width:' + ukuran + 'px;height:' + ukuran + 'px;' +
-      'left:' + (x - kotak.left) + 'px;top:' + (y - kotak.top) + 'px;' +
+      'left:' + (x - kotak.left) / k + 'px;top:' + (y - kotak.top) / k + 'px;' +
       'shape-rendering:crispEdges;pointer-events:none';
     taman.appendChild(el);
     const sudut = Math.random() * Math.PI * 2;
@@ -93,15 +108,44 @@ function hamburkan(x, y, jumlah) {
   }
 }
 
-/* ---------- layar judul ---------- */
-const startBtn = document.getElementById('startBtn');
-if (startBtn) {
-  startBtn.addEventListener('click', (e) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    hamburkan(r.left + r.width / 2, r.top + r.height / 2, 10);
-    ke(1);
-  });
-}
+/* ---------- semua yang bisa diketuk ----------
+   Satu penangan di fase TANGKAP pada document, bukan listener per tombol.
+   Alasannya bukan kerapian: di editor, card-frame.js memasang penangan
+   tangkap sendiri yang memanggil stopPropagation() pada tiap elemen
+   ber-data-edit / data-frame supaya kliknya terbaca sebagai "pilih elemen
+   untuk disunting". Tombol HUG, PRESS START, dan ubin power-up semuanya
+   ber-data-edit — jadi listener yang menempel di tombolnya sendiri TIDAK
+   PERNAH kebagian, dan tombolnya terasa mati waktu dicoba dari editor.
+
+   Berkas ini dimuat sebelum card-frame.js (yang defer), jadi penangan di
+   sini mendaftar lebih dulu dan berjalan lebih dulu. Sengaja tidak memanggil
+   preventDefault: editor tetap boleh memilih elemennya. */
+document.addEventListener('click', (e) => {
+  const sasaran = e.target.closest ? e.target : e.target.parentElement;
+  if (!sasaran) return;
+
+  const tombol = sasaran.closest('#startBtn, #ulangBtn, #pelukBtn');
+  if (tombol) {
+    const r = tombol.getBoundingClientRect();
+    if (tombol.id === 'startBtn') {
+      hamburkan(r.left + r.width / 2, r.top + r.height / 2, 10);
+      ke(1);
+    } else if (tombol.id === 'ulangBtn') {
+      document.querySelectorAll('#kisi .ubin').forEach((u) => u.classList.remove('terbuka'));
+      ke(0);
+    } else {
+      peluk();
+    }
+    return;
+  }
+
+  const ubin = sasaran.closest('#kisi .ubin');
+  if (ubin && !ubin.classList.contains('terbuka')) {
+    ubin.classList.add('terbuka');
+    const r = ubin.getBoundingClientRect();
+    hamburkan(r.left + r.width / 2, r.top + r.height / 2, 4);
+  }
+}, true);
 
 /* ---------- bar XP & LEVEL UP ----------
    Bar diisi dulu, baru tulisannya meletup. Dijalankan ulang tiap kali babak
@@ -133,25 +177,6 @@ function naikLevel() {
     hamburkan(r.left + r.width / 2, r.top + r.height / 2, 12);
     pestaBerdua();
   }, 1150);
-}
-
-/* ---------- ubin power-up ---------- */
-document.querySelectorAll('#kisi .ubin').forEach((ubin) => {
-  ubin.addEventListener('click', (e) => {
-    if (ubin.classList.contains('terbuka')) return;
-    ubin.classList.add('terbuka');
-    const r = ubin.getBoundingClientRect();
-    hamburkan(r.left + r.width / 2, r.top + r.height / 2, 4);
-  });
-});
-
-/* ---------- main lagi ---------- */
-const ulangBtn = document.getElementById('ulangBtn');
-if (ulangBtn) {
-  ulangBtn.addEventListener('click', () => {
-    document.querySelectorAll('#kisi .ubin').forEach((u) => u.classList.remove('terbuka'));
-    ke(0);
-  });
 }
 
 /* ---------- ajakan memiringkan HP ----------
@@ -332,6 +357,18 @@ if (temanCowok && temanCewek) {
       subtree: true, childList: true, characterData: true,
     });
   }
+
+  // Jalur kedua: dengarkan langsung pesan editor. MutationObserver saja
+  // ternyata tidak cukup diandalkan di sini, dan nama yang tidak ikut
+  // berubah membuat pembeli mengira fiturnya rusak. setTimeout dipakai
+  // karena berkas ini mendaftar sebelum card-frame.js — tanpa jeda, kita
+  // membaca teks LAMA yang belum sempat ditimpa.
+  window.addEventListener('message', (event) => {
+    const d = event.data || {};
+    if (d.source === 'card-editor' && (d.type === 'text' || d.type === 'reload')) {
+      setTimeout(salin, 0);
+    }
+  });
 })();
 
 /* ---------- pesta meriah ----------
@@ -344,13 +381,14 @@ const WARNA_PESTA = ['#ffd23f', '#ff6bb5', '#a8e6cf', '#b9a5e3', '#ffffff', '#ff
 function pesta(x, y, jumlah) {
   if (kurangiGerak || !taman) return;
   const kotak = taman.getBoundingClientRect();
+  const k = skalaKartu();
   for (let i = 0; i < jumlah; i++) {
     const el = document.createElement('i');
     const sisi = 5 + Math.floor(Math.random() * 6);
     el.style.cssText =
       'position:absolute;width:' + sisi + 'px;height:' + (sisi + Math.round(Math.random() * 4)) + 'px;' +
       'background:' + WARNA_PESTA[i % WARNA_PESTA.length] + ';' +
-      'left:' + (x - kotak.left) + 'px;top:' + (y - kotak.top) + 'px;pointer-events:none';
+      'left:' + (x - kotak.left) / k + 'px;top:' + (y - kotak.top) / k + 'px;pointer-events:none';
     taman.appendChild(el);
 
     const miring = (Math.random() - .5) * 150;   // sebaran mendatar saat naik
@@ -407,9 +445,6 @@ function peluk() {
   regu[1].kunci = -1;   // yang kanan menghadap kiri
   regu.forEach((t) => { t.laku = 'hug'; t.sekali = null; });
 }
-
-const pelukBtn = document.getElementById('pelukBtn');
-if (pelukBtn) pelukBtn.addEventListener('click', peluk);
 
 /* Hati baru muncul setelah keduanya benar-benar sampai dan berpelukan —
    kalau dipicu bersamaan dengan tombol, hatinya meletup di tempat kosong

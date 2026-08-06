@@ -106,14 +106,14 @@ SEEDS = [
                 {"key": "title_main", "label": "Judul utama", "default": "HAPPY BIRTHDAY"},
                 {"key": "title_start", "label": "Tombol mulai", "default": "PRESS START"},
                 {"key": "player_head", "label": "Judul pilih pemain", "default": "PLAYER SELECT"},
-                {"key": "player_1p", "label": "Label pemain 1", "default": "1P"},
-                {"key": "player_2p", "label": "Label pemain 2", "default": "2P"},
+                {"key": "player_1p", "label": "Tulisan kotak kiri", "default": "1P"},
+                {"key": "player_2p", "label": "Tulisan kotak kanan", "default": "2P"},
                 # Nama karakter, TERPISAH dari nama penerima di layar judul.
                 # Sempat memakai kolom yang sama, dan akibatnya mengetik nama
                 # di layar judul ikut mengubah nama pemain 1 — dua hal beda
                 # yang tidak boleh saling menyeret.
-                {"key": "nama1", "label": "Nama karakter 1P", "default": "PLAYER 1"},
-                {"key": "nama2", "label": "Nama karakter 2P", "default": "PLAYER 2"},
+                {"key": "nama1", "label": "Nama karakter cowok", "default": "PLAYER 1"},
+                {"key": "nama2", "label": "Nama karakter cewek", "default": "PLAYER 2"},
                 {"key": "level_kick", "label": "Pembuka naik level", "default": "pengalaman bertambah..."},
                 {"key": "level_head", "label": "Judul naik level", "default": "LEVEL UP!"},
                 {"key": "level_stat", "label": "Statistik level", "default": "HP +100  LOVE +999"},

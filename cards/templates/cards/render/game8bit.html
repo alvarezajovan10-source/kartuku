@@ -34,8 +34,9 @@
   pecah kalau diperbesar, sementara bentuk vektor tetap tajam, ringan, dan
   bisa dianimasikan — melompat, berkedip, meledak.
 
-  Latar sinar dan titik halftone murni CSS (lihat game8bit.css), jadi tidak
-  ada satu pun berkas gambar yang perlu diunduh penerima.
+  Latarnya SATU berkas gambar unduhan — lihat peringatan hak cipta di bagian
+  LANGIT pada game8bit.css sebelum kartu ini dijual. Versi yang latarnya
+  digambar sendiri ada di branch template-8bit.
 {% endcomment %}
 
 <!-- ======== BENTUK PIKSEL YANG DIPAKAI ULANG ======== -->
@@ -59,33 +60,16 @@
 <div id="card-viewport"><div id="card-stage">
 
   {% comment %}
-    LATAR — langit pastel, bukan sinar berputar.
+    LATAR — berkas gambar (static/img/render/8bit-langit.webp).
 
-    Versi pertama memakai repeating-conic-gradient yang diputar terus. Dua
-    masalahnya nyata: berat (browser menggambar ulang gradien sebesar layar
-    tiap frame, dan itulah sumber lag-nya), dan pola garis yang berputar
-    bikin pusing dilihat lama-lama. Diganti langit bertingkat dengan awan
-    yang hanyut mendatar — hanya transform, jadi kartu grafis yang
-    mengerjakan, bukan prosesor.
+    Ini pemandangan piksel yang DIUNDUH, bukan digambar di sini. Lihat
+    catatan hak cipta di game8bit.css sebelum kartu ini dijual.
+
+    HUD permainan di tepi atas gambar aslinya (deret hati, bar, tulisan)
+    sudah dipotong — itu antarmuka game lain dan tidak ada urusannya dengan
+    kartu ulang tahun.
   {% endcomment %}
-  <div class="langit" aria-hidden="true">
-    <svg class="pelangi" viewBox="0 0 13 7"><use href="#s-pelangi"/></svg>
-    <i class="kerlip k1"></i><i class="kerlip k2"></i><i class="kerlip k3"></i>
-    <i class="kerlip k4"></i><i class="kerlip k5"></i><i class="kerlip k6"></i>
-    <svg class="awan a1" viewBox="0 0 14 7"><use href="#s-awan"/></svg>
-    <svg class="awan a2" viewBox="0 0 14 7"><use href="#s-awan"/></svg>
-    <svg class="awan a3" viewBox="0 0 14 7"><use href="#s-awan"/></svg>
-    <svg class="awan a4" viewBox="0 0 14 7"><use href="#s-awan"/></svg>
-    <svg class="awan a5" viewBox="0 0 14 7"><use href="#s-awan"/></svg>
-    <div class="tanah">
-      <svg class="pohon t1" viewBox="0 0 11 13"><use href="#s-pohon"/></svg>
-      <svg class="pohon t2" viewBox="0 0 11 13"><use href="#s-pohon-hijau"/></svg>
-      <svg class="pohon t3" viewBox="0 0 11 13"><use href="#s-pohon"/></svg>
-      <svg class="pohon t4" viewBox="0 0 11 13"><use href="#s-pohon-hijau"/></svg>
-      <svg class="pohon t5" viewBox="0 0 11 13"><use href="#s-pohon"/></svg>
-      <svg class="pohon t6" viewBox="0 0 11 13"><use href="#s-pohon-hijau"/></svg>
-    </div>
-  </div>
+  <div class="langit" aria-hidden="true"></div>
   <div id="taman" aria-hidden="true"></div>
 
   <!-- ================= 1. LAYAR JUDUL ================= -->

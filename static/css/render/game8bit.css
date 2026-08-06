@@ -10,10 +10,10 @@
      diatur hanya lapisan ajakan DI LUAR kanvas, bukan tata letak kartu.)
    - Tiap ukuran font yang bisa disunting WAJIB mengalikan var(--fs).
 
-   Tidak ada satu pun berkas gambar di sini. Langit, awan, pohon, pelangi,
-   kerlip, dan seluruh bingkai bergerigi dibuat dari gradien, bayangan
-   kotak, dan SVG piksel — jadi kartunya ringan dan tetap tajam di layar
-   sebesar apa pun.
+   Latarnya SATU berkas gambar unduhan (lihat peringatan hak cipta di
+   bagian LANGIT). Sisanya — bingkai bergerigi, ikon, hati, piala —
+   tetap SVG piksel dan bayangan kotak, jadi tidak ada gambar lain yang
+   perlu diunduh penerima.
    ============================================================ */
 :root{
   /* Diambil langsung dari gambar desainnya, bukan ditebak. */
@@ -52,58 +52,32 @@ body{
 svg{shape-rendering:crispEdges}
 img{image-rendering:auto}
 
-/* ---------- LANGIT PASTEL ----------
-   Menggantikan sinar berputar versi pertama. Dua alasan, dua-duanya nyata:
-   pola garis yang berputar bikin pusing dilihat lama, dan
-   repeating-conic-gradient seukuran layar harus digambar ulang tiap frame
-   sehingga kartunya tersendat. Di sini yang bergerak hanya transform awan —
-   itu dikerjakan kartu grafis, bukan prosesor. */
+/* ---------- LANGIT (BERKAS GAMBAR) ----------
+   PERINGATAN HAK CIPTA. Gambar ini diunduh dari internet ("Pixelated
+   Landscape with Rainbow and Clouds — Stream Background, Desktop
+   Wallpaper"), bukan buatan sendiri. Kartu ini DIJUAL, jadi memakainya
+   berarti menjual karya ilustrator lain. Risikonya lebih besar daripada
+   tema komik yang sudah ditahan: latar ini menutupi seluruh layar, mudah
+   dilacak lewat pencarian gambar terbalik, dan muncul di setiap kartu yang
+   terjual. Pakai hanya kalau lisensinya sudah dipastikan; kalau tidak,
+   versi yang digambar sendiri ada di branch template-8bit.
+
+   image-rendering:pixelated wajib: tanpa itu browser menghaluskan gambar
+   saat diperbesar dan piksel-artnya jadi buram — justru merusak yang
+   membuatnya menarik. */
 #card-stage{
-  background:linear-gradient(180deg,
-    #bfe3f7 0%, #d9e6fa 26%, #f3dcf0 52%, #ffd8e6 74%, #ffe6d5 100%);
+  background:#d9c9e8 url("../../img/render/8bit-langit.webp") center 62% / cover no-repeat;
+  image-rendering:pixelated;
   overflow:hidden;
   box-shadow:0 0 0 var(--px) var(--tinta), 0 30px 70px -30px rgba(43,15,34,.75);
 }
-.langit{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
-
-.awan{position:absolute;height:auto;opacity:.95;
-  animation:hanyut linear infinite;will-change:transform}
-.a1{width:210px;top:9%;left:-24%;animation-duration:78s}
-.a2{width:150px;top:23%;left:-30%;animation-duration:104s;animation-delay:-30s;opacity:.85}
-.a3{width:265px;top:38%;left:-34%;animation-duration:126s;animation-delay:-70s;opacity:.75}
-.a4{width:120px;top:6%;left:-16%;animation-duration:92s;animation-delay:-52s;opacity:.8}
-.a5{width:185px;top:31%;left:-22%;animation-duration:142s;animation-delay:-96s;opacity:.7}
-@keyframes hanyut{to{transform:translateX(1360px)}}
-
-.pelangi{position:absolute;width:132px;top:7%;right:8%;opacity:.85}
-
-/* Deretan pohon di kaki langit. Kecil dan pucat — ini latar, bukan isi. */
-.tanah{
-  position:absolute;left:0;right:0;bottom:0;height:118px;
-  background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,244,250,.9));
+/* Kabut tipis di tengah supaya teks tetap terbaca di atas pemandangan yang
+   ramai. Tepinya dibiarkan bening — bagian itulah yang paling enak dilihat. */
+.langit{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(62% 58% at 50% 48%,
+    rgba(255,252,255,.62) 0%, rgba(255,252,255,.28) 55%, transparent 78%);
 }
-.pohon{position:absolute;bottom:16px;width:52px;opacity:.72}
-.t1{left:3%;width:44px}
-.t2{left:15%}
-.t3{left:29%;width:60px;bottom:12px}
-.t4{right:27%}
-.t5{right:13%;width:46px}
-.t6{right:2%;width:58px;bottom:12px}
-
-/* Kerlip — kotak putih kecil yang berkedip, bukan gambar. */
-.kerlip{
-  position:absolute;width:8px;height:8px;background:var(--putih);
-  box-shadow:0 -8px 0 -2px var(--putih), 0 8px 0 -2px var(--putih),
-             -8px 0 0 -2px var(--putih), 8px 0 0 -2px var(--putih);
-  animation:kerlip 3.4s steps(2) infinite;
-}
-@keyframes kerlip{0%,60%{opacity:.15}70%,100%{opacity:.9}}
-.k1{top:12%;left:12%}
-.k2{top:20%;right:22%;animation-delay:-.9s}
-.k3{top:34%;left:26%;animation-delay:-1.8s}
-.k4{top:8%;left:42%;animation-delay:-2.4s}
-.k5{top:44%;right:9%;animation-delay:-1.2s}
-.k6{top:27%;left:57%;animation-delay:-2.9s}
 
 #taman{position:absolute;inset:0;z-index:27;pointer-events:none;overflow:hidden}
 
@@ -476,7 +450,7 @@ body.is-editing .putar-hp{display:none}
 }
 
 @media (prefers-reduced-motion: reduce){
-  .awan,.kerlip,.stik,.pantul,.denyut,.kedip,.panah,.putar-hp svg{animation:none}
+  .stik,.pantul,.denyut,.kedip,.panah,.putar-hp svg{animation:none}
   .scene.active .isi{animation:none}
   .pop.meletup{animation:none}
 }

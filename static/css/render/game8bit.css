@@ -317,7 +317,7 @@ img{image-rendering:auto}
 }
 
 /* ---------- POWER UPS ---------- */
-.kisi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:100%;max-width:560px}
+.kisi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:100%;max-width:640px}
 .ubin{
   position:relative;aspect-ratio:1;background:var(--pink-pucat);
   display:grid;place-items:center;cursor:pointer;overflow:hidden;

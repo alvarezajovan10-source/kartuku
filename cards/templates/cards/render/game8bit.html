@@ -174,11 +174,12 @@
 
   <!-- ================= 6. POWER UPS ================= -->
   {% comment %}
-    Kisi 4 ubin: 2 slot foto + 2 ikon piksel, semuanya tertutup tanda "?"
-    sampai diketuk. Sempat 8 ubin — terlalu banyak yang harus diisi pembeli,
-    dan kotak yang dibiarkan kosong justru merusak halamannya. Desain
-    aslinya menampilkan ikon terbuka; ditutup di sini supaya penerima punya
-    sesuatu untuk dilakukan, bukan cuma dilihat.
+    Kisi 4 ubin, SEMUANYA slot foto, tertutup tanda "?" sampai diketuk.
+    Sempat 8 ubin (terlalu banyak yang harus diisi pembeli), lalu sempat 2
+    foto + 2 ikon — tapi ikonnya tidak membawa apa-apa: diketuk, tutupnya
+    lepas, muncul gambar kue, selesai. Kotak yang tidak memberi apa pun
+    lebih baik diisi kenangan. Desain aslinya menampilkan ikon terbuka;
+    ditutup di sini supaya penerima punya sesuatu untuk dilakukan.
   {% endcomment %}
   <section class="scene" id="powerups">
     <div class="isi tengah">
@@ -193,8 +194,6 @@
         </div>
         {% endwith %}
         {% endfor %}
-        <div class="ubin"><span class="tanya" aria-hidden="true">?</span><svg viewBox="0 0 14 11"><use href="#s-kue"/></svg></div>
-        <div class="ubin"><span class="tanya" aria-hidden="true">?</span><svg viewBox="0 0 12 12"><use href="#s-kado"/></svg></div>
       </div>
       <p class="kecil"{% el card editing "power_note" %}>{% t card "power_note" %}</p>
     </div>

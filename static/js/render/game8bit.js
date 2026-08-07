@@ -131,7 +131,9 @@ document.addEventListener('click', (e) => {
       hamburkan(r.left + r.width / 2, r.top + r.height / 2, 10);
       ke(1);
     } else if (tombol.id === 'ulangBtn') {
-      document.querySelectorAll('#kisi .ubin').forEach((u) => u.classList.remove('terbuka'));
+      document.querySelectorAll('#kisi .ubin').forEach((u) => {
+        u.classList.remove('terbuka', 'terbalik');
+      });
       ke(0);
     } else {
       peluk();
@@ -140,10 +142,16 @@ document.addEventListener('click', (e) => {
   }
 
   const ubin = sasaran.closest('#kisi .ubin');
-  if (ubin && !ubin.classList.contains('terbuka')) {
-    ubin.classList.add('terbuka');
-    const r = ubin.getBoundingClientRect();
-    hamburkan(r.left + r.width / 2, r.top + r.height / 2, 4);
+  if (ubin) {
+    if (!ubin.classList.contains('terbuka')) {
+      // Ketukan pertama: tutup "?" pecah, ceritanya yang terbaca duluan.
+      ubin.classList.add('terbuka');
+      const r = ubin.getBoundingClientRect();
+      hamburkan(r.left + r.width / 2, r.top + r.height / 2, 4);
+    } else {
+      // Sesudah terbuka, tiap ketukan membaliknya bolak-balik.
+      ubin.classList.toggle('terbalik');
+    }
     return;
   }
 

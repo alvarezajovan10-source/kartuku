@@ -468,14 +468,47 @@ img{image-rendering:auto}
 .kisi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:100%;max-width:640px}
 .ubin{
   position:relative;aspect-ratio:1;background:var(--pink-pucat);
-  display:grid;place-items:center;cursor:pointer;overflow:hidden;
+  cursor:pointer;
+  /* overflow:hidden SENGAJA TIDAK dipakai di sini. Memotong isi memaksa
+     browser meratakan anaknya jadi satu bidang, dan preserve-3d di dalamnya
+     berhenti bekerja — ubinnya tidak berputar, cuma berkedip ganti sisi.
+     Pemotongan dipindah ke tiap .sisi. */
+  perspective:700px;
   box-shadow:0 0 0 var(--px) var(--tinta), 0 8px 0 calc(var(--px)*-1) var(--pink-tua-2);
   transition:translate .12s steps(2);
 }
 .ubin:nth-child(2n){background:var(--pink)}
-.ubin>svg{width:66%;height:66%}
-.ubin .ph{position:absolute;inset:0;background:var(--pink-pucat)}
-.ubin .ph img{width:100%;height:100%;object-fit:cover;display:block}
+/* Pemutar dua sisi. */
+.balik{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.3,.85,.32,1);
+}
+.ubin.terbalik .balik{transform:rotateY(180deg)}
+.sisi{
+  position:absolute;inset:0;overflow:hidden;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:grid;place-items:center;
+}
+/* Sisi foto duduk terbalik sejak awal, jadi ia baru menghadap penerima
+   setelah pembungkusnya diputar 180 derajat. */
+.sisi.gambar{transform:rotateY(180deg)}
+.sisi.cerita{
+  background:var(--putih);padding:11px 9px;
+  box-shadow:inset 0 0 0 var(--px) var(--tinta);
+}
+.cap{
+  font-family:var(--f,'VT323'),monospace;
+  font-size:calc(1.25rem*var(--fs,1));
+  color:var(--c,var(--tinta));text-align:var(--al,center);
+  font-weight:var(--fw,400);font-style:var(--fi,normal);
+  letter-spacing:var(--ls,.02em);line-height:var(--lh,1.2);
+  white-space:pre-wrap;overflow-wrap:break-word;
+}
+/* Ubinnya cuma sekitar 148 piksel; ceritanya dikurung dan digulir di dalam
+   sisinya, memakai bagan yang sama dengan surat panjang di babak Surat. */
+#powerups .bagan-isi{max-height:104px}
+.sisi.gambar .ph{position:absolute;inset:0;background:var(--pink-pucat)}
+.sisi.gambar .ph img{width:100%;height:100%;object-fit:cover;display:block}
 /* Tutup "?" yang lepas saat ubinnya diketuk. */
 .tanya{
   position:absolute;inset:0;z-index:3;display:grid;place-items:center;
@@ -489,6 +522,23 @@ img{image-rendering:auto}
   100%{transform:scale(1.5) rotate(12deg);opacity:0}
 }
 .ubin.terbuka{translate:0 4px}
+/* Penanda bahwa ubinnya masih punya sisi lain. Baru muncul setelah tutupnya
+   pecah — sebelum itu tidak ada yang perlu diberitahukan, dan ikon di atas
+   tanda tanya justru membocorkan kejutannya. */
+.putar{
+  position:absolute;right:5px;bottom:5px;z-index:4;
+  /* Keping padat, bukan huruf bergaris luar. Sisi cerita berlatar putih dan
+     sisi foto bisa berwarna apa saja; hanya keping berlatar sendiri yang
+     terbaca di atas keduanya. */
+  padding:3px 4px;background:var(--tinta);color:var(--putih);
+  font-family:'Press Start 2P',monospace;font-size:.62rem;line-height:1;
+  pointer-events:none;opacity:0;transition:opacity .3s;
+}
+.ubin.terbuka .putar{opacity:1}
+
+@media (prefers-reduced-motion: reduce){
+  .balik{transition:none}
+}
 
 /* ---------- PAPAN SKOR ---------- */
 /* ---------- TIUP LILIN ----------

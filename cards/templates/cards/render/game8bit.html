@@ -237,9 +237,30 @@
         {% frames_in card "powerups" as panel_power %}
         {% for f in panel_power %}
         {% with photo=frame_photos|get:f.key %}
+        {% comment %}
+          Ubin punya DUA sisi. Ketukan pertama memecahkan tutup "?" dan
+          memperlihatkan ceritanya; ketukan berikutnya membaliknya bolak-balik
+          antara cerita dan foto.
+
+          Sisi cerita yang jadi muka depan, bukan fotonya — begitu tutupnya
+          pecah, yang terbaca duluan ceritanya, dan fotonya baru muncul
+          setelah dibalik. Karena itu tidak ada rotasi awal yang perlu
+          dipasang: keadaan diam ubin ini memang menghadap cerita.
+        {% endcomment %}
         <div class="ubin foto{% if editing and not photo %} is-empty{% endif %}" {% frame card editing f.key %}>
+          <div class="balik">
+            <div class="sisi cerita">
+              <div class="bagan-isi" data-gulir>
+                <p class="cap"{% el card editing f.cap %}>{% t card f.cap %}</p>
+              </div>
+              <span class="panah-gulir" aria-hidden="true">▼</span>
+            </div>
+            <div class="sisi gambar">
+              <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+            </div>
+          </div>
           <span class="tanya" aria-hidden="true">?</span>
-          <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+          <span class="putar" aria-hidden="true">↻</span>
         </div>
         {% endwith %}
         {% endfor %}

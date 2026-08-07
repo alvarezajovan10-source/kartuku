@@ -311,18 +311,35 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   Akhirannya acak, bukan berurutan, supaya kartu orang lain tidak bisa
   di-enumerate.
 - **`DEPLOY.md`** — panduan deploy ke PythonAnywhere gratis.
+- **Situs sudah TAYANG** di `kartuku.pythonanywhere.com`. Deploy dijalankan
+  `python3 tools/pa.py --deploy` (pull + migrate + collectstatic + reload).
+  **`--deploy` TIDAK menjalankan `seed_templates`.** Tiap kali daftar teks
+  atau bingkai template berubah, jalankan sendiri sesudahnya:
+  `python3 tools/pa.py "cd ~/giftcard && /home/kartuku/.virtualenvs/kartuku/bin/python manage.py seed_templates"`
+  — tanpa itu produksi masih memakai config lama dan template baru tidak
+  pernah muncul.
+- **Template Game 8-Bit** (5 Agu 2026) — kartu MENDATAR 16:9 pertama
+  (`data-stage="lebar"`), 8 babak, dua karakter piksel yang berjalan
+  menemani penerima, babak tiup lilin, dan ubin Momen yang bisa dibalik ke
+  keterangan fotonya. Lembar sprite & simbol kue adalah keluaran
+  `tools/buat_sprite_8bit.py` dan `tools/buat_kue_8bit.py` — jangan sunting
+  PNG-nya langsung. Skrip pemeriksa di `tools/cek_*.js` (perlu
+  `NODE_PATH` ke node_modules berisi puppeteer-core).
+  > **Latarnya gambar unduhan, bukan buatan sendiri.** Risiko hak ciptanya
+  > diangkat sebelum deploy dan pemilik situs memilih tetap memakainya.
+  > Versi latar gambar-sendiri ada di branch `template-8bit` (tertinggal
+  > jauh). Jangan angkat lagi sebagai risiko baru — sudah diputuskan.
 
 ### Sedang berjalan
 
-1. **Deploy ke PythonAnywhere** — belum dikerjakan. Ikuti `DEPLOY.md`.
-   Tertahan di langkah 2: repo belum punya remote GitHub.
-2. **Webhook Lynk.id** — Lynk punya webhook (Settings → Integrations → Webhook).
+1. **Webhook Lynk.id** — Lynk punya webhook (Settings → Integrations → Webhook).
    Rencana: Lynk memberi tahu situs saat ada order → situs membuat `AccessCode`
    → email otomatis ke pembeli. **Butuh situs online lebih dulu.**
    Langkah berikutnya: tangkap contoh payload pakai webhook.site + tombol
    "Test URL" di Lynk, baru tulis handler-nya. Wajib ada verifikasi keamanan
-   seperti aturan webhook Midtrans di §6.2.
-3. **Jualan lewat TikTok → Lynk.id.** Midtrans sengaja ditunda.
+   seperti aturan webhook Midtrans di §6.2. Situsnya sekarang SUDAH online,
+   jadi penghalangnya hilang.
+2. **Jualan lewat TikTok → Lynk.id.** Midtrans sengaja ditunda.
 
 ### Jebakan lingkungan — mahal kalau lupa
 

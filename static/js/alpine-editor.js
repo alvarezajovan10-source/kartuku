@@ -21,7 +21,7 @@ window.cardEditor = function () {
     // id mentah ("powerups") alih-alih nama yang bisa dibaca pembeli.
     title: "Layar Judul", player: "Pilih Pemain", levelup: "Naik Level",
     dialog: "Surat", wishes: "Wishes", powerups: "Power Ups",
-    scores: "Skor", gameover: "Penutup",
+    kue: "Tiup Lilin", gameover: "Penutup",
   };
 
   var specByKey = {};

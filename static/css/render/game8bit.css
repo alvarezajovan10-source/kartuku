@@ -87,9 +87,9 @@ img{image-rendering:auto}
    mereka akan lenyap lalu muncul di tempat lain — teleport. Di lapisan
    sendiri, mereka bertahan dan BERJALAN ke posisi barunya.
 
-   Semua animasi memakai sprite sheet: satu PNG per karakter, 6 kolom x 10
+   Semua animasi memakai sprite sheet: satu PNG per karakter, 6 kolom x 12
    baris (idle, walk, run, wave, happy, surprised, sit, sleep, jump,
-   celebrate). JS hanya menggeser baris dan mengatur jumlah frame; kolomnya
+   celebrate, hug, blow). JS hanya menggeser baris dan mengatur jumlah frame; kolomnya
    dijalankan CSS dengan steps() supaya tidak ada perhitungan tiap frame. */
 .lantai{
   position:absolute;left:0;right:0;bottom:0;height:104px;z-index:2;
@@ -109,7 +109,7 @@ img{image-rendering:auto}
 .teman .sprite{
   position:absolute;inset:0;display:block;
   background-repeat:no-repeat;
-  background-size:calc(102px*6) calc(138px*11);
+  background-size:calc(102px*6) calc(138px*12);
   /* Wajib: tanpa ini browser menghaluskan sprite saat diperbesar dan
      piksel-artnya jadi buram. */
   image-rendering:pixelated;
@@ -176,6 +176,14 @@ img{image-rendering:auto}
 .isi.tengah{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
 /* Wishes paling padat isinya — jaraknya dirapatkan supaya kotaknya kebagian ruang. */
 #wishes .isi{gap:12px}
+/* Judul TIUP LILIN naik ke atas: kuenya berdiri di tanah, dan judul yang
+   melayang di tengah akan bertumpuk dengan nyala lilin paling tinggi. */
+/* Judul pindah ke paruh KANAN, sejajar tengah. Kuenya terkunci di kiri bawah
+   (tombol navigasi menguasai tengah bawah), dan judul di tengah atas seperti
+   babak lain membuat separuh kanan kartu kosong melompong sementara seluruh
+   adegan berdesakan di satu pojok. */
+#kue{justify-content:flex-end;padding-bottom:120px}
+#kue .isi{max-width:400px;gap:10px}
 /* Ledakan putih .pop::before duduk di dasar .isi; semua saudara kandungnya
    diangkat satu lapis supaya terbaca di atasnya, bukan tertimbun.
    .pop DIKECUALIKAN dengan sengaja: memberinya z-index membuatnya jadi
@@ -386,7 +394,7 @@ img{image-rendering:auto}
   display:block;width:136px;height:184px;
   background-repeat:no-repeat;
   background-position:0 0;                       /* baris diam, petak pertama */
-  background-size:calc(136px*6) calc(184px*11);
+  background-size:calc(136px*6) calc(184px*12);
   image-rendering:pixelated;
 }
 .tokoh.cowok{background-image:url("../../img/render/8bit-cowok.png")}
@@ -482,27 +490,69 @@ img{image-rendering:auto}
 .ubin.terbuka{translate:0 4px}
 
 /* ---------- PAPAN SKOR ---------- */
-.papan-skor{
-  width:100%;max-width:660px;background:var(--putih);padding:24px 34px;
-  display:flex;flex-direction:column;gap:16px;
-  box-shadow:0 0 0 var(--px) var(--tinta), 14px 14px 0 calc(var(--px)*-1) var(--ceri);
+/* ---------- TIUP LILIN ----------
+   Panggung kue ditambatkan ke DASAR babak dengan ukuran piksel kanonis
+   (kanvas 960x540), bukan persentase: lilinnya harus duduk tepat di
+   permukaan krim, dan persentase membuat titiknya bergeser tiap kali
+   tinggi babaknya berubah.
+
+   Ditaruh di paruh kiri karena tombol navigasi menempati x 360-600 di
+   dasar kartu dan digambar DI ATAS babak (z-index 40). Apa pun yang
+   berdiri di tanah tepat di tengah akan tertimpa tombol itu. */
+.kue-panggung{
+  position:absolute;left:105px;bottom:10px;width:160px;height:120px;z-index:12;
 }
-.papan-skor .baris{display:flex;align-items:baseline;justify-content:space-between;gap:22px}
-.skor-label{
-  font-family:var(--f,'Press Start 2P'),monospace;
-  font-size:calc(1.5rem*var(--fs,1));
-  color:var(--c,var(--pink));text-align:var(--al,left);
-  font-weight:var(--fw,400);font-style:var(--fi,normal);
-  letter-spacing:var(--ls,.02em);line-height:var(--lh,1.2);
-  text-shadow:4px 4px 0 var(--pink-tua-2);overflow-wrap:break-word;
+.kue-besar{width:100%;height:100%;display:block;shape-rendering:crispEdges}
+
+.lilin{
+  position:absolute;width:28px;height:50px;transform:translateX(-50%);
+  background:none;border:0;padding:0;margin:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
 }
-.skor-nilai{
-  font-family:var(--f,'Press Start 2P'),monospace;
-  font-size:calc(1.5rem*var(--fs,1));
-  color:var(--c,var(--pink));text-align:var(--al,right);
-  font-weight:var(--fw,400);font-style:var(--fi,normal);
-  letter-spacing:var(--ls,.02em);line-height:var(--lh,1.2);
-  text-shadow:4px 4px 0 var(--pink-tua-2);overflow-wrap:break-word;
+/* Kelimanya berjajar di permukaan krim, sengaja MASUK ke dalam badan kue,
+   bukan sampai ke tepinya: dua lilin terluar yang menempel tepi akan berdiri
+   tepat di depan tempat kedua karakter berhenti. */
+.l1{left:20px;bottom:94px}
+.l2{left:50px;bottom:94px}
+.l3{left:80px;bottom:94px}
+.l4{left:110px;bottom:94px}
+.l5{left:140px;bottom:94px}
+
+.lilin .batang{
+  position:absolute;left:50%;bottom:0;width:10px;height:26px;
+  transform:translateX(-50%);background:var(--putih);
+  box-shadow:0 0 0 2px var(--tinta), inset -3px 0 0 var(--pink-pucat);
+}
+.lilin .sumbu{
+  position:absolute;left:50%;bottom:26px;width:2px;height:5px;
+  transform:translateX(-50%);background:var(--tinta);
+}
+.lilin .api{
+  position:absolute;left:50%;bottom:29px;width:14px;height:18px;
+  transform:translateX(-50%);shape-rendering:crispEdges;
+  transform-origin:center bottom;
+  animation:api-goyang .42s steps(2) infinite;
+}
+/* Nyala yang benar-benar DIAM terbaca seperti stiker, bukan api. */
+@keyframes api-goyang{
+  from{transform:translateX(-50%) scaleY(1)}
+  to{transform:translateX(-50%) scaleY(.82)}
+}
+/* Lingkaran cahaya lembut di sekitar nyala. */
+.lilin .api::after{content:""}
+.lilin.padam .api{display:none}
+/* Sasaran ketuk hanya berguna selama masih menyala. */
+.lilin.padam{cursor:default;pointer-events:none}
+.lilin:focus-visible{outline:3px solid var(--tinta);outline-offset:2px}
+
+/* Asap: kepulan kecil yang naik sesudah lilinnya padam. */
+.asap{
+  position:absolute;width:6px;height:6px;background:#cbb9c6;
+  pointer-events:none;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .lilin .api{animation:none}
 }
 
 /* ---------- GAME OVER ---------- */

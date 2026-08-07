@@ -144,7 +144,11 @@ document.addEventListener('click', (e) => {
     ubin.classList.add('terbuka');
     const r = ubin.getBoundingClientRect();
     hamburkan(r.left + r.width / 2, r.top + r.height / 2, 4);
+    return;
   }
+
+  const lilin = sasaran.closest('.lilin');
+  if (lilin) ketukLilin(lilin);
 }, true);
 
 /* ---------- bar XP & LEVEL UP ----------
@@ -245,6 +249,7 @@ const ANIM = {
   jump: { baris: 8, frames: 3, dur: .5 },
   celebrate: { baris: 9, frames: 4, dur: .48 },
   hug: { baris: 10, frames: 2, dur: 1.4 },
+  blow: { baris: 11, frames: 3, dur: .42 },
 };
 
 const TINGGI_FRAME = 138;
@@ -260,7 +265,10 @@ const PANGGUNG = {
   dialog:      { x: [.06, .91], laku: 'sit' },
   wishes:      { x: [.13, .85], laku: 'surprised' },
   powerups:    { x: [.05, .92], laku: 'idle' },
-  scores:      { x: [.10, .88], laku: 'happy' },
+  // Mengapit kue di paruh kiri, saling berhadapan. Angkanya bukan selera:
+  // kue berdiri di x 85-285, dan tombol navigasi menguasai x 360-600 di
+  // dasar kartu — keduanya harus dihindari badan mereka.
+  kue:         { x: [.07, .335], laku: 'idle', hadap: [1, -1] },
   gameover:    { x: [.25, .71], laku: 'celebrate' },
 };
 
@@ -271,6 +279,7 @@ function Teman(el, mula) {
   this.sprite = el.querySelector('.sprite');
   this.x = mula;
   this.tujuan = mula;
+  this.pangkal = mula;         // tempat berdiri di babak ini; lihat temaniBabak
   this.lari = false;
   this.hadap = 1;
   this.anim = '';
@@ -353,6 +362,17 @@ let sentuhTerakhir = performance.now();
    mati, walau tidak ada yang salah dengan kodenya sendiri. */
 let memeluk = false;
 let hatiPeluk = false;
+
+/* Keadaan babak TIUP LILIN — sengaja ikut dideklarasikan di sini, dengan
+   alasan yang persis sama seperti dua baris di atas: ke() dipanggil di baris
+   terakhir berkas ini dan memanggil temaniBabak(), yang membaca semuaPadam.
+   Kalau deklarasinya menunggu sampai dekat fungsi-fungsi lilin di bawah,
+   pembacaan itu jatuh sebelum `let`-nya jalan dan seluruh berkas mati. */
+let antreLilin = [];
+let sedangTiup = false;
+let giliranTiup = 0;
+let timerTiup = [];
+let semuaPadam = false;
 
 if (temanCowok && temanCewek) {
   regu = [
@@ -557,13 +577,130 @@ function temaniBabak(id) {
   sentuhTerakhir = performance.now();
   regu.forEach((t, i) => {
     t.pergiKe(W_KANVAS * p.x[i] - LEBAR_TEMAN / 2);
-    t.laku = p.laku;
+    // Titik pangkalnya diingat: di babak kue mereka maju-mundur dari sini,
+    // dan tanpa catatan ini tidak ada tempat untuk kembali.
+    t.pangkal = t.tujuan;
+    t.laku = id === 'kue' && semuaPadam ? 'celebrate' : p.laku;
     t.sekali = null;
-    t.kunci = null;
+    t.kunci = p.hadap ? p.hadap[i] : null;
     t.el.classList.remove('merapat');
   });
   // Pindah babak membatalkan pelukan: mereka punya urusan lain di sana.
   memeluk = false;
+  if (id !== 'kue') batalkanTiup();
+}
+
+/* ---------- TIUP LILIN ----------
+   Ketuk api sebuah lilin, dan salah satu karakter MENGHAMPIRI lalu meniupnya.
+   Bukan padam di tempat begitu diketuk: aturan yang dipegang sejak awal
+   adalah mereka tidak boleh berpindah atau bertindak dari jarak jauh, dan
+   nyala yang mati sendiri tanpa ada yang datang meniup membuat kedua
+   karakter itu jadi hiasan, bukan pelaku.
+
+   Antrean dipakai karena penerima pasti mengetuk beruntun. Tanpa antrean,
+   ketukan kedua menyuruh karakter yang sama berbalik di tengah jalan dan
+   dua tiupan saling memotong. */
+const lilinSemua = [...document.querySelectorAll('.lilin')];
+const panggungKue = document.querySelector('.kue-panggung');
+
+function tundaTiup(fn, ms) {
+  timerTiup.push(setTimeout(fn, ms));
+}
+
+function batalkanTiup() {
+  timerTiup.forEach(clearTimeout);
+  timerTiup = [];
+  antreLilin = [];
+  sedangTiup = false;
+}
+
+function ketukLilin(el) {
+  if (el.classList.contains('padam') || antreLilin.includes(el)) return;
+  sentuhTerakhir = performance.now();
+  antreLilin.push(el);
+  jalankanAntreLilin();
+}
+
+function jalankanAntreLilin() {
+  if (sedangTiup) return;
+  const el = antreLilin.shift();
+  if (!el) return;
+  if (el.classList.contains('padam')) return jalankanAntreLilin();
+
+  // Tanpa karakter (mis. sprite gagal dimuat) lilinnya tetap harus bisa
+  // padam — kalau tidak, babak ini jadi buntu total.
+  if (!regu.length) {
+    padamkanLilin(el);
+    return jalankanAntreLilin();
+  }
+
+  sedangTiup = true;
+  const t = regu[giliranTiup % regu.length];
+  giliranTiup += 1;
+
+  // Selangkah ke arah kue, bukan menyeberang: jaraknya pendek supaya lima
+  // kali bolak-balik tidak terasa seperti menunggu. Sengaja cuma 18 piksel —
+  // langkah yang lebih panjang membuat badan mereka menutupi kue, dan yang
+  // sedang ditiup jadi tidak kelihatan.
+  const maju = t === regu[0] ? 14 : -14;
+  t.pergiKe(t.pangkal + maju);
+  const tempuh = Math.abs(maju) / 104 * 1000 + 140;
+
+  tundaTiup(() => {
+    t.mainkan('blow', 780);
+    // Apinya padam SESUDAH embusannya mulai, bukan bersamaan dengan langkah.
+    tundaTiup(() => padamkanLilin(el), 280);
+    tundaTiup(() => {
+      t.pergiKe(t.pangkal);
+      sedangTiup = false;
+      tundaTiup(jalankanAntreLilin, 240);
+    }, 800);
+  }, tempuh);
+}
+
+function padamkanLilin(el) {
+  if (el.classList.contains('padam')) return;
+  el.classList.add('padam');
+  asapLilin(el);
+  if (lilinSemua.every((l) => l.classList.contains('padam'))) selesaiTiup();
+}
+
+/* Kepulan asap dari sumbu. Koordinatnya dibagi skala kartu dengan alasan yang
+   sama seperti partikel lain — lihat catatan di skalaKartu(). */
+function asapLilin(el) {
+  if (kurangiGerak || !taman) return;
+  const kotak = taman.getBoundingClientRect();
+  const k = skalaKartu();
+  const r = el.getBoundingClientRect();
+  const x = (r.left + r.width / 2 - kotak.left) / k;
+  const y = (r.top + r.height * .28 - kotak.top) / k;
+  for (let i = 0; i < 5; i++) {
+    const p = document.createElement('i');
+    const sisi = 5 + Math.random() * 5;
+    p.className = 'asap';
+    p.style.cssText = 'position:absolute;width:' + sisi + 'px;height:' + sisi + 'px;' +
+      'background:#cbb9c6;left:' + x + 'px;top:' + y + 'px;pointer-events:none';
+    taman.appendChild(p);
+    p.animate([
+      { transform: 'translate(-50%,-50%) scale(.6)', opacity: .85 },
+      {
+        transform: 'translate(calc(-50% + ' + (Math.random() * 26 - 13) + 'px),' +
+          'calc(-50% - ' + (34 + Math.random() * 30) + 'px)) scale(1.5)',
+        opacity: 0,
+      },
+    ], { duration: 700 + Math.random() * 500, delay: i * 70, easing: 'steps(7, end)' })
+      .onfinish = () => p.remove();
+  }
+}
+
+function selesaiTiup() {
+  semuaPadam = true;
+  regu.forEach((t) => { t.laku = 'celebrate'; t.sekali = null; });
+  pestaBerdua(LETUPAN);
+  if (panggungKue) {
+    const r = panggungKue.getBoundingClientRect();
+    hamburkan(r.left + r.width / 2, r.top + r.height * .2, 12);
+  }
 }
 
 /* Babak awal. Saat MENGEDIT, layar judul dilewati supaya pembeli tidak harus

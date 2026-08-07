@@ -124,13 +124,11 @@ SEEDS = [
                 {"key": "peluk_btn", "label": "Tombol peluk", "default": "HUG"},
                 {"key": "power_head", "label": "Judul power up", "default": "POWER UPS"},
                 {"key": "power_note", "label": "Catatan power up", "default": "ketuk tiap kotak buat lihat isinya"},
-                {"key": "score_head", "label": "Judul skor", "default": "HIGH SCORES"},
-                {"key": "score_l1", "label": "Skor 1: nama", "default": "LOVE"},
-                {"key": "score_v1", "label": "Skor 1: angka", "default": "99999"},
-                {"key": "score_l2", "label": "Skor 2: nama", "default": "JOY"},
-                {"key": "score_v2", "label": "Skor 2: angka", "default": "88888"},
-                {"key": "score_l3", "label": "Skor 3: nama", "default": "CUTE"},
-                {"key": "score_v3", "label": "Skor 3: angka", "default": "77777"},
+                # Dulu HIGH SCORES: tiga baris angka karangan. Dicabut atas
+                # permintaan pemilik kartu — angkanya tidak menyumbang apa
+                # pun, cuma membuat template terlihat sibuk.
+                {"key": "kue_head", "label": "Judul tiup lilin", "default": "MAKE A WISH"},
+                {"key": "kue_note", "label": "Petunjuk tiup lilin", "default": "ketuk tiap api lilinnya"},
                 {"key": "over_head", "label": "Judul penutup (dicoret)", "default": "GAME OVER?"},
                 {"key": "over_big", "label": "Jawaban penutup", "default": "NEVER!"},
                 {"key": "over_note", "label": "Kalimat penutup", "default": "CONTINUE TOGETHER FOREVER"},

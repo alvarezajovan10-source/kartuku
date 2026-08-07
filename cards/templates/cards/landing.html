@@ -31,10 +31,14 @@
         <span class="script coret">hadiah berkesan<svg class="coret-garis" viewBox="0 0 300 14" aria-hidden="true" preserveAspectRatio="none"><path d="M4 9C60 3 150 2 296 6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span><br>
         untuk orang teristimewa.
       </h1>
+      {% comment %}
+        Harga sengaja TIDAK disebut di sini lagi, atas permintaan pemilik
+        situs. Angkanya masih tampil di bagian Harga lebih bawah di halaman
+        yang sama, jadi tidak ada yang hilang — cuma pindah.
+      {% endcomment %}
       <p class="hero-lede">
-        Buat kartu ucapan digital cantik dengan foto, pesan, dan video YouTube.
-        {% if payment_ready %}Bayar mudah dengan QRIS hanya{% else %}Sekali bayar{% endif %}
-        <strong>Rp{{ price|floatformat:0 }}</strong>, lalu bagikan ke orang tersayang.
+        Buat kartu ucapan digital cantik dengan foto dan pesan, lalu bagikan
+        ke orang tersayang.
       </p>
 
       <div class="hero-actions">

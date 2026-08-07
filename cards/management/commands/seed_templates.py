@@ -99,13 +99,13 @@ SEEDS = [
                 # sempat punya slot foto juga, lalu dicabut: kotak di sana
                 # memajang potret kedua karakter supaya jelas kolom nama mana
                 # milik siapa, dan foto pembeli menghapus petunjuk itu.
-                {"key": "g1", "label": "Power up 1", "area": "powerups",
+                {"key": "g1", "label": "Momen 1", "area": "powerups",
                  "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
-                {"key": "g2", "label": "Power up 2", "area": "powerups",
+                {"key": "g2", "label": "Momen 2", "area": "powerups",
                  "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
-                {"key": "g3", "label": "Power up 3", "area": "powerups",
+                {"key": "g3", "label": "Momen 3", "area": "powerups",
                  "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
-                {"key": "g4", "label": "Power up 4", "area": "powerups",
+                {"key": "g4", "label": "Momen 4", "area": "powerups",
                  "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
             ],
             "texts": [
@@ -130,8 +130,8 @@ SEEDS = [
                 # dan yang di luar kotak tumpah keluar kartu kalau panjang.
                 {"key": "wish_note", "label": "Isi harapan", "default": "semoga tahun ini sebaik kamu memperlakukan orang lain, dan semoga aku masih di sampingmu waktu itu terjadi."},
                 {"key": "peluk_btn", "label": "Tombol peluk", "default": "HUG"},
-                {"key": "power_head", "label": "Judul power up", "default": "POWER UPS"},
-                {"key": "power_note", "label": "Catatan power up", "default": "ketuk tiap kotak buat lihat isinya"},
+                {"key": "power_head", "label": "Judul momen", "default": "MOMENTS"},
+                {"key": "power_note", "label": "Catatan momen", "default": "ketuk tiap kotak buat lihat isinya"},
                 # Dulu HIGH SCORES: tiga baris angka karangan. Dicabut atas
                 # permintaan pemilik kartu — angkanya tidak menyumbang apa
                 # pun, cuma membuat template terlihat sibuk.

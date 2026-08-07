@@ -142,9 +142,8 @@
         <input type="text" class="ed-input" x-show="photo" maxlength="40" id="cap-bingkai"
                :value="photo && photo.caption" placeholder="Tulis keterangan foto…"
                @change="saveCaption(photo.id, $event.target.value)">
-        <p class="ed-note" x-show="photo && !photo.caption">
-          Muncul sebagai tulisan tangan di bawah foto.
-        </p>
+        <p class="ed-note" x-show="photo && !photo.caption"
+           x-text="(spec &amp;&amp; spec.capNote) || 'Muncul sebagai tulisan tangan di bawah foto.'"></p>
 
         <button type="button" class="ed-more" @click="moreOpen = !moreOpen"
                 x-show="photo" x-text="moreOpen ? '▾ Lebih sedikit' : '▸ Lainnya'"></button>

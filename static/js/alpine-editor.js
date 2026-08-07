@@ -17,6 +17,11 @@ window.cardEditor = function () {
   var SCENE_LABELS = {
     cover: "Sampul", hero: "Ucapan", hub: "Hadiah", message: "Surat",
     flower: "Bunga", cake: "Kue", song: "Lagu", gallery: "Kenangan",
+    // Game 8-Bit. Tanpa entri di sini, pemilih babak di editor menampilkan
+    // id mentah ("powerups") alih-alih nama yang bisa dibaca pembeli.
+    title: "Layar Judul", player: "Pilih Pemain", levelup: "Naik Level",
+    dialog: "Surat", wishes: "Wishes", powerups: "Momen",
+    kue: "Tiup Lilin", gameover: "Penutup",
   };
 
   var specByKey = {};
@@ -168,6 +173,30 @@ window.cardEditor = function () {
         }
       });
 
+      /* Bentuk bingkai pratinjau MENGIKUTI kartunya, bukan sebaliknya.
+         Sebelumnya bingkainya dipaku 390x844 (proporsi HP) untuk semua
+         template. Itu benar selama semua kartu tegak, dan diam-diam salah
+         begitu ada kartu mendatar 16:9: kartunya diperas jadi pita 390x219
+         di tengah kotak HP — sekitar 0,4x ukuran sebenarnya. Akibatnya bukan
+         cuma "kelihatan kecil". Detail sehalus nyala lilin, yang digambar
+         7 piksel dan dirender crispEdges, menyusut sampai di bawah satu
+         piksel per satuan gambar dan HILANG SAMA SEKALI di editor, padahal
+         di kartu aslinya menyala terang. */
+      var frame = this.$refs.frame;
+      if (frame) {
+        frame.addEventListener("load", function () {
+          var wadah = frame.parentElement;
+          if (!wadah) return;
+          var bentuk = "";
+          try {
+            bentuk = frame.contentDocument.documentElement.dataset.stage || "";
+          } catch (e) {
+            bentuk = "";
+          }
+          wadah.classList.toggle("is-lebar", bentuk === "lebar");
+        });
+      }
+
       window.addEventListener("message", function (event) {
         var data = event.data || {};
         if (data.source !== "card-frame") return;
@@ -192,11 +221,22 @@ window.cardEditor = function () {
     /* ── Kirim ke iframe ──────────────────────────────────────────────── */
     post: function (message) {
       var frame = this.$refs.frame;
-      if (frame && frame.contentWindow) {
-        frame.contentWindow.postMessage(
-          Object.assign({ source: "card-editor" }, message), "*"
-        );
+      if (!frame || !frame.contentWindow) return;
+      /* Disalin jadi objek polos dulu. Nilai yang datang dari state Alpine
+         adalah Proxy, dan postMessage MENOLAK menyalin Proxy — ia melempar
+         DataCloneError. Kerusakannya tidak kelihatan karena tidak ada yang
+         gagal secara mencolok: lemparan itu terjadi di baris PERTAMA
+         replay(), jadi seluruh gaya, warna, dan teks yang seharusnya
+         dipasang ulang sesudahnya diam-diam tidak pernah terkirim. Persis
+         hal yang replay() dibuat untuk mencegah — editan hilang dari
+         pratinjau tiap kali ia dimuat ulang, misalnya sehabis unggah foto. */
+      var polos;
+      try {
+        polos = JSON.parse(JSON.stringify(Object.assign({ source: "card-editor" }, message)));
+      } catch (e) {
+        return;
       }
+      frame.contentWindow.postMessage(polos, "*");
     },
     pushStyle: function () {
       this.post({ type: "style", key: this.sel, css: elementCss(this.st) });

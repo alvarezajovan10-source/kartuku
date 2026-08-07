@@ -80,6 +80,70 @@ SEEDS = [
             ],
         },
     ),
+    (
+        "game-8bit",
+        "Game 8-Bit",
+        CardType.BIRTHDAY,
+        {
+            "accent": "#ff2d8a",
+            # Satu-satunya renderer MENDATAR 16:9 (data-stage="lebar"),
+            # mengikuti desain Canva aslinya yang 1376x768.
+            "renderer": "game8bit",
+            "frames": [
+                # Desain aslinya tidak punya slot foto sama sekali; keempat
+                # ubin POWER UPS dijadikan kenangan. Keterangan di balik ubin
+                # memakai GiftPhoto.caption — kotak yang sudah ada di panel
+                # foto — bukan kolom teks tersendiri. "cap_note" cuma mengganti
+                # kalimat penjelas di bawah kotak itu, karena kalimat bawaannya
+                # ("tulisan tangan di bawah foto") tidak berlaku di sini. Halaman PLAYER SELECT
+                # sempat punya slot foto juga, lalu dicabut: kotak di sana
+                # memajang potret kedua karakter supaya jelas kolom nama mana
+                # milik siapa, dan foto pembeli menghapus petunjuk itu.
+                {"key": "g1", "label": "Momen 1", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
+                {"key": "g2", "label": "Momen 2", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
+                {"key": "g3", "label": "Momen 3", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
+                {"key": "g4", "label": "Momen 4", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
+            ],
+            "texts": [
+                # Bawaan = contoh nada yang bisa ditiru pembeli, bukan perintah.
+                # Huruf besar disengaja: itu bahasa layar permainan 8-bit.
+                {"key": "title_main", "label": "Judul utama", "default": "HAPPY BIRTHDAY"},
+                {"key": "title_start", "label": "Tombol mulai", "default": "PRESS START"},
+                {"key": "player_head", "label": "Judul pilih pemain", "default": "PLAYER SELECT"},
+                {"key": "player_1p", "label": "Tulisan kotak kiri", "default": "1P"},
+                {"key": "player_2p", "label": "Tulisan kotak kanan", "default": "2P"},
+                # Nama karakter, TERPISAH dari nama penerima di layar judul.
+                # Sempat memakai kolom yang sama, dan akibatnya mengetik nama
+                # di layar judul ikut mengubah nama pemain 1 — dua hal beda
+                # yang tidak boleh saling menyeret.
+                {"key": "nama1", "label": "Nama karakter cowok", "default": "PLAYER 1"},
+                {"key": "nama2", "label": "Nama karakter cewek", "default": "PLAYER 2"},
+                {"key": "level_kick", "label": "Pembuka naik level", "default": "there's a suprise for you"},
+                {"key": "level_head", "label": "Judul naik level", "default": "LEVEL UP!"},
+                {"key": "level_stat", "label": "Statistik level", "default": "HP +100  LOVE +999"},
+                {"key": "wish_head", "label": "Judul wishes", "default": "WISHES"},
+                # Satu kolom untuk seluruh harapan. Sempat dua (judul + catatan),
+                # dan yang di luar kotak tumpah keluar kartu kalau panjang.
+                {"key": "wish_note", "label": "Isi harapan", "default": "semoga tahun ini sebaik kamu memperlakukan orang lain, dan semoga aku masih di sampingmu waktu itu terjadi."},
+                {"key": "peluk_btn", "label": "Tombol peluk", "default": "HUG"},
+                {"key": "power_head", "label": "Judul momen", "default": "MOMENTS"},
+                {"key": "power_note", "label": "Catatan momen", "default": "ketuk tiap kotak buat lihat isinya"},
+                # Dulu HIGH SCORES: tiga baris angka karangan. Dicabut atas
+                # permintaan pemilik kartu — angkanya tidak menyumbang apa
+                # pun, cuma membuat template terlihat sibuk.
+                {"key": "kue_head", "label": "Judul tiup lilin", "default": "MAKE A WISH"},
+                {"key": "kue_note", "label": "Petunjuk tiup lilin", "default": "ketuk tiap api lilinnya"},
+                {"key": "over_head", "label": "Judul penutup (dicoret)", "default": "GAME OVER?"},
+                {"key": "over_big", "label": "Jawaban penutup", "default": "NEVER!"},
+                {"key": "over_note", "label": "Kalimat penutup", "default": "CONTINUE TOGETHER FOREVER"},
+                {"key": "over_btn", "label": "Tombol main lagi", "default": "PLAY AGAIN"},
+            ],
+        },
+    ),
     # Anniversary, Love Story, dan Proposal sengaja belum ada isinya.
     # Kategorinya tetap tampil di situs sebagai "Coming soon" — lihat
     # _category_cards() di cards/views.py, yang menandai kategori tanpa

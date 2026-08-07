@@ -737,6 +737,14 @@ img { max-width: 100%; display: block; }
   border: 0; border-radius: var(--radius);
   box-shadow: var(--shadow-lg); background: #fff;
 }
+/* Kartu MENDATAR 16:9 memakai bingkainya sendiri. Kelasnya dipasang
+   alpine-editor.js setelah membaca data-stage kartu yang dimuat — lihat
+   catatan panjang di sana soal nyala lilin yang lenyap waktu kartu mendatar
+   dijejalkan ke kotak berproporsi HP. */
+.ed-stage.is-lebar { align-items: center; }
+.ed-stage.is-lebar iframe {
+  width: 960px; aspect-ratio: 960 / 540;
+}
 
 @media (max-width: 900px) {
   .ed { grid-template-columns: 1fr; height: auto; }

@@ -17,10 +17,17 @@ from pathlib import Path
 from django.conf import settings
 from django.test import TestCase
 
+# (berkas CSS, lebar kanonisnya dalam px).
+#
+# Ada DUA lebar kanonis, bukan satu: kartu tegak ditata pada 390px, kartu
+# mendatar 16:9 pada 960px. Yang dijaga bukan angkanya melainkan
+# kecocokannya dengan card-stage.js — kalau CSS dan JS berbeda, kartu
+# terpotong atau menyisakan celah kosong.
 CSS_KARTU = [
-    "css/render/birthday.css",
-    "css/render/scrapbook.css",
-    "css/kanvas.css",
+    ("css/render/birthday.css", 390),
+    ("css/render/scrapbook.css", 390),
+    ("css/kanvas.css", 390),
+    ("css/render/game8bit.css", 960),
 ]
 
 
@@ -36,7 +43,7 @@ class InvarianCssKartuTests(TestCase):
         layar dan berada di luar kanvas kartu.
         """
         pola = re.compile(r"[\d.]+(vw|vh|dvh|svh|lvh)\b")
-        for nama in CSS_KARTU:
+        for nama, _lebar in CSS_KARTU:
             for nomor, baris in enumerate(baca(nama).splitlines(), 1):
                 if not pola.search(baris):
                     continue
@@ -54,7 +61,7 @@ class InvarianCssKartuTests(TestCase):
         Jadi ia menyala di HP dan mati di laptop — persis ketidaksesuaian
         yang sedang dihilangkan. Hanya prefers-reduced-motion yang boleh.
         """
-        for nama in CSS_KARTU:
+        for nama, _lebar in CSS_KARTU:
             for nomor, baris in enumerate(baca(nama).splitlines(), 1):
                 if "@media" not in baris:
                     continue
@@ -68,21 +75,24 @@ class InvarianCssKartuTests(TestCase):
     def test_ukuran_font_dasar_dikunci(self):
         """Tanpa ini, setelan ukuran teks di browser penerima dan font
         boosting Chrome Android mengubah pemenggalan baris."""
-        for nama in CSS_KARTU:
+        for nama, _lebar in CSS_KARTU:
             isi = baca(nama).replace(" ", "")
             self.assertIn("font-size:16px", isi, f"{nama}: ukuran font dasar tidak dikunci")
             self.assertIn("text-size-adjust:100%", isi, f"{nama}: text-size-adjust hilang")
 
     def test_lebar_kanonis_terdefinisi(self):
-        for nama in CSS_KARTU:
+        for nama, _lebar in CSS_KARTU:
             self.assertIn("--w0", baca(nama), f"{nama}: --w0 tidak terdefinisi")
 
     def test_lebar_kanonis_sama_dengan_di_javascript(self):
         """Kalau CSS dan JS berbeda, kartu terpotong atau ada celah kosong."""
         js = (Path(settings.BASE_DIR) / "static" / "js" / "card-stage.js").read_text()
-        self.assertRegex(js, r"W0\s*=\s*390")
-        for nama in CSS_KARTU:
-            self.assertRegex(baca(nama).replace(" ", ""), r"--w0:390px")
+        self.assertRegex(js, r"\bW0\s*=\s*390")
+        self.assertRegex(js, r"\bW0_LEBAR\s*=\s*960")
+        self.assertRegex(js, r"\bH0_LEBAR\s*=\s*540")
+        for nama, lebar in CSS_KARTU:
+            with self.subTest(css=nama):
+                self.assertRegex(baca(nama).replace(" ", ""), rf"--w0:{lebar}px")
 
     def test_gaya_pilihan_user_tidak_dikalahkan_spesifisitas(self):
         """Aturan ber-id sempat mengalahkan lapisan gaya user, sehingga
@@ -134,6 +144,7 @@ class StrukturKanvasTests(TestCase):
         ("birthday", "frame"),
         ("scrapbook", "flow"),
         ("kanvas", "flow"),
+        ("game8bit", "lebar"),
     ]
 
     def setUp(self):

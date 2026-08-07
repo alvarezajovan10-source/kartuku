@@ -1,0 +1,358 @@
+{% load static card_extras %}<!DOCTYPE html>
+<html lang="id" data-stage="lebar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk {{ card.recipient_name|default:"kamu" }} ♥</title>
+<meta name="robots" content="noindex, nofollow">
+{% include "cards/_card_head.html" %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+{% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
+<link rel="stylesheet" href="{% static_v 'css/render/game8bit.css' %}">
+{% include "cards/_stage_head.html" %}
+{% if editing %}
+<link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
+<script defer src="{% static_v 'js/card-frame.js' %}"></script>
+{% endif %}
+</head>
+<body{% if editing %} class="is-editing"{% endif %}>
+
+{% comment %}
+  GAME 8-BIT — kartu MENDATAR 16:9 (data-stage="lebar"), dari desain Canva
+  milik pemilik situs.
+
+  Rasionya mengikuti desain aslinya yang 1376x768. Konsekuensinya tata letak
+  di sini selalu memakai lebar: kisi mendatar, dua pemain berdampingan,
+  papan skor melebar. Di HP yang dipegang tegak kartu ini kecil — itu sifat
+  bawaan 16:9, dan penerima diminta memiringkan HP lewat lapisan .putar-hp
+  di bawah, yang sengaja DI LUAR kanvas supaya tidak ikut diskalakan.
+
+  Seluruh piksel-art digambar ulang sebagai SVG (lihat blok <symbol> di
+  bawah), bukan menempel PNG dari Canva: tiap halaman PNG itu ~1,3 MB dan
+  pecah kalau diperbesar, sementara bentuk vektor tetap tajam, ringan, dan
+  bisa dianimasikan — melompat, berkedip, meledak.
+
+  Latarnya SATU berkas gambar unduhan — lihat peringatan hak cipta di bagian
+  LANGIT pada game8bit.css sebelum kartu ini dijual. Versi yang latarnya
+  digambar sendiri ada di branch template-8bit.
+{% endcomment %}
+
+<!-- ======== BENTUK PIKSEL YANG DIPAKAI ULANG ======== -->
+<svg class="svg-defs" aria-hidden="true" shape-rendering="crispEdges">
+  <symbol id="s-awan" viewBox="0 0 14 7"><rect x="5" y="0" width="4" height="1" fill="#2b0f22"/><rect x="3" y="1" width="2" height="1" fill="#2b0f22"/><rect x="5" y="1" width="4" height="1" fill="#ffffff"/><rect x="9" y="1" width="2" height="1" fill="#2b0f22"/><rect x="2" y="2" width="1" height="1" fill="#2b0f22"/><rect x="3" y="2" width="8" height="1" fill="#ffffff"/><rect x="11" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="1" height="1" fill="#2b0f22"/><rect x="2" y="3" width="10" height="1" fill="#ffffff"/><rect x="12" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="12" height="1" fill="#ffffff"/><rect x="13" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="12" height="1" fill="#ffe9f4"/><rect x="13" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="12" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-pohon" viewBox="0 0 11 13"><rect x="3" y="0" width="5" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="5" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="6" width="1" height="1" fill="#2b0f22"/><rect x="3" y="6" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="6" width="1" height="1" fill="#2b0f22"/><rect x="3" y="7" width="2" height="1" fill="#2b0f22"/><rect x="5" y="7" width="1" height="1" fill="#c99a78"/><rect x="6" y="7" width="2" height="1" fill="#2b0f22"/><rect x="4" y="8" width="1" height="1" fill="#2b0f22"/><rect x="5" y="8" width="1" height="1" fill="#c99a78"/><rect x="6" y="8" width="1" height="1" fill="#2b0f22"/><rect x="4" y="9" width="1" height="1" fill="#2b0f22"/><rect x="5" y="9" width="1" height="1" fill="#c99a78"/><rect x="6" y="9" width="1" height="1" fill="#2b0f22"/><rect x="4" y="10" width="1" height="1" fill="#2b0f22"/><rect x="5" y="10" width="1" height="1" fill="#c99a78"/><rect x="6" y="10" width="1" height="1" fill="#2b0f22"/><rect x="3" y="11" width="1" height="1" fill="#2b0f22"/><rect x="4" y="11" width="3" height="1" fill="#c99a78"/><rect x="7" y="11" width="1" height="1" fill="#2b0f22"/><rect x="2" y="12" width="7" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-pohon-hijau" viewBox="0 0 11 13"><rect x="3" y="0" width="5" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="5" height="1" fill="#bfe6c4"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="7" height="1" fill="#bfe6c4"/><rect x="9" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="9" height="1" fill="#bfe6c4"/><rect x="10" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="9" height="1" fill="#bfe6c4"/><rect x="10" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="5" width="7" height="1" fill="#bfe6c4"/><rect x="9" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="6" width="1" height="1" fill="#2b0f22"/><rect x="3" y="6" width="5" height="1" fill="#bfe6c4"/><rect x="8" y="6" width="1" height="1" fill="#2b0f22"/><rect x="3" y="7" width="2" height="1" fill="#2b0f22"/><rect x="5" y="7" width="1" height="1" fill="#c99a78"/><rect x="6" y="7" width="2" height="1" fill="#2b0f22"/><rect x="4" y="8" width="1" height="1" fill="#2b0f22"/><rect x="5" y="8" width="1" height="1" fill="#c99a78"/><rect x="6" y="8" width="1" height="1" fill="#2b0f22"/><rect x="4" y="9" width="1" height="1" fill="#2b0f22"/><rect x="5" y="9" width="1" height="1" fill="#c99a78"/><rect x="6" y="9" width="1" height="1" fill="#2b0f22"/><rect x="4" y="10" width="1" height="1" fill="#2b0f22"/><rect x="5" y="10" width="1" height="1" fill="#c99a78"/><rect x="6" y="10" width="1" height="1" fill="#2b0f22"/><rect x="3" y="11" width="1" height="1" fill="#2b0f22"/><rect x="4" y="11" width="3" height="1" fill="#c99a78"/><rect x="7" y="11" width="1" height="1" fill="#2b0f22"/><rect x="2" y="12" width="7" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-pelangi" viewBox="0 0 13 7"><rect x="3" y="0" width="7" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="7" height="1" fill="#ffaed4"/><rect x="10" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="1" height="1" fill="#ffaed4"/><rect x="3" y="2" width="7" height="1" fill="#ffd8a8"/><rect x="10" y="2" width="1" height="1" fill="#ffaed4"/><rect x="11" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="1" height="1" fill="#2b0f22"/><rect x="2" y="3" width="1" height="1" fill="#ffaed4"/><rect x="3" y="3" width="1" height="1" fill="#ffd8a8"/><rect x="4" y="3" width="5" height="1" fill="#fff3a8"/><rect x="9" y="3" width="1" height="1" fill="#ffd8a8"/><rect x="10" y="3" width="1" height="1" fill="#ffaed4"/><rect x="11" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="4" width="1" height="1" fill="#ffaed4"/><rect x="3" y="4" width="1" height="1" fill="#ffd8a8"/><rect x="9" y="4" width="1" height="1" fill="#ffd8a8"/><rect x="10" y="4" width="1" height="1" fill="#ffaed4"/><rect x="11" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="5" width="1" height="1" fill="#ffaed4"/><rect x="10" y="5" width="1" height="1" fill="#ffaed4"/><rect x="11" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="1" height="1" fill="#2b0f22"/><rect x="11" y="6" width="1" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-hati" viewBox="0 0 9 8"><rect x="1" y="0" width="2" height="1" fill="#2b0f22"/><rect x="6" y="0" width="2" height="1" fill="#2b0f22"/><rect x="0" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="3" y="1" width="1" height="1" fill="#2b0f22"/><rect x="5" y="1" width="1" height="1" fill="#2b0f22"/><rect x="6" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="0" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="2" width="1" height="1" fill="#ffffff"/><rect x="3" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="4" y="2" width="1" height="1" fill="#2b0f22"/><rect x="5" y="2" width="3" height="1" fill="#ff6bb5"/><rect x="8" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="7" height="1" fill="#ff6bb5"/><rect x="8" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="4" width="5" height="1" fill="#ff6bb5"/><rect x="7" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="5" width="1" height="1" fill="#2b0f22"/><rect x="3" y="5" width="3" height="1" fill="#ff6bb5"/><rect x="6" y="5" width="1" height="1" fill="#2b0f22"/><rect x="3" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="6" width="1" height="1" fill="#ff6bb5"/><rect x="5" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="7" width="1" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-piala" viewBox="0 0 11 13"><rect x="2" y="0" width="7" height="1" fill="#2b0f22"/><rect x="1" y="1" width="1" height="1" fill="#2b0f22"/><rect x="2" y="1" width="7" height="1" fill="#ffd23f"/><rect x="9" y="1" width="1" height="1" fill="#2b0f22"/><rect x="0" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#e8951e"/><rect x="2" y="2" width="7" height="1" fill="#ffd23f"/><rect x="9" y="2" width="1" height="1" fill="#e8951e"/><rect x="10" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="1" height="1" fill="#e8951e"/><rect x="2" y="3" width="1" height="1" fill="#2b0f22"/><rect x="3" y="3" width="5" height="1" fill="#ffd23f"/><rect x="8" y="3" width="1" height="1" fill="#2b0f22"/><rect x="9" y="3" width="1" height="1" fill="#e8951e"/><rect x="10" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#e8951e"/><rect x="2" y="4" width="1" height="1" fill="#2b0f22"/><rect x="3" y="4" width="5" height="1" fill="#ffd23f"/><rect x="8" y="4" width="1" height="1" fill="#2b0f22"/><rect x="9" y="4" width="1" height="1" fill="#e8951e"/><rect x="10" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="2" height="1" fill="#2b0f22"/><rect x="3" y="5" width="5" height="1" fill="#ffd23f"/><rect x="8" y="5" width="2" height="1" fill="#2b0f22"/><rect x="3" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="6" width="3" height="1" fill="#ffd23f"/><rect x="7" y="6" width="1" height="1" fill="#2b0f22"/><rect x="4" y="7" width="1" height="1" fill="#2b0f22"/><rect x="5" y="7" width="1" height="1" fill="#ffd23f"/><rect x="6" y="7" width="1" height="1" fill="#2b0f22"/><rect x="4" y="8" width="1" height="1" fill="#2b0f22"/><rect x="5" y="8" width="1" height="1" fill="#ffd23f"/><rect x="6" y="8" width="1" height="1" fill="#2b0f22"/><rect x="3" y="9" width="1" height="1" fill="#2b0f22"/><rect x="4" y="9" width="3" height="1" fill="#ffd23f"/><rect x="7" y="9" width="1" height="1" fill="#2b0f22"/><rect x="2" y="10" width="1" height="1" fill="#2b0f22"/><rect x="3" y="10" width="5" height="1" fill="#e8951e"/><rect x="8" y="10" width="1" height="1" fill="#2b0f22"/><rect x="1" y="11" width="1" height="1" fill="#2b0f22"/><rect x="2" y="11" width="7" height="1" fill="#e8951e"/><rect x="9" y="11" width="1" height="1" fill="#2b0f22"/><rect x="2" y="12" width="7" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kue" viewBox="0 0 14 11"><rect x="6" y="0" width="2" height="1" fill="#2b0f22"/><rect x="5" y="1" width="1" height="1" fill="#2b0f22"/><rect x="6" y="1" width="2" height="1" fill="#ff2d8a"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="6" y="2" width="2" height="1" fill="#2b0f22"/><rect x="2" y="3" width="10" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="4" width="10" height="1" fill="#ffffff"/><rect x="12" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="12" height="1" fill="#ffffff"/><rect x="13" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="12" height="1" fill="#ff6bb5"/><rect x="13" y="6" width="1" height="1" fill="#2b0f22"/><rect x="0" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="7" width="1" height="1" fill="#e0348c"/><rect x="3" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="5" y="7" width="1" height="1" fill="#e0348c"/><rect x="6" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="8" y="7" width="1" height="1" fill="#e0348c"/><rect x="9" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="11" y="7" width="1" height="1" fill="#e0348c"/><rect x="12" y="7" width="1" height="1" fill="#ff6bb5"/><rect x="13" y="7" width="1" height="1" fill="#2b0f22"/><rect x="0" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="12" height="1" fill="#ff6bb5"/><rect x="13" y="8" width="1" height="1" fill="#2b0f22"/><rect x="0" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="12" height="1" fill="#ff6bb5"/><rect x="13" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="12" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kado" viewBox="0 0 12 12"><rect x="2" y="0" width="1" height="1" fill="#2b0f22"/><rect x="9" y="0" width="1" height="1" fill="#2b0f22"/><rect x="1" y="1" width="1" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#ffffff"/><rect x="3" y="1" width="1" height="1" fill="#2b0f22"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="9" y="1" width="1" height="1" fill="#ffffff"/><rect x="10" y="1" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="1" height="1" fill="#2b0f22"/><rect x="3" y="2" width="1" height="1" fill="#ffffff"/><rect x="4" y="2" width="1" height="1" fill="#2b0f22"/><rect x="7" y="2" width="1" height="1" fill="#2b0f22"/><rect x="8" y="2" width="1" height="1" fill="#ffffff"/><rect x="9" y="2" width="1" height="1" fill="#2b0f22"/><rect x="3" y="3" width="1" height="1" fill="#2b0f22"/><rect x="4" y="3" width="1" height="1" fill="#ffffff"/><rect x="5" y="3" width="2" height="1" fill="#2b0f22"/><rect x="7" y="3" width="1" height="1" fill="#ffffff"/><rect x="8" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="10" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="5" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="5" width="2" height="1" fill="#2b0f22"/><rect x="7" y="5" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="10" height="1" fill="#2b0f22"/><rect x="1" y="7" width="1" height="1" fill="#2b0f22"/><rect x="2" y="7" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="7" width="2" height="1" fill="#2b0f22"/><rect x="7" y="7" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="8" width="2" height="1" fill="#2b0f22"/><rect x="7" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="1" height="1" fill="#2b0f22"/><rect x="2" y="9" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="9" width="2" height="1" fill="#2b0f22"/><rect x="7" y="9" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="1" height="1" fill="#2b0f22"/><rect x="2" y="10" width="3" height="1" fill="#ff6bb5"/><rect x="5" y="10" width="2" height="1" fill="#2b0f22"/><rect x="7" y="10" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="10" width="1" height="1" fill="#2b0f22"/><rect x="1" y="11" width="10" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-topi" viewBox="0 0 11 12"><rect x="5" y="0" width="1" height="1" fill="#ffd23f"/><rect x="4" y="1" width="1" height="1" fill="#2b0f22"/><rect x="5" y="1" width="1" height="1" fill="#ffd23f"/><rect x="6" y="1" width="1" height="1" fill="#2b0f22"/><rect x="4" y="2" width="1" height="1" fill="#2b0f22"/><rect x="5" y="2" width="1" height="1" fill="#ffd23f"/><rect x="6" y="2" width="1" height="1" fill="#2b0f22"/><rect x="4" y="3" width="1" height="1" fill="#2b0f22"/><rect x="5" y="3" width="1" height="1" fill="#ff6bb5"/><rect x="6" y="3" width="1" height="1" fill="#2b0f22"/><rect x="3" y="4" width="1" height="1" fill="#2b0f22"/><rect x="4" y="4" width="3" height="1" fill="#ff6bb5"/><rect x="7" y="4" width="1" height="1" fill="#2b0f22"/><rect x="3" y="5" width="1" height="1" fill="#2b0f22"/><rect x="4" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="5" y="5" width="1" height="1" fill="#ffffff"/><rect x="6" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="7" y="5" width="1" height="1" fill="#2b0f22"/><rect x="2" y="6" width="1" height="1" fill="#2b0f22"/><rect x="3" y="6" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="6" width="1" height="1" fill="#2b0f22"/><rect x="2" y="7" width="1" height="1" fill="#2b0f22"/><rect x="3" y="7" width="1" height="1" fill="#ff6bb5"/><rect x="4" y="7" width="1" height="1" fill="#ffffff"/><rect x="5" y="7" width="3" height="1" fill="#ff6bb5"/><rect x="8" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="1" height="1" fill="#2b0f22"/><rect x="2" y="9" width="1" height="1" fill="#ff6bb5"/><rect x="3" y="9" width="1" height="1" fill="#ffffff"/><rect x="4" y="9" width="3" height="1" fill="#ff6bb5"/><rect x="7" y="9" width="1" height="1" fill="#ffffff"/><rect x="8" y="9" width="1" height="1" fill="#ff6bb5"/><rect x="9" y="9" width="1" height="1" fill="#2b0f22"/><rect x="0" y="10" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="10" width="1" height="1" fill="#2b0f22"/><rect x="0" y="11" width="11" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-balon" viewBox="0 0 11 14"><rect x="3" y="0" width="5" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="3" y="2" width="1" height="1" fill="#ffffff"/><rect x="4" y="2" width="5" height="1" fill="#ff6bb5"/><rect x="9" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="1" height="1" fill="#2b0f22"/><rect x="2" y="3" width="1" height="1" fill="#ff6bb5"/><rect x="3" y="3" width="1" height="1" fill="#ffffff"/><rect x="4" y="3" width="5" height="1" fill="#ff6bb5"/><rect x="9" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="9" height="1" fill="#ff6bb5"/><rect x="10" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="1" height="1" fill="#2b0f22"/><rect x="2" y="7" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="7" height="1" fill="#ff6bb5"/><rect x="9" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="9" width="1" height="1" fill="#2b0f22"/><rect x="3" y="9" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="9" width="1" height="1" fill="#2b0f22"/><rect x="3" y="10" width="1" height="1" fill="#2b0f22"/><rect x="4" y="10" width="3" height="1" fill="#ff6bb5"/><rect x="7" y="10" width="1" height="1" fill="#2b0f22"/><rect x="4" y="11" width="1" height="1" fill="#2b0f22"/><rect x="5" y="11" width="1" height="1" fill="#ff6bb5"/><rect x="6" y="11" width="1" height="1" fill="#2b0f22"/><rect x="5" y="12" width="1" height="1" fill="#2b0f22"/><rect x="4" y="13" width="1" height="1" fill="#2b0f22"/><rect x="6" y="13" width="1" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-stik" viewBox="0 0 20 12"><rect x="3" y="0" width="3" height="1" fill="#2b0f22"/><rect x="14" y="0" width="3" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="3" height="1" fill="#a8e6cf"/><rect x="6" y="1" width="1" height="1" fill="#2b0f22"/><rect x="13" y="1" width="1" height="1" fill="#2b0f22"/><rect x="14" y="1" width="3" height="1" fill="#a8e6cf"/><rect x="17" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="18" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="18" height="1" fill="#ffc2d6"/><rect x="19" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="3" height="1" fill="#ffc2d6"/><rect x="4" y="4" width="1" height="1" fill="#b9a5e3"/><rect x="5" y="4" width="9" height="1" fill="#ffc2d6"/><rect x="14" y="4" width="1" height="1" fill="#ffd23f"/><rect x="15" y="4" width="4" height="1" fill="#ffc2d6"/><rect x="19" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#ffc2d6"/><rect x="2" y="5" width="5" height="1" fill="#b9a5e3"/><rect x="7" y="5" width="6" height="1" fill="#ffc2d6"/><rect x="13" y="5" width="1" height="1" fill="#a8e6cf"/><rect x="14" y="5" width="1" height="1" fill="#ffc2d6"/><rect x="15" y="5" width="1" height="1" fill="#b9a5e3"/><rect x="16" y="5" width="3" height="1" fill="#ffc2d6"/><rect x="19" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="3" height="1" fill="#ffc2d6"/><rect x="4" y="6" width="1" height="1" fill="#b9a5e3"/><rect x="5" y="6" width="9" height="1" fill="#ffc2d6"/><rect x="14" y="6" width="1" height="1" fill="#a8e6cf"/><rect x="15" y="6" width="4" height="1" fill="#ffc2d6"/><rect x="19" y="6" width="1" height="1" fill="#2b0f22"/><rect x="0" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="6" height="1" fill="#ffc2d6"/><rect x="7" y="7" width="4" height="1" fill="#a8e6cf"/><rect x="11" y="7" width="8" height="1" fill="#ffc2d6"/><rect x="19" y="7" width="1" height="1" fill="#2b0f22"/><rect x="0" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="18" height="1" fill="#ffc2d6"/><rect x="19" y="8" width="1" height="1" fill="#2b0f22"/><rect x="0" y="9" width="2" height="1" fill="#2b0f22"/><rect x="2" y="9" width="16" height="1" fill="#ffc2d6"/><rect x="18" y="9" width="2" height="1" fill="#2b0f22"/><rect x="1" y="10" width="3" height="1" fill="#2b0f22"/><rect x="4" y="10" width="3" height="1" fill="#ffc2d6"/><rect x="7" y="10" width="4" height="1" fill="#2b0f22"/><rect x="11" y="10" width="3" height="1" fill="#ffc2d6"/><rect x="14" y="10" width="4" height="1" fill="#2b0f22"/><rect x="2" y="11" width="5" height="1" fill="#2b0f22"/><rect x="11" y="11" width="5" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kilau" viewBox="0 0 7 7"><rect x="3" y="0" width="1" height="1" fill="#ffffff"/><rect x="3" y="1" width="1" height="1" fill="#ffffff"/><rect x="2" y="2" width="3" height="1" fill="#ffffff"/><rect x="0" y="3" width="7" height="1" fill="#ffffff"/><rect x="2" y="4" width="3" height="1" fill="#ffffff"/><rect x="3" y="5" width="1" height="1" fill="#ffffff"/><rect x="3" y="6" width="1" height="1" fill="#ffffff"/></symbol>
+  <symbol id="s-api" viewBox="0 0 7 9"><rect x="3" y="0" width="1" height="1" fill="#2b0f22"/><rect x="2" y="1" width="1" height="1" fill="#2b0f22"/><rect x="3" y="1" width="1" height="1" fill="#ff8a1f"/><rect x="4" y="1" width="1" height="1" fill="#2b0f22"/><rect x="2" y="2" width="1" height="1" fill="#2b0f22"/><rect x="3" y="2" width="1" height="1" fill="#ff8a1f"/><rect x="4" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="1" height="1" fill="#2b0f22"/><rect x="2" y="3" width="1" height="1" fill="#ff8a1f"/><rect x="3" y="3" width="1" height="1" fill="#ffd23f"/><rect x="4" y="3" width="1" height="1" fill="#ff8a1f"/><rect x="5" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="1" height="1" fill="#2b0f22"/><rect x="2" y="4" width="1" height="1" fill="#ff8a1f"/><rect x="3" y="4" width="1" height="1" fill="#ffd23f"/><rect x="4" y="4" width="1" height="1" fill="#ff8a1f"/><rect x="5" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#ff8a1f"/><rect x="2" y="5" width="3" height="1" fill="#ffd23f"/><rect x="5" y="5" width="1" height="1" fill="#ff8a1f"/><rect x="6" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="1" height="1" fill="#ff8a1f"/><rect x="2" y="6" width="3" height="1" fill="#ffd23f"/><rect x="5" y="6" width="1" height="1" fill="#ff8a1f"/><rect x="6" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="1" height="1" fill="#2b0f22"/><rect x="2" y="7" width="3" height="1" fill="#ff8a1f"/><rect x="5" y="7" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="3" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kue-besar" viewBox="0 0 40 30"><rect x="2" y="6" width="36" height="1" fill="#2b0f22"/><rect x="2" y="7" width="1" height="1" fill="#2b0f22"/><rect x="3" y="7" width="34" height="1" fill="#ffffff"/><rect x="37" y="7" width="1" height="1" fill="#2b0f22"/><rect x="2" y="8" width="1" height="1" fill="#2b0f22"/><rect x="3" y="8" width="34" height="1" fill="#ffffff"/><rect x="37" y="8" width="1" height="1" fill="#2b0f22"/><rect x="2" y="9" width="1" height="1" fill="#2b0f22"/><rect x="3" y="9" width="34" height="1" fill="#ffffff"/><rect x="37" y="9" width="1" height="1" fill="#2b0f22"/><rect x="2" y="10" width="1" height="1" fill="#2b0f22"/><rect x="3" y="10" width="3" height="1" fill="#ffffff"/><rect x="6" y="10" width="2" height="1" fill="#ff6bb5"/><rect x="8" y="10" width="2" height="1" fill="#ffffff"/><rect x="10" y="10" width="2" height="1" fill="#ff6bb5"/><rect x="12" y="10" width="3" height="1" fill="#ffffff"/><rect x="15" y="10" width="2" height="1" fill="#ff6bb5"/><rect x="17" y="10" width="2" height="1" fill="#ffffff"/><rect x="19" y="10" width="2" height="1" fill="#ff6bb5"/><rect x="21" y="10" width="3" height="1" fill="#ffffff"/><rect x="24" y="10" width="2" height="1" fill="#ff6bb5"/><rect x="26" y="10" width="2" height="1" fill="#ffffff"/><rect x="28" y="10" width="1" height="1" fill="#ff6bb5"/><rect x="29" y="10" width="3" height="1" fill="#ffffff"/><rect x="32" y="10" width="1" height="1" fill="#ff6bb5"/><rect x="33" y="10" width="2" height="1" fill="#ffffff"/><rect x="35" y="10" width="2" height="1" fill="#ff6bb5"/><rect x="37" y="10" width="1" height="1" fill="#2b0f22"/><rect x="2" y="11" width="1" height="1" fill="#2b0f22"/><rect x="3" y="11" width="3" height="1" fill="#ffffff"/><rect x="6" y="11" width="2" height="1" fill="#ff6bb5"/><rect x="8" y="11" width="2" height="1" fill="#ffffff"/><rect x="10" y="11" width="7" height="1" fill="#ff6bb5"/><rect x="17" y="11" width="2" height="1" fill="#ffffff"/><rect x="19" y="11" width="2" height="1" fill="#ff6bb5"/><rect x="21" y="11" width="3" height="1" fill="#ffffff"/><rect x="24" y="11" width="2" height="1" fill="#ff6bb5"/><rect x="26" y="11" width="2" height="1" fill="#ffffff"/><rect x="28" y="11" width="1" height="1" fill="#ff6bb5"/><rect x="29" y="11" width="3" height="1" fill="#ffffff"/><rect x="32" y="11" width="1" height="1" fill="#ff6bb5"/><rect x="33" y="11" width="2" height="1" fill="#ffffff"/><rect x="35" y="11" width="2" height="1" fill="#ff6bb5"/><rect x="37" y="11" width="1" height="1" fill="#2b0f22"/><rect x="2" y="12" width="1" height="1" fill="#2b0f22"/><rect x="3" y="12" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="12" width="2" height="1" fill="#ffffff"/><rect x="10" y="12" width="7" height="1" fill="#ff6bb5"/><rect x="17" y="12" width="2" height="1" fill="#ffffff"/><rect x="19" y="12" width="2" height="1" fill="#ff6bb5"/><rect x="21" y="12" width="3" height="1" fill="#ffffff"/><rect x="24" y="12" width="5" height="1" fill="#ff6bb5"/><rect x="29" y="12" width="3" height="1" fill="#ffffff"/><rect x="32" y="12" width="1" height="1" fill="#ff6bb5"/><rect x="33" y="12" width="2" height="1" fill="#ffffff"/><rect x="35" y="12" width="2" height="1" fill="#ff6bb5"/><rect x="37" y="12" width="1" height="1" fill="#2b0f22"/><rect x="2" y="13" width="1" height="1" fill="#2b0f22"/><rect x="3" y="13" width="5" height="1" fill="#ff6bb5"/><rect x="8" y="13" width="2" height="1" fill="#ffffff"/><rect x="10" y="13" width="11" height="1" fill="#ff6bb5"/><rect x="21" y="13" width="3" height="1" fill="#ffffff"/><rect x="24" y="13" width="9" height="1" fill="#ff6bb5"/><rect x="33" y="13" width="2" height="1" fill="#ffffff"/><rect x="35" y="13" width="2" height="1" fill="#ff6bb5"/><rect x="37" y="13" width="1" height="1" fill="#2b0f22"/><rect x="2" y="14" width="1" height="1" fill="#2b0f22"/><rect x="3" y="14" width="18" height="1" fill="#ff6bb5"/><rect x="21" y="14" width="3" height="1" fill="#ffffff"/><rect x="24" y="14" width="13" height="1" fill="#ff6bb5"/><rect x="37" y="14" width="1" height="1" fill="#2b0f22"/><rect x="2" y="15" width="1" height="1" fill="#2b0f22"/><rect x="3" y="15" width="34" height="1" fill="#ff6bb5"/><rect x="37" y="15" width="1" height="1" fill="#2b0f22"/><rect x="2" y="16" width="1" height="1" fill="#2b0f22"/><rect x="3" y="16" width="34" height="1" fill="#ff6bb5"/><rect x="37" y="16" width="1" height="1" fill="#2b0f22"/><rect x="2" y="17" width="1" height="1" fill="#2b0f22"/><rect x="3" y="17" width="34" height="1" fill="#ff6bb5"/><rect x="37" y="17" width="1" height="1" fill="#2b0f22"/><rect x="2" y="18" width="1" height="1" fill="#2b0f22"/><rect x="3" y="18" width="34" height="1" fill="#ff6bb5"/><rect x="37" y="18" width="1" height="1" fill="#2b0f22"/><rect x="2" y="19" width="1" height="1" fill="#2b0f22"/><rect x="3" y="19" width="34" height="1" fill="#ff6bb5"/><rect x="37" y="19" width="1" height="1" fill="#2b0f22"/><rect x="2" y="20" width="1" height="1" fill="#2b0f22"/><rect x="3" y="20" width="34" height="1" fill="#ff6bb5"/><rect x="37" y="20" width="1" height="1" fill="#2b0f22"/><rect x="2" y="21" width="1" height="1" fill="#2b0f22"/><rect x="3" y="21" width="2" height="1" fill="#ff6bb5"/><rect x="5" y="21" width="2" height="1" fill="#ffffff"/><rect x="7" y="21" width="3" height="1" fill="#ff6bb5"/><rect x="10" y="21" width="2" height="1" fill="#ffffff"/><rect x="12" y="21" width="3" height="1" fill="#ff6bb5"/><rect x="15" y="21" width="2" height="1" fill="#ffffff"/><rect x="17" y="21" width="3" height="1" fill="#ff6bb5"/><rect x="20" y="21" width="2" height="1" fill="#ffffff"/><rect x="22" y="21" width="3" height="1" fill="#ff6bb5"/><rect x="25" y="21" width="2" height="1" fill="#ffffff"/><rect x="27" y="21" width="3" height="1" fill="#ff6bb5"/><rect x="30" y="21" width="2" height="1" fill="#ffffff"/><rect x="32" y="21" width="5" height="1" fill="#ff6bb5"/><rect x="37" y="21" width="1" height="1" fill="#2b0f22"/><rect x="2" y="22" width="1" height="1" fill="#2b0f22"/><rect x="3" y="22" width="34" height="1" fill="#ff6bb5"/><rect x="37" y="22" width="1" height="1" fill="#2b0f22"/><rect x="2" y="23" width="1" height="1" fill="#2b0f22"/><rect x="3" y="23" width="34" height="1" fill="#e0348c"/><rect x="37" y="23" width="1" height="1" fill="#2b0f22"/><rect x="2" y="24" width="1" height="1" fill="#2b0f22"/><rect x="3" y="24" width="34" height="1" fill="#e0348c"/><rect x="37" y="24" width="1" height="1" fill="#2b0f22"/><rect x="2" y="25" width="36" height="1" fill="#2b0f22"/><rect x="0" y="26" width="40" height="1" fill="#2b0f22"/><rect x="0" y="27" width="1" height="1" fill="#2b0f22"/><rect x="1" y="27" width="38" height="1" fill="#ffffff"/><rect x="39" y="27" width="1" height="1" fill="#2b0f22"/><rect x="0" y="28" width="1" height="1" fill="#2b0f22"/><rect x="1" y="28" width="38" height="1" fill="#ffd9ec"/><rect x="39" y="28" width="1" height="1" fill="#2b0f22"/><rect x="0" y="29" width="40" height="1" fill="#2b0f22"/></symbol>
+  <symbol id="s-kucing" viewBox="0 0 12 12"><rect x="1" y="0" width="2" height="1" fill="#2b0f22"/><rect x="9" y="0" width="2" height="1" fill="#2b0f22"/><rect x="0" y="1" width="1" height="1" fill="#2b0f22"/><rect x="1" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="3" y="1" width="1" height="1" fill="#2b0f22"/><rect x="8" y="1" width="1" height="1" fill="#2b0f22"/><rect x="9" y="1" width="2" height="1" fill="#ff6bb5"/><rect x="11" y="1" width="1" height="1" fill="#2b0f22"/><rect x="0" y="2" width="1" height="1" fill="#2b0f22"/><rect x="1" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="2" width="1" height="1" fill="#ffffff"/><rect x="3" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="4" y="2" width="4" height="1" fill="#2b0f22"/><rect x="8" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="9" y="2" width="1" height="1" fill="#ffffff"/><rect x="10" y="2" width="1" height="1" fill="#ff6bb5"/><rect x="11" y="2" width="1" height="1" fill="#2b0f22"/><rect x="0" y="3" width="1" height="1" fill="#2b0f22"/><rect x="1" y="3" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="3" width="1" height="1" fill="#2b0f22"/><rect x="0" y="4" width="1" height="1" fill="#2b0f22"/><rect x="1" y="4" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="4" width="1" height="1" fill="#2b0f22"/><rect x="0" y="5" width="1" height="1" fill="#2b0f22"/><rect x="1" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="2" y="5" width="1" height="1" fill="#2b0f22"/><rect x="3" y="5" width="6" height="1" fill="#ff6bb5"/><rect x="9" y="5" width="1" height="1" fill="#2b0f22"/><rect x="10" y="5" width="1" height="1" fill="#ff6bb5"/><rect x="11" y="5" width="1" height="1" fill="#2b0f22"/><rect x="0" y="6" width="1" height="1" fill="#2b0f22"/><rect x="1" y="6" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="6" width="1" height="1" fill="#2b0f22"/><rect x="0" y="7" width="1" height="1" fill="#2b0f22"/><rect x="1" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="3" y="7" width="1" height="1" fill="#2b0f22"/><rect x="4" y="7" width="4" height="1" fill="#ffffff"/><rect x="8" y="7" width="1" height="1" fill="#2b0f22"/><rect x="9" y="7" width="2" height="1" fill="#ff6bb5"/><rect x="11" y="7" width="1" height="1" fill="#2b0f22"/><rect x="0" y="8" width="1" height="1" fill="#2b0f22"/><rect x="1" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="4" y="8" width="4" height="1" fill="#ffffff"/><rect x="8" y="8" width="3" height="1" fill="#ff6bb5"/><rect x="11" y="8" width="1" height="1" fill="#2b0f22"/><rect x="0" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="9" width="10" height="1" fill="#ff6bb5"/><rect x="11" y="9" width="1" height="1" fill="#2b0f22"/><rect x="1" y="10" width="1" height="1" fill="#2b0f22"/><rect x="2" y="10" width="8" height="1" fill="#ff6bb5"/><rect x="10" y="10" width="1" height="1" fill="#2b0f22"/><rect x="2" y="11" width="8" height="1" fill="#2b0f22"/></symbol>
+</svg>
+
+<!-- Kanvas kanonis mendatar — lihat cards/_stage_head.html -->
+<div id="card-viewport"><div id="card-stage">
+
+  {% comment %}
+    LATAR — berkas gambar (static/img/render/8bit-langit.webp).
+
+    Ini pemandangan piksel yang DIUNDUH, bukan digambar di sini. Lihat
+    catatan hak cipta di game8bit.css sebelum kartu ini dijual.
+
+    HUD permainan di tepi atas gambar aslinya (deret hati, bar, tulisan)
+    sudah dipotong — itu antarmuka game lain dan tidak ada urusannya dengan
+    kartu ulang tahun.
+  {% endcomment %}
+  <div class="langit" aria-hidden="true"></div>
+  <div id="taman" aria-hidden="true"></div>
+
+  {% comment %}
+    TEMAN — dua karakter yang menemani penerima sepanjang kartu.
+
+    Letaknya DI LUAR semua <section class="scene">, dan itu bukan kerapian
+    melainkan syarat. Babak di kartu ini berganti dengan potongan tegas;
+    kalau karakternya ikut di dalam babak, dia lenyap di satu tempat dan
+    muncul di tempat lain tiap halaman berganti — teleport, persis yang
+    tidak boleh terjadi. Di lapisan sendiri, dia bertahan melintasi
+    pergantian babak dan BERJALAN ke posisi barunya.
+
+    Mereka hidup di pita lantai bawah, dan .scene diberi ruang bawah yang
+    cukup supaya isi kartu tidak pernah tertimpa badan mereka.
+  {% endcomment %}
+  <div class="lantai" aria-hidden="true"></div>
+  {% comment %}
+    Nama dipisah dari sprite dengan sengaja. Sprite dibalik mendatar
+    (scaleX -1) waktu menghadap kiri; kalau namanya ikut di dalamnya,
+    tulisannya ikut terbalik jadi cermin. Jadi pembungkus yang bergeser,
+    sprite yang berbalik, nama tetap tegak.
+  {% endcomment %}
+  <div class="teman cowok" id="temanCowok">
+    <span class="nama-teman" id="namaCowok">{% t card "nama1" %}</span>
+    <i class="sprite" role="img" aria-label="Karakter cowok"></i>
+  </div>
+  <div class="teman cewek" id="temanCewek">
+    <span class="nama-teman" id="namaCewek">{% t card "nama2" %}</span>
+    <i class="sprite" role="img" aria-label="Karakter cewek"></i>
+  </div>
+
+  <!-- ================= 1. LAYAR JUDUL ================= -->
+  <section class="scene active" id="title">
+    <div class="isi tengah">
+      <svg class="stik" viewBox="0 0 20 12" aria-hidden="true"><use href="#s-stik"/></svg>
+      <div class="papan-judul">
+        <h1 class="judul"{% el card editing "title_main" %}>{% t card "title_main" %}</h1>
+      </div>
+      <p class="untuk"{% el card editing "recipient" %}{% if editing %} data-placeholder="Nama penerima"{% endif %}>{{ card.recipient_name|default:"Nama penerima" }}</p>
+      <button class="mulai kedip" id="startBtn" type="button"{% el card editing "title_start" %}>{% t card "title_start" %}</button>
+    </div>
+  </section>
+
+  <!-- ================= 2. PILIH PEMAIN ================= -->
+  {% comment %}
+    Kedua kotak di sini SENGAJA bukan slot foto, dan sengaja tidak bisa
+    diganti pembeli. Isinya potret dari lembar sprite yang sama dengan
+    karakter yang berjalan di bawah — itu justru gunanya: begitu melihat
+    wajahnya, pengedit langsung tahu kolom nama yang sedang diisi milik
+    karakter yang mana. Kalau kotaknya boleh ditempeli foto sendiri,
+    petunjuk itu hilang dan halaman ini kembali jadi tebak-tebakan.
+  {% endcomment %}
+  <section class="scene" id="player">
+    <div class="isi tengah">
+      <h2 class="kepala"{% el card editing "player_head" %}>{% t card "player_head" %}</h2>
+      <div class="pemain">
+        <div class="slot">
+          <span class="tag"{% el card editing "player_1p" %}>{% t card "player_1p" %}</span>
+          <div class="bingkai kotak-tokoh">
+            <div class="ph"><i class="tokoh cowok" role="img" aria-label="Karakter cowok"></i></div>
+          </div>
+          <p class="nama" id="nama1p"{% el card editing "nama1" %}>{% t card "nama1" %}</p>
+        </div>
+
+        <svg class="hati denyut" viewBox="0 0 9 8" aria-hidden="true"><use href="#s-hati"/></svg>
+
+        <div class="slot">
+          <span class="tag"{% el card editing "player_2p" %}>{% t card "player_2p" %}</span>
+          <div class="bingkai kotak-tokoh">
+            <div class="ph"><i class="tokoh cewek" role="img" aria-label="Karakter cewek"></i></div>
+          </div>
+          <p class="nama" id="nama2p"{% el card editing "nama2" %}>{% t card "nama2" %}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. NAIK LEVEL ================= -->
+  <section class="scene" id="levelup">
+    <div class="isi tengah">
+      <p class="kecil"{% el card editing "level_kick" %}>{% t card "level_kick" %}</p>
+      {# Bar XP terisi dulu, baru tulisannya meledak — lihat game8bit.js. #}
+      <div class="xp" aria-hidden="true"><i id="xpIsi"></i></div>
+      <h2 class="pop" id="popLevel"{% el card editing "level_head" %}>{% t card "level_head" %}</h2>
+      <p class="stat"{% el card editing "level_stat" %}>{% t card "level_stat" %}</p>
+      <svg class="hati kiri-bawah" viewBox="0 0 9 8" aria-hidden="true"><use href="#s-hati"/></svg>
+      <svg class="kilau kanan-atas" viewBox="0 0 7 7" aria-hidden="true"><use href="#s-kilau"/></svg>
+    </div>
+  </section>
+
+  <!-- ================= 4. KOTAK DIALOG (surat) ================= -->
+  {% comment %}
+    Babak tambahan — desain Canva tidak punya tempat untuk surat, padahal
+    itu isi utama tiap kartu yang dijual. Dibuat memakai bahasa visual yang
+    sama: kotak dialog RPG dengan potret pembicara di kiri.
+  {% endcomment %}
+  <section class="scene" id="dialog">
+    <div class="isi tengah">
+      <div class="kotak-dialog">
+        <div class="potret" aria-hidden="true">
+          <svg viewBox="0 0 12 12"><use href="#s-kucing"/></svg>
+        </div>
+        <div class="ucap">
+          {% comment %}
+            Bawaannya "dear," dan BUKAN "Namamu": baris merah muda ini yang
+            pertama dibaca penerima, dan kata "Namamu" di kartu jadi yang
+            terkirim kalau pembeli melewatinya. Petunjuk di editor ikut
+            diseragamkan supaya yang terlihat di editor sama persis dengan
+            yang tercetak.
+          {% endcomment %}
+          <p class="pembicara"{% el card editing "sender" %}{% if editing %} data-placeholder="dear,"{% endif %}>{{ card.sender_name|default:"dear," }}</p>
+          {# Suratnya digulir DI DALAM kotak ini; kotaknya sendiri tidak bergeser. #}
+          <div class="bagan-isi" data-gulir>
+            <p class="surat"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis suratmu di sini..."{% endif %}>{{ card.message|default:"Tulis suratmu di sini..." }}</p>
+          </div>
+        </div>
+        <span class="panah-gulir" aria-hidden="true">▼</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. WISHES ================= -->
+  {% comment %}
+    Satu-satunya babak yang punya tombol peluk. Tombolnya sengaja hanya di
+    sini: kalau ada di semua babak, pelukannya jadi hal biasa dan kehilangan
+    artinya. Yang dilakukan tombol ini bukan memutar animasi di tempat —
+    kedua karakter BERJALAN saling mendekat dulu, baru berpelukan. Lihat
+    peluk() di game8bit.js.
+  {% endcomment %}
+  <section class="scene" id="wishes">
+    <div class="isi tengah">
+      <h2 class="kepala"{% el card editing "wish_head" %}>{% t card "wish_head" %}</h2>
+      <svg class="ikon-besar pantul" viewBox="0 0 14 11" aria-hidden="true"><use href="#s-kue"/></svg>
+      {% comment %}
+        SATU bagan untuk seluruh harapan. Sempat dua tempat menulis (judul di
+        dalam kotak, catatan di luarnya) — dan catatan yang di luar itulah
+        yang tumpah keluar kartu waktu pembeli menulis panjang. Sekarang
+        semuanya di dalam kotak, dan yang panjang digulir di dalamnya.
+      {% endcomment %}
+      <div class="panel">
+        <div class="bagan-isi" data-gulir>
+          <p class="panel-teks"{% el card editing "wish_note" %}>{% t card "wish_note" %}</p>
+        </div>
+        <span class="panah-gulir" aria-hidden="true">▼</span>
+      </div>
+      <button class="mulai peluk" id="pelukBtn" type="button"{% el card editing "peluk_btn" %}>{% t card "peluk_btn" %}</button>
+    </div>
+  </section>
+
+  <!-- ================= 6. POWER UPS ================= -->
+  {% comment %}
+    Kisi 4 ubin, SEMUANYA slot foto, tertutup tanda "?" sampai diketuk.
+    Sempat 8 ubin (terlalu banyak yang harus diisi pembeli), lalu sempat 2
+    foto + 2 ikon — tapi ikonnya tidak membawa apa-apa: diketuk, tutupnya
+    lepas, muncul gambar kue, selesai. Kotak yang tidak memberi apa pun
+    lebih baik diisi kenangan. Desain aslinya menampilkan ikon terbuka;
+    ditutup di sini supaya penerima punya sesuatu untuk dilakukan.
+  {% endcomment %}
+  <section class="scene" id="powerups">
+    <div class="isi tengah">
+      <h2 class="kepala"{% el card editing "power_head" %}>{% t card "power_head" %}</h2>
+      <div class="kisi" id="kisi">
+        {% frames_in card "powerups" as panel_power %}
+        {% for f in panel_power %}
+        {% with photo=frame_photos|get:f.key %}
+        {% comment %}
+          Ubin punya DUA sisi. Ketukan pertama memecahkan tutup "?" dan
+          memperlihatkan ceritanya; ketukan berikutnya membaliknya bolak-balik
+          antara cerita dan foto.
+
+          Sisi cerita yang jadi muka depan, bukan fotonya — begitu tutupnya
+          pecah, yang terbaca duluan ceritanya, dan fotonya baru muncul
+          setelah dibalik. Karena itu tidak ada rotasi awal yang perlu
+          dipasang: keadaan diam ubin ini memang menghadap cerita.
+        {% endcomment %}
+        <div class="ubin foto{% if editing and not photo %} is-empty{% endif %}" {% frame card editing f.key %}>
+          <div class="balik">
+            <div class="sisi cerita">
+              {% comment %}
+                Keterangan diambil dari FOTONYA sendiri (GiftPhoto.caption),
+                bukan dari kolom teks terpisah. Sempat memakai kolom sendiri,
+                dan akibatnya pembeli tidak menemukannya: situs ini sudah punya
+                kotak "Tulis keterangan foto..." tepat di bawah tombol Pilih
+                Foto, dipakai template lain, dan di sanalah orang mencarinya.
+              {% endcomment %}
+              <div class="bagan-isi" data-gulir>
+                <p class="cap">{{ photo.caption }}</p>
+              </div>
+              <span class="panah-gulir" aria-hidden="true">▼</span>
+            </div>
+            <div class="sisi gambar">
+              <div class="ph">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</div>
+            </div>
+          </div>
+          <span class="tanya" aria-hidden="true">?</span>
+          <span class="putar" aria-hidden="true">↻</span>
+        </div>
+        {% endwith %}
+        {% endfor %}
+      </div>
+      <p class="kecil"{% el card editing "power_note" %}>{% t card "power_note" %}</p>
+    </div>
+  </section>
+
+  <!-- ================= 7. TIUP LILIN ================= -->
+  {% comment %}
+    Dulu babak ini HIGH SCORES — tiga baris angka karangan. Diganti atas
+    permintaan pemilik kartu: angka itu tidak menyumbang apa pun, cuma
+    membuat template terlihat sibuk.
+
+    Kuenya ditaruh di paruh KIRI, bukan di tengah. Tombol navigasi duduk di
+    tengah bawah (x 360-600) dan digambar di atas seluruh babak, jadi apa pun
+    yang berdiri di tanah tepat di tengah akan tertimpa tombolnya.
+  {% endcomment %}
+  <section class="scene" id="kue">
+    <div class="isi tengah">
+      <h2 class="kepala"{% el card editing "kue_head" %}>{% t card "kue_head" %}</h2>
+      <p class="kecil"{% el card editing "kue_note" %}>{% t card "kue_note" %}</p>
+    </div>
+    <div class="kue-panggung">
+      <svg class="kue-besar" viewBox="0 0 40 30" aria-hidden="true"><use href="#s-kue-besar"/></svg>
+      {% comment %}
+        Tiap lilin tombol sendiri — bukan satu gambar berisi lima lilin —
+        karena masing-masing harus bisa diketuk dan padam sendiri-sendiri.
+        Kotak ketukannya sengaja jauh lebih lebar dari batang lilinnya:
+        di layar ponsel seluruh kartu ini menyusut, dan sasaran seukuran
+        batang lilin tidak akan pernah kena jari.
+      {% endcomment %}
+      {% for n in "12345" %}
+      <button class="lilin l{{ forloop.counter }}" type="button" data-lilin="{{ forloop.counter0 }}"
+              aria-label="Tiup lilin ke-{{ forloop.counter }}">
+        <i class="batang" aria-hidden="true"></i>
+        <i class="sumbu" aria-hidden="true"></i>
+        <svg class="api" viewBox="0 0 7 9" aria-hidden="true"><use href="#s-api"/></svg>
+      </button>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ================= 8. GAME OVER? NEVER! ================= -->
+  <section class="scene" id="gameover">
+    <div class="isi tengah">
+      <p class="dicoret"{% el card editing "over_head" %}>{% t card "over_head" %}</p>
+      <h2 class="pop besar"{% el card editing "over_big" %}>{% t card "over_big" %}</h2>
+      <div class="sepasang" aria-hidden="true">
+        <svg class="hati" viewBox="0 0 9 8"><use href="#s-hati"/></svg>
+        <span class="silang">×</span>
+        <svg class="hati" viewBox="0 0 9 8"><use href="#s-hati"/></svg>
+      </div>
+      <p class="kepala kecil-spasi"{% el card editing "over_note" %}>{% t card "over_note" %}</p>
+      <button class="mulai" id="ulangBtn" type="button"{% el card editing "over_btn" %}>{% t card "over_btn" %}</button>
+    </div>
+  </section>
+
+  <!-- ======== NAVIGASI BABAK ======== -->
+  <nav class="nav" aria-label="Babak kartu">
+    <button id="prev" type="button" aria-label="Babak sebelumnya">◀</button>
+    <div class="dots" id="dots"></div>
+    <button id="next" type="button" aria-label="Babak berikutnya">▶</button>
+  </nav>
+
+</div></div>
+
+{% comment %}
+  Ajakan memiringkan HP. DI LUAR kanvas, sama seperti tombol musik dan layar
+  penuh: kalau di dalam, ia ikut diperkecil bersama kartu dan justru tidak
+  terbaca di layar yang paling membutuhkannya.
+{% endcomment %}
+<div class="putar-hp" id="putarHp">
+  <svg viewBox="0 0 48 48" aria-hidden="true">
+    <rect x="17" y="6" width="14" height="26" rx="2.5"/>
+    <path d="M9 34a15 15 0 0 0 30 0"/>
+    <path d="M39 34l-4-4M39 34l4-4"/>
+  </svg>
+  <p>MIRINGKAN HP-MU</p>
+  <button type="button" id="putarLanjut">LANJUT SAJA</button>
+</div>
+
+<script src="{% static_v 'js/render/game8bit.js' %}"></script>
+{% include "cards/_bgm.html" %}
+{% include "cards/_fullscreen.html" %}
+{% include "cards/_preview_bar.html" %}
+</body>
+</html>

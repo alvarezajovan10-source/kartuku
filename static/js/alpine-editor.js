@@ -173,6 +173,30 @@ window.cardEditor = function () {
         }
       });
 
+      /* Bentuk bingkai pratinjau MENGIKUTI kartunya, bukan sebaliknya.
+         Sebelumnya bingkainya dipaku 390x844 (proporsi HP) untuk semua
+         template. Itu benar selama semua kartu tegak, dan diam-diam salah
+         begitu ada kartu mendatar 16:9: kartunya diperas jadi pita 390x219
+         di tengah kotak HP — sekitar 0,4x ukuran sebenarnya. Akibatnya bukan
+         cuma "kelihatan kecil". Detail sehalus nyala lilin, yang digambar
+         7 piksel dan dirender crispEdges, menyusut sampai di bawah satu
+         piksel per satuan gambar dan HILANG SAMA SEKALI di editor, padahal
+         di kartu aslinya menyala terang. */
+      var frame = this.$refs.frame;
+      if (frame) {
+        frame.addEventListener("load", function () {
+          var wadah = frame.parentElement;
+          if (!wadah) return;
+          var bentuk = "";
+          try {
+            bentuk = frame.contentDocument.documentElement.dataset.stage || "";
+          } catch (e) {
+            bentuk = "";
+          }
+          wadah.classList.toggle("is-lebar", bentuk === "lebar");
+        });
+      }
+
       window.addEventListener("message", function (event) {
         var data = event.data || {};
         if (data.source !== "card-frame") return;

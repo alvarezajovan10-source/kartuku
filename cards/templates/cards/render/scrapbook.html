@@ -47,7 +47,14 @@
         <p class="cap">{{ photo.caption|default:"" }}</p>
       </div>
       {% endwith %}
-      <div class="note tape reveal"><p{% el card editing "bab1_note" %}>{% t card "bab1_note" %}</p></div>
+      {% comment %}
+        Kedua polaroid berdampingan DI ATAS catatannya. Urutan di sini yang
+        menentukan tata letaknya: .collage itu flex yang membungkus sendiri,
+        dan catatan selebar 340px selalu memakan satu baris penuh — jadi
+        apa pun yang ditaruh sesudahnya pasti turun ke baris berikutnya.
+        Dulu catatan berdiri di antara dua foto, dan keduanya jadi terpisah
+        di baris yang berbeda.
+      {% endcomment %}
       {% with photo=frame_photos|get:"b1b" %}
       <div class="pola sm reveal{% if editing and not photo %} is-empty{% endif %}" style="--pr:5deg;--tr:-6deg"
            {% frame card editing "b1b" %}>
@@ -55,6 +62,7 @@
         <p class="cap">{{ photo.caption|default:"" }}</p>
       </div>
       {% endwith %}
+      <div class="note tape reveal"><p{% el card editing "bab1_note" %}>{% t card "bab1_note" %}</p></div>
     </div>
   </section>
 

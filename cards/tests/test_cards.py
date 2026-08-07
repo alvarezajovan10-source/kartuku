@@ -678,7 +678,7 @@ class SeedIntegrityTests(TestCase):
         self.assertEqual(len(birthday.config["texts"]), 20)
         self.assertEqual(len(birthday.config["frames"]), 4)
         scrapbook = Template.objects.get(slug="scrapbook-cerita")
-        self.assertGreaterEqual(len(scrapbook.config["texts"]), 14)
+        self.assertGreaterEqual(len(scrapbook.config["texts"]), 13)
         self.assertEqual(len(scrapbook.config["frames"]), 7)
         # Tiap frame wajib punya area supaya tidak nyasar ke bagian lain.
         for template in (birthday, scrapbook):

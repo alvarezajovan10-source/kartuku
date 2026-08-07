@@ -3,7 +3,11 @@
 Bawaan di sini bukan isian sementara: itulah yang dilihat pembeli saat pertama
 membuka editor, jadi tugasnya memberi contoh nada yang bisa mereka tiru. Bab
 yang bawaannya cuma perintah ("Tulis harapanmu di sini...") terbukti dilewati —
-8 dari 12 kartu lunas mengosongkannya.
+8 dari 12 kartu lunas mengosongkannya. Bab itu (Harapan) akhirnya DIHAPUS atas
+permintaan pemilik situs pada 7 Agustus 2026, dengan akibat yang sudah
+disampaikan lebih dulu: 5 kartu yang sudah dibayar punya tulisan di kertas
+harapannya, dan tulisan itu berhenti tampil. Isinya masih utuh di kolom
+GiftCard.message, jadi bisa dimunculkan lagi kalau babnya dikembalikan.
 
 Yang dijaga di sini adalah hal yang gampang rusak diam-diam saat teksnya diubah
 lagi nanti, bukan bunyi kalimatnya.
@@ -36,7 +40,7 @@ class BawaanTeksTests(TestCase):
         wajib = {
             "cover_title", "cover_sub", "bab1_label", "bab1_note",
             "bab2_label", "bab2_note", "momen_label", "momen_strip",
-            "cinta_label", "cinta_note", "harapan_label",
+            "cinta_label", "cinta_note",
             "closing_label", "closing_line", "from_line",
         }
         self.assertEqual(wajib - set(self.bawaan), set())
@@ -45,7 +49,7 @@ class BawaanTeksTests(TestCase):
         """Label bab dirender sebagai .ransom — tiap huruf dapat kotaknya
         sendiri. Kalimat panjang memenuhi layar dan memecah tata letaknya."""
         for kunci in ["cover_title", "bab1_label", "bab2_label", "momen_label",
-                      "cinta_label", "harapan_label", "closing_label"]:
+                      "cinta_label", "closing_label"]:
             with self.subTest(kunci=kunci):
                 self.assertLessEqual(
                     len(self.bawaan[kunci]), 20,
@@ -53,8 +57,9 @@ class BawaanTeksTests(TestCase):
                 )
 
     def test_cerita_bab_memberi_contoh_bukan_perintah(self):
-        """Bab yang bawaannya perintah akan dilewati pembeli — itu yang terjadi
-        pada bab Harapan. Cerita bab harus berupa kalimat jadi yang bisa ditiru."""
+        """Bab yang bawaannya perintah akan dilewati pembeli — itulah yang
+        menimpa bab Harapan sampai akhirnya dihapus. Cerita bab harus berupa
+        kalimat jadi yang bisa ditiru, bukan instruksi."""
         for kunci in ["bab1_note", "bab2_note", "cinta_note", "momen_strip"]:
             with self.subTest(kunci=kunci):
                 isi = self.bawaan[kunci]

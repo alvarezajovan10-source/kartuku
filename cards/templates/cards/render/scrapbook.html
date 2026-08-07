@@ -116,18 +116,6 @@
     </div>
   </section>
 
-  <!-- ================= BAB 5 : HARAPAN ================= -->
-  <section class="chapter">
-    <svg class="squig sq-tr reveal" viewBox="0 0 130 70"><path d="M6 40c18-40 40 10 54-6s34-30 52 2"/></svg>
-    <div class="chap-label ransom reveal" data-text="{% t card 'harapan_label' %}"{% el card editing "harapan_label" %}></div>
-    <div class="collage">
-      <div class="note tape reveal" style="max-width:380px">
-        <p class="quote"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis harapanmu di sini..."{% endif %}>{{ card.message|default:"Tulis harapanmu di sini..." }}</p>
-      </div>
-    </div>
-    <svg class="squig sq-bl reveal" viewBox="0 0 120 70"><path d="M6 30c16 34 40-8 52 6s30 28 50-4"/></svg>
-  </section>
-
   <!-- ================= CLOSING ================= -->
   <section class="chapter" id="closing">
     <div class="chap-label ransom reveal" data-text="{% t card 'closing_label' %}"{% el card editing "closing_label" %}></div>

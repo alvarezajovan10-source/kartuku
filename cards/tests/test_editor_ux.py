@@ -173,28 +173,3 @@ class CaptionFotoTests(TestCase):
         )
         isi = self.client.get(reverse("cards:editor", args=["uji"])).content.decode()
         self.assertIn("Muncul sebagai tulisan tangan", isi)
-
-
-class FontHarapanTests(TestCase):
-    """Bug 4 — pesan HARAPAN tampil dengan font yang terlihat berbeda sendiri."""
-
-    def test_kutipan_tidak_dipaksa_miring(self):
-        """class .quote dipakai TEPAT SEKALI di Scrapbook — pesan bab HARAPAN.
-        Memaksanya italic membuatnya jadi satu-satunya kotak kertas yang miring.
-        Caveat tidak punya face italic, jadi browser memiringkan huruf tegak
-        secara paksa dan hasilnya terbaca seperti font lain sama sekali.
-        """
-        css = baca("static/css/render/scrapbook.css")
-        self.assertIn(".note .quote{font-style:var(--fi,normal)}", css)
-
-    def test_pilihan_miring_user_tetap_dihormati(self):
-        """Bawaannya tegak, tapi tombol I di editor harus tetap bekerja —
-        karena itu var(--fi, ...) dipertahankan, bukan ditulis mati 'normal'."""
-        css = baca("static/css/render/scrapbook.css")
-        self.assertNotIn(".note .quote{font-style:normal}", css)
-
-    def test_quote_memang_hanya_dipakai_sekali(self):
-        """Kalau kelak dipakai di tempat lain, keputusan 'samakan dengan note
-        lain' perlu ditinjau ulang — bukan diam-diam ikut berubah."""
-        html = baca("cards/templates/cards/render/scrapbook.html")
-        self.assertEqual(html.count('class="quote"'), 1)

@@ -81,8 +81,6 @@ body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
    secara paksa — hasilnya terbaca seperti font yang sama sekali lain, bukan
    sekadar versi miring. Disamakan dengan .note p; user tetap bisa memilih
    miring sendiri lewat tombol I di editor karena --fi tetap dihormati. */
-.note .quote{font-style:var(--fi,normal)}
-
 .strip{background:var(--paper);color:var(--c,var(--ink));font-family:var(--f,'Caveat',cursive);
   font-size:calc(1.18rem*var(--fs,1));text-align:var(--al,center);font-weight:var(--fw,400);
   letter-spacing:var(--ls,normal);

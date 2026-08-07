@@ -72,7 +72,6 @@ SEEDS = [
                 {"key": "momen_strip", "label": "Keterangan momen", "default": "my fav random things with you"},
                 {"key": "cinta_label", "label": "Judul bab cinta", "default": "our first date"},
                 {"key": "cinta_note", "label": "Cerita bab cinta", "default": "Thank you for always loving me and being there for me."},
-                {"key": "harapan_label", "label": "Judul bab harapan", "default": "for you"},
                 {"key": "closing_label", "label": "Judul penutup", "default": "Happy Birthday"},
                 # Sengaja kosong — lihat catatan di bab CLOSING scrapbook.html.
                 {"key": "closing_line", "label": "Kalimat penutup", "default": ""},

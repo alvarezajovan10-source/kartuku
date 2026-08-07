@@ -150,6 +150,19 @@ SEEDS = [
 ]
 
 
+# Template yang sengaja DIMATIKAN. Ditulis di sini, bukan cuma diklik di
+# admin: perintah ini memaksa is_active=True tiap kali dijalankan, jadi tanpa
+# daftar ini template yang dimatikan akan hidup lagi diam-diam pada deploy
+# berikutnya — dan tidak ada yang menyadarinya sampai muncul lagi di galeri.
+#
+# Mematikan template TIDAK merusak kartu yang sudah terbit: halaman kartu
+# publik merender dari template milik kartunya sendiri dan tidak pernah
+# memeriksa is_active. Yang tertutup cuma pintu membuat kartu BARU.
+NONAKTIF = {
+    "klasik-ulang-tahun",   # Amplop Merah — dimatikan 7 Agustus 2026.
+}
+
+
 class Command(BaseCommand):
     help = "Isi template awal (idempoten — aman dijalankan berulang)."
 
@@ -161,7 +174,7 @@ class Command(BaseCommand):
                     "name": name,
                     "category": category,
                     "config": config,
-                    "is_active": True,
+                    "is_active": slug not in NONAKTIF,
                 },
             )
             verb = "dibuat" if created else "diperbarui"

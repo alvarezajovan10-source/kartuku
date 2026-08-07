@@ -10,6 +10,11 @@
   --muted: #9a8880;
   --line: #ebdcd2;
   --white: #fff;
+  /* Merah muda halaman depan. Rancangannya jauh lebih merah muda daripada
+     krem yang lama; nilainya diambil dari gambar rancangan, bukan ditebak. */
+  --pink-1: #fdeeeb;
+  --pink-2: #fbe0dc;
+  --pink-3: #f8d3ce;
   --radius: 14px;
   --shadow: 0 10px 30px rgba(107, 76, 62, .07);
   --shadow-lg: 0 18px 44px rgba(107, 76, 62, .12);
@@ -24,7 +29,10 @@ html { scroll-behavior: smooth; scroll-padding-top: 90px; }
 
 body {
   margin: 0;
-  background: var(--cream);
+  /* Nyaris putih tapi condong merah muda. Krem yang lama memotong keras di
+     bawah hero: awan putih di dasar hero berakhir tepat di garis pertemuan
+     dua warna, dan pertemuannya terbaca sebagai garis lurus. */
+  background: #fffaf9;
   color: var(--ink);
   font: 16px/1.65 var(--sans);
   -webkit-font-smoothing: antialiased;
@@ -51,22 +59,27 @@ img { max-width: 100%; display: block; }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
+/* Header MELAYANG di atas latar, bukan bilah yang menempel ke tepi atas.
+   Yang lengket tetap pembungkusnya, jadi kartunya ikut turun saat digulir —
+   membuat kartunya sendiri position:sticky akan menabrak margin atasnya. */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(253, 249, 245, .92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
+  background: transparent;
+  padding: 14px 16px;
 }
-
 .header-inner {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: 12px 14px 12px 22px;
   display: flex;
   align-items: center;
   gap: 24px;
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(12px);
+  border-radius: 22px;
+  box-shadow: 0 12px 34px -18px rgba(150, 90, 80, .45);
 }
 
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
@@ -149,14 +162,21 @@ img { max-width: 100%; display: block; }
 
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
-  background: linear-gradient(180deg, #fbf1e9 0%, #f8e9df 100%);
-  border-bottom: 1px solid var(--line);
+  position: relative;
+  background: linear-gradient(165deg, var(--pink-1) 0%, var(--pink-2) 52%, var(--pink-3) 100%);
+  border-bottom: 0;
   overflow: hidden;
+  /* Header melayang di atas hero, jadi hero harus mulai dari paling atas
+     halaman — kalau tidak, ada pita krem tipis mengintip di belakang kartu
+     headernya. */
+  margin-top: calc(-1 * (68px + 28px));
+  padding-top: calc(68px + 28px);
 }
+.hero-inner { position: relative; z-index: 2; }
 .hero-inner {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 60px 24px 40px;
+  padding: 60px 24px 10px;
   display: grid;
   grid-template-columns: 1fr 1.05fr;
   gap: 40px;
@@ -173,32 +193,103 @@ img { max-width: 100%; display: block; }
 .hero-lede strong { color: var(--ink); font-weight: 600; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
 
+/* Kartu putih melayang, bukan daftar telanjang di atas latar. */
+.trust-wrap {
+  position: relative; z-index: 2;
+  max-width: 1240px; margin: 0 auto; padding: 0 24px 54px;
+}
 .trust {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
   list-style: none;
-  margin: 42px 0 0;
-  padding: 0;
+  margin: 0;
+  padding: 18px 8px;
+  background: rgba(255, 255, 255, .9);
+  backdrop-filter: blur(8px);
+  border-radius: 22px;
+  box-shadow: 0 16px 40px -22px rgba(150, 90, 80, .5);
 }
 .trust li {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 22px;
+  gap: 14px;
+  padding: 6px 24px;
   border-left: 1px solid var(--line);
+  /* Sama rata bertiga, dan basis 0 supaya panjang tulisan yang berbeda tidak
+     membuat salah satunya melebar sendiri. */
+  flex: 1 1 0;
 }
-.trust li:first-child { padding-left: 0; border-left: 0; }
-.trust svg { width: 26px; height: 26px; color: var(--rose); flex: none; }
+.trust li:first-child { border-left: 0; }
+/* Ikon duduk di dalam lingkaran merah muda. Ukurannya dijaga lewat padding
+   pada kotak-isi supaya lingkarannya bulat sempurna berapa pun ikonnya. */
+.trust svg {
+  width: 21px; height: 21px; color: var(--rose); flex: none;
+  padding: 11px; box-sizing: content-box;
+  background: var(--pink-2); border-radius: 50%;
+}
 .trust span { display: flex; flex-direction: column; font-size: .78rem; color: var(--muted); line-height: 1.4; }
 .trust strong { font-size: .86rem; color: var(--ink); font-weight: 600; }
 
-.hero-art { position: relative; }
+/* ── Hiasan latar hero ──────────────────────────────────────────────────
+   Hati, kilau, dan awan yang membuat latarnya tidak rata. Semuanya di
+   lapisan sendiri di belakang isi (z-index 1 lawan 2), dan pointer-events
+   dimatikan supaya tidak ada satu pun yang bisa menghalangi tombol. */
+.hero-deco {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none; overflow: hidden;
+}
+.hero-deco .deco { position: absolute; display: block; }
+.hero-deco .hati { fill: var(--rose-soft); }
+.hero-deco .kilau { fill: #fff; opacity: .85; }
+
+.hero-deco .h1 { width: 26px; top: 12%; left: 4%;  opacity: .55; }
+.hero-deco .h2 { width: 44px; top: 20%; left: 55%; opacity: .5; }
+.hero-deco .h3 { width: 18px; top: 46%; left: 42%; opacity: .45; }
+.hero-deco .h4 { width: 30px; top: 68%; left: 8%;  opacity: .4; }
+.hero-deco .h5 { width: 22px; top: 33%; right: 3%; opacity: .5; }
+.hero-deco .k1 { width: 16px; top: 16%; left: 22%; }
+.hero-deco .k2 { width: 12px; top: 58%; left: 63%; }
+.hero-deco .k3 { width: 18px; top: 28%; right: 12%; }
+
+/* Awan di dasar hero. Dua lingkaran lebar yang saling menimpa — bentuknya
+   tidak perlu tepat, yang dibutuhkan cuma tepi lembut supaya hero tidak
+   berakhir dengan garis lurus. */
+.hero-deco .awan {
+  position: absolute; bottom: -70px; display: block;
+  height: 150px; border-radius: 50%;
+  background: rgba(255, 255, 255, .55);
+  filter: blur(2px);
+}
+.hero-deco .a1 { left: -6%; width: 46%; }
+.hero-deco .a2 { right: -8%; width: 52%; bottom: -84px; }
+
+/* Melayang pelan. Dimatikan untuk yang meminta gerak dikurangi — hiasan
+   yang bergerak terus adalah persis jenis gerak yang mengganggu mereka. */
+@keyframes apung { from { transform: translateY(0) } to { transform: translateY(-14px) } }
+.hero-deco .deco { animation: apung 5s ease-in-out infinite alternate; }
+.hero-deco .h2 { animation-duration: 7s; animation-delay: -2s; }
+.hero-deco .h3 { animation-duration: 6s; animation-delay: -1s; }
+.hero-deco .h4 { animation-duration: 8s; animation-delay: -3s; }
+.hero-deco .h5 { animation-duration: 6.5s; animation-delay: -4s; }
+.hero-deco .k2 { animation-duration: 7.5s; animation-delay: -2.5s; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-deco .deco { animation: none; }
+}
+
+/* Garis lengkung di bawah "hadiah berkesan". */
+.script.coret { position: relative; display: inline-block; }
+.coret-garis {
+  position: absolute; left: 4%; right: 2%; bottom: -.06em;
+  width: 94%; height: .22em; color: var(--rose-soft); opacity: .75;
+}
+
+.hero-art { position: relative; z-index: 2; }
 .hero-art img, .hero-svg { width: 100%; height: auto; border-radius: var(--radius); }
 
 /* ── Kerangka seksi ─────────────────────────────────────────────────────── */
 .section { max-width: 1180px; margin: 0 auto; padding: 84px 24px; }
-.section-alt { max-width: none; background: var(--cream-deep); }
+.section-alt { max-width: none; background: var(--pink-1); }
 .section-alt > * { max-width: 1180px; margin-left: auto; margin-right: auto; }
 
 .section-head { text-align: center; margin-bottom: 46px; }
@@ -846,8 +937,10 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 
 @media (max-width: 620px) {
   .section { padding: 60px 20px; }
-  .trust { gap: 14px; }
-  .trust li { border-left: 0; padding: 0; flex: 1 1 140px; }
+  /* Di layar sempit ketiganya BERTUMPUK, bukan dua-lalu-satu. Baris kedua
+     yang cuma berisi satu butir membuat kartunya terlihat separuh jadi. */
+  .trust { gap: 4px; padding: 14px 6px; }
+  .trust li { border-left: 0; padding: 8px 14px; flex: 1 1 100%; }
   .footer-inner { flex-direction: column; align-items: flex-start; }
   .footer-note { text-align: left; }
 }

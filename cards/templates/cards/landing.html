@@ -6,11 +6,29 @@
 {% block body %}
 <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
 <section class="hero">
+  {% comment %}
+    Hiasan latar. Ditaruh sebagai elemen sendiri, bukan background-image,
+    supaya tiap kepingnya bisa diletakkan dan diberi gerak masing-masing.
+    aria-hidden: tidak ada satu pun yang membawa makna, dan pembaca layar
+    yang menyebutkannya cuma menunda pembaca sampai ke judulnya.
+  {% endcomment %}
+  <div class="hero-deco" aria-hidden="true">
+    <svg class="deco hati h1" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
+    <svg class="deco hati h2" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
+    <svg class="deco hati h3" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
+    <svg class="deco hati h4" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
+    <svg class="deco hati h5" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
+    <svg class="deco kilau k1" viewBox="0 0 24 24"><path d="M12 1l2.2 7.8L22 11l-7.8 2.2L12 21l-2.2-7.8L2 11l7.8-2.2z"/></svg>
+    <svg class="deco kilau k2" viewBox="0 0 24 24"><path d="M12 1l2.2 7.8L22 11l-7.8 2.2L12 21l-2.2-7.8L2 11l7.8-2.2z"/></svg>
+    <svg class="deco kilau k3" viewBox="0 0 24 24"><path d="M12 1l2.2 7.8L22 11l-7.8 2.2L12 21l-2.2-7.8L2 11l7.8-2.2z"/></svg>
+    <span class="awan a1"></span>
+    <span class="awan a2"></span>
+  </div>
   <div class="hero-inner">
     <div class="hero-copy">
       <h1 class="display">
         Ucapan tulus,<br>
-        <span class="script">hadiah berkesan</span><br>
+        <span class="script coret">hadiah berkesan<svg class="coret-garis" viewBox="0 0 300 14" aria-hidden="true" preserveAspectRatio="none"><path d="M4 9C60 3 150 2 296 6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span><br>
         untuk orang teristimewa.
       </h1>
       <p class="hero-lede">
@@ -30,6 +48,23 @@
         </a>
       </div>
 
+    </div>
+
+    <div class="hero-art">
+      {% if hero_photo %}
+        <img src="{% static hero_photo %}" alt="Kartu ucapan dalam amplop dengan bunga">
+      {% else %}
+        {% include "cards/_hero_illustration.html" %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% comment %}
+    Kartu jaminan sengaja DI LUAR .hero-inner. Sebelumnya ia anak .hero-copy,
+    yang lebarnya dibatasi 560px — tiga butirnya tidak muat sebaris dan yang
+    ketiga jatuh ke baris kedua, membuat kartunya terlihat separuh jadi.
+  {% endcomment %}
+  <div class="trust-wrap">
       <ul class="trust">
         <li>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -44,15 +79,6 @@
           <span><strong>Privasi Terjaga</strong>Akses setelah bayar</span>
         </li>
       </ul>
-    </div>
-
-    <div class="hero-art">
-      {% if hero_photo %}
-        <img src="{% static hero_photo %}" alt="Kartu ucapan dalam amplop dengan bunga">
-      {% else %}
-        {% include "cards/_hero_illustration.html" %}
-      {% endif %}
-    </div>
   </div>
 </section>
 

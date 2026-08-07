@@ -91,20 +91,22 @@ SEEDS = [
             "renderer": "game8bit",
             "frames": [
                 # Desain aslinya tidak punya slot foto sama sekali; keempat
-                # ubin POWER UPS dijadikan kenangan. "cap" menunjuk kolom
-                # cerita di balik ubin itu; pasangannya ditulis di sini, BUKAN
-                # dirakit di template. Sempat dirakit dengan
-                # "cap"|add:forloop.counter, dan filter add Django gagal
-                # menyambung teks dengan angka lalu diam-diam mengembalikan
-                # string kosong — kolom ceritanya jadi tidak bisa disunting
-                # sama sekali, tanpa error apa pun. Halaman PLAYER SELECT
+                # ubin POWER UPS dijadikan kenangan. Keterangan di balik ubin
+                # memakai GiftPhoto.caption — kotak yang sudah ada di panel
+                # foto — bukan kolom teks tersendiri. "cap_note" cuma mengganti
+                # kalimat penjelas di bawah kotak itu, karena kalimat bawaannya
+                # ("tulisan tangan di bawah foto") tidak berlaku di sini. Halaman PLAYER SELECT
                 # sempat punya slot foto juga, lalu dicabut: kotak di sana
                 # memajang potret kedua karakter supaya jelas kolom nama mana
                 # milik siapa, dan foto pembeli menghapus petunjuk itu.
-                {"key": "g1", "label": "Power up 1", "area": "powerups", "cap": "cap1"},
-                {"key": "g2", "label": "Power up 2", "area": "powerups", "cap": "cap2"},
-                {"key": "g3", "label": "Power up 3", "area": "powerups", "cap": "cap3"},
-                {"key": "g4", "label": "Power up 4", "area": "powerups", "cap": "cap4"},
+                {"key": "g1", "label": "Power up 1", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
+                {"key": "g2", "label": "Power up 2", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
+                {"key": "g3", "label": "Power up 3", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
+                {"key": "g4", "label": "Power up 4", "area": "powerups",
+                 "cap_note": "Muncul di balik ubinnya waktu penerima membaliknya."},
             ],
             "texts": [
                 # Bawaan = contoh nada yang bisa ditiru pembeli, bukan perintah.
@@ -130,16 +132,6 @@ SEEDS = [
                 {"key": "peluk_btn", "label": "Tombol peluk", "default": "HUG"},
                 {"key": "power_head", "label": "Judul power up", "default": "POWER UPS"},
                 {"key": "power_note", "label": "Catatan power up", "default": "ketuk tiap kotak buat lihat isinya"},
-                # Cerita di balik tiap ubin foto. Bawaannya SENGAJA kosong,
-                # bukan contoh kalimat seperti kolom lain: pemilik kartu
-                # menolak kalimat contoh di sini karena kalau pembeli
-                # melewatinya, contoh itu ikut terkirim ke penerima sebagai
-                # cerita foto yang bukan miliknya. Ubin tanpa cerita tetap
-                # bisa dibalik, sisi belakangnya dibiarkan kosong.
-                {"key": "cap1", "label": "Cerita foto 1", "default": ""},
-                {"key": "cap2", "label": "Cerita foto 2", "default": ""},
-                {"key": "cap3", "label": "Cerita foto 3", "default": ""},
-                {"key": "cap4", "label": "Cerita foto 4", "default": ""},
                 # Dulu HIGH SCORES: tiga baris angka karangan. Dicabut atas
                 # permintaan pemilik kartu — angkanya tidak menyumbang apa
                 # pun, cuma membuat template terlihat sibuk.

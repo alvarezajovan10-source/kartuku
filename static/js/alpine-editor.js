@@ -221,11 +221,22 @@ window.cardEditor = function () {
     /* ── Kirim ke iframe ──────────────────────────────────────────────── */
     post: function (message) {
       var frame = this.$refs.frame;
-      if (frame && frame.contentWindow) {
-        frame.contentWindow.postMessage(
-          Object.assign({ source: "card-editor" }, message), "*"
-        );
+      if (!frame || !frame.contentWindow) return;
+      /* Disalin jadi objek polos dulu. Nilai yang datang dari state Alpine
+         adalah Proxy, dan postMessage MENOLAK menyalin Proxy — ia melempar
+         DataCloneError. Kerusakannya tidak kelihatan karena tidak ada yang
+         gagal secara mencolok: lemparan itu terjadi di baris PERTAMA
+         replay(), jadi seluruh gaya, warna, dan teks yang seharusnya
+         dipasang ulang sesudahnya diam-diam tidak pernah terkirim. Persis
+         hal yang replay() dibuat untuk mencegah — editan hilang dari
+         pratinjau tiap kali ia dimuat ulang, misalnya sehabis unggah foto. */
+      var polos;
+      try {
+        polos = JSON.parse(JSON.stringify(Object.assign({ source: "card-editor" }, message)));
+      } catch (e) {
+        return;
       }
+      frame.contentWindow.postMessage(polos, "*");
     },
     pushStyle: function () {
       this.post({ type: "style", key: this.sel, css: elementCss(this.st) });

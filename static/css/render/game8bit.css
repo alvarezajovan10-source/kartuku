@@ -541,11 +541,6 @@ img{image-rendering:auto}
   pointer-events:none;opacity:0;transition:opacity .3s;
 }
 .ubin.terbuka .putar{opacity:1}
-/* Di editor, cerita yang masih kosong tidak punya tinggi sama sekali —
-   tidak ada apa pun untuk diklik, jadi pembeli tidak punya cara MEMULAI
-   menulisnya. Sasarannya dilebarkan hanya saat mengedit; kartu yang
-   terkirim tidak ikut membesar. */
-body.is-editing #kisi .cap{min-height:92px;display:flex;align-items:center;justify-content:center}
 /* Ajakan "+ foto" milik SISI FOTO. Ia digambar di ubinnya, bukan di salah
    satu sisinya, jadi tanpa aturan ini ia tercetak menembus cerita yang
    sedang dibaca — pembeli melihat "+ foto" di tengah kalimatnya sendiri. */

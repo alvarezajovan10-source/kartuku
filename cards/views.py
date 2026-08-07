@@ -382,6 +382,11 @@ def editor(request, template_slug):
                 "key": spec["key"],
                 "label": spec.get("label", spec["key"]),
                 "type": "photo",
+                # Kalimat penjelas di bawah kotak keterangan. Bawaannya bicara
+                # soal tulisan tangan di bawah foto; itu benar untuk sebagian
+                # template dan MENYESATKAN di template lain, jadi tiap bingkai
+                # boleh menuliskan penjelasnya sendiri.
+                "capNote": spec.get("cap_note", ""),
                 "photo": _photo_payload(by_slot[spec["key"]])
                 if spec["key"] in by_slot
                 else None,

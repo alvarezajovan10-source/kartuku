@@ -250,8 +250,15 @@
         <div class="ubin foto{% if editing and not photo %} is-empty{% endif %}" {% frame card editing f.key %}>
           <div class="balik">
             <div class="sisi cerita">
+              {% comment %}
+                Keterangan diambil dari FOTONYA sendiri (GiftPhoto.caption),
+                bukan dari kolom teks terpisah. Sempat memakai kolom sendiri,
+                dan akibatnya pembeli tidak menemukannya: situs ini sudah punya
+                kotak "Tulis keterangan foto..." tepat di bawah tombol Pilih
+                Foto, dipakai template lain, dan di sanalah orang mencarinya.
+              {% endcomment %}
               <div class="bagan-isi" data-gulir>
-                <p class="cap"{% el card editing f.cap %}>{% t card f.cap %}</p>
+                <p class="cap">{{ photo.caption }}</p>
               </div>
               <span class="panah-gulir" aria-hidden="true">▼</span>
             </div>

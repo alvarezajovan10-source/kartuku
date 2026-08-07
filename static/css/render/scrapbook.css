@@ -97,6 +97,13 @@ body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
   object-position:var(--ox,50%) var(--oy,50%);transform:scale(var(--zoom,1));transform-origin:var(--ox,50%) var(--oy,50%);border-radius:var(--br,0)}
 .pola .cap{font-family:'Caveat',cursive;font-size:1.05rem;color:#6d4650;text-align:center;margin-top:6px;min-height:1.1em;overflow-wrap:break-word}
 .pola.sm{width:104px}
+/* Bab 1 memajang dua polaroid berdampingan, jadi keduanya boleh lebih besar
+   daripada polaroid di bab lain. SENGAJA tidak diubah global: bab Momen
+   menaruh TIGA .pola.sm dalam satu baris, dan 3x104 ditambah jaraknya sudah
+   hampir memenuhi 346px yang tersedia (kanvas 390 dikurangi padding bab) —
+   membesarkannya di sana membuat barisnya pecah jadi dua. */
+.collage.pasangan .pola{width:150px}
+.collage.pasangan .pola.sm{width:122px}
 
 .bfly{width:64px;height:54px;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
 .bfly .wing{transform-origin:center;animation:flutter 4s ease-in-out infinite}

@@ -517,6 +517,12 @@ img{image-rendering:auto}
   box-shadow:inset 0 0 0 var(--px) var(--tinta);
 }
 .ubin.terbuka .tanya{animation:pecah .3s steps(4) forwards}
+/* Tutup yang sudah pecah harus BERHENTI menangkap klik. Animasinya cuma
+   membuatnya tembus pandang, dan lembaran tak terlihat seluas ubin itu tetap
+   menadah setiap ketukan: di editor, mengklik ceritanya selalu terbaca
+   sebagai mengklik slot fotonya, jadi kolom cerita tidak pernah bisa dipilih
+   dan pembeli tidak punya cara menuliskannya. */
+.ubin.terbuka .tanya{pointer-events:none}
 @keyframes pecah{
   0%{transform:scale(1);opacity:1}
   100%{transform:scale(1.5) rotate(12deg);opacity:0}
@@ -535,6 +541,15 @@ img{image-rendering:auto}
   pointer-events:none;opacity:0;transition:opacity .3s;
 }
 .ubin.terbuka .putar{opacity:1}
+/* Di editor, cerita yang masih kosong tidak punya tinggi sama sekali —
+   tidak ada apa pun untuk diklik, jadi pembeli tidak punya cara MEMULAI
+   menulisnya. Sasarannya dilebarkan hanya saat mengedit; kartu yang
+   terkirim tidak ikut membesar. */
+body.is-editing #kisi .cap{min-height:92px;display:flex;align-items:center;justify-content:center}
+/* Ajakan "+ foto" milik SISI FOTO. Ia digambar di ubinnya, bukan di salah
+   satu sisinya, jadi tanpa aturan ini ia tercetak menembus cerita yang
+   sedang dibaca — pembeli melihat "+ foto" di tengah kalimatnya sendiri. */
+body.is-editing #kisi .ubin.terbuka:not(.terbalik).is-empty::after{display:none}
 
 @media (prefers-reduced-motion: reduce){
   .balik{transition:none}

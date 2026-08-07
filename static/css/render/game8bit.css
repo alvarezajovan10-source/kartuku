@@ -178,12 +178,13 @@ img{image-rendering:auto}
 #wishes .isi{gap:12px}
 /* Judul TIUP LILIN naik ke atas: kuenya berdiri di tanah, dan judul yang
    melayang di tengah akan bertumpuk dengan nyala lilin paling tinggi. */
-/* Judul pindah ke paruh KANAN, sejajar tengah. Kuenya terkunci di kiri bawah
-   (tombol navigasi menguasai tengah bawah), dan judul di tengah atas seperti
-   babak lain membuat separuh kanan kartu kosong melompong sementara seluruh
-   adegan berdesakan di satu pojok. */
-#kue{justify-content:flex-end;padding-bottom:120px}
-#kue .isi{max-width:400px;gap:10px}
+/* Judul di tengah, sama seperti babak lain.
+
+   Kuenya sendiri TIDAK ikut ke tengah, dan itu disengaja: tombol navigasi
+   menempati x 360-600 di dasar kartu dan digambar di lapisan paling atas
+   (z-index 40), jadi kue setinggi 120 piksel yang berdiri di tanah pasti
+   memotong pita itu — kedelapan titik halaman akan tercetak di badan kuenya. */
+#kue .isi{gap:10px}
 /* Ledakan putih .pop::before duduk di dasar .isi; semua saudara kandungnya
    diangkat satu lapis supaya terbaca di atasnya, bukan tertimbun.
    .pop DIKECUALIKAN dengan sengaja: memberinya z-index membuatnya jadi

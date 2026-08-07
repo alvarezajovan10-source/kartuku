@@ -114,7 +114,7 @@ SEEDS = [
                 # yang tidak boleh saling menyeret.
                 {"key": "nama1", "label": "Nama karakter cowok", "default": "PLAYER 1"},
                 {"key": "nama2", "label": "Nama karakter cewek", "default": "PLAYER 2"},
-                {"key": "level_kick", "label": "Pembuka naik level", "default": "pengalaman bertambah..."},
+                {"key": "level_kick", "label": "Pembuka naik level", "default": "there's a suprise for you"},
                 {"key": "level_head", "label": "Judul naik level", "default": "LEVEL UP!"},
                 {"key": "level_stat", "label": "Statistik level", "default": "HP +100  LOVE +999"},
                 {"key": "wish_head", "label": "Judul wishes", "default": "WISHES"},

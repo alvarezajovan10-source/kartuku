@@ -173,7 +173,14 @@
           <svg viewBox="0 0 12 12"><use href="#s-kucing"/></svg>
         </div>
         <div class="ucap">
-          <p class="pembicara"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Namamu" }}</p>
+          {% comment %}
+            Bawaannya "dear," dan BUKAN "Namamu": baris merah muda ini yang
+            pertama dibaca penerima, dan kata "Namamu" di kartu jadi yang
+            terkirim kalau pembeli melewatinya. Petunjuk di editor ikut
+            diseragamkan supaya yang terlihat di editor sama persis dengan
+            yang tercetak.
+          {% endcomment %}
+          <p class="pembicara"{% el card editing "sender" %}{% if editing %} data-placeholder="dear,"{% endif %}>{{ card.sender_name|default:"dear," }}</p>
           {# Suratnya digulir DI DALAM kotak ini; kotaknya sendiri tidak bergeser. #}
           <div class="bagan-isi" data-gulir>
             <p class="surat"{% el card editing "message" %}{% if editing %} data-placeholder="Tulis suratmu di sini..."{% endif %}>{{ card.message|default:"Tulis suratmu di sini..." }}</p>

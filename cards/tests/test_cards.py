@@ -947,3 +947,51 @@ class AccessCodeTests(TestCase):
         self.assertEqual(dibuat.count(), 3)
         for entry in dibuat:
             self.assertIn(entry.code, keluaran.getvalue())
+
+
+class LaguContohTests(TestCase):
+    """Lagu yang terdengar di halaman contoh template.
+
+    Halaman contoh dipakai calon pembeli menilai template, jadi lagunya ikut
+    dinilai — dan sampai 20 Agu 2026 yang terpasang di situ "dQw4w9WgXcQ",
+    id YouTube yang lazim dipakai sebagai isian asal-asalan (rickroll). Itu
+    bukan lagu yang pernah dipilih siapa pun; ia cuma tidak pernah diganti.
+    """
+
+    PLACEHOLDER = "dQw4w9WgXcQ"
+
+    def setUp(self):
+        for slug, kategori in [("uji-ultah", CardType.BIRTHDAY),
+                               ("uji-cinta", CardType.LOVE_STORY)]:
+            Template.objects.create(
+                slug=slug, name=slug, category=kategori,
+                config={"renderer": "birthday"}, is_active=True,
+            )
+
+    def lagu_contoh(self):
+        from cards.views import _sample_card
+
+        return _sample_card(Template.objects.first()).youtube_video_id
+
+    def test_bukan_id_isian_asal_asalan(self):
+        """Penjaga yang sesungguhnya. Id ini gampang sekali tertinggal —
+        ia dipakai di banyak fixture tes sebagai id berbentuk sah, jadi
+        menyalinnya ke data contoh terasa wajar dan tidak ada yang merah."""
+        self.assertNotEqual(
+            self.lagu_contoh(), self.PLACEHOLDER,
+            "halaman contoh memutar lagu rickroll lagi — itu isian asal-asalan, "
+            "bukan lagu yang dipilih",
+        )
+
+    def test_semua_template_memakai_lagu_yang_sama(self):
+        """Satu sumber: _sample_card(). Kalau suatu saat lagunya disetel per
+        template, ini yang akan memberi tahu."""
+        vid = self.lagu_contoh()
+        for template in Template.objects.filter(is_active=True):
+            with self.subTest(template=template.slug):
+                isi = self.client.get(
+                    reverse("cards:preview", args=[template.slug])
+                ).content.decode()
+                self.assertIn(vid, isi)
+                self.assertNotIn(self.PLACEHOLDER, isi)
+

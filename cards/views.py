@@ -250,7 +250,21 @@ def _sample_card(template):
             "hari-hari biasa terasa istimewa.\n\n"
             "Semoga tahun ini kamu dikelilingi hal-hal yang kamu cintai."
         ),
-        youtube_video_id="dQw4w9WgXcQ",
+        # Lagu yang terdengar di SEMUA halaman contoh template.
+        #
+        # Sebelumnya "dQw4w9WgXcQ" — itu bukan pilihan musik, melainkan id
+        # YouTube yang lazim dipakai sebagai isian asal-asalan (lagu Rick
+        # Astley, si "rickroll"). Ia tidak pernah dipilih siapa pun, dan
+        # karena halaman contoh dipakai calon pembeli menilai template, yang
+        # terdengar mereka adalah lagu acak yang tidak ada hubungannya
+        # dengan kartunya. Diganti atas permintaan pemilik situs (20 Agu
+        # 2026) ke lagu yang memang dikehendaki.
+        #
+        # Kalau diganti lagi, WAJIB diperiksa dulu boleh diputar di situs
+        # lain: check_youtube_embeddable() di cards/utils.py. Video yang
+        # diblokir label musik tetap terlihat normal di YouTube tapi gagal
+        # diputar di kartu, dan gagalnya diam-diam.
+        youtube_video_id="75-Com9Bo_s",
         favorite_flower="Sunflower",
         affirmations=(
             "Kamu berharga, dengan cara yang jarang orang sadari.\n"

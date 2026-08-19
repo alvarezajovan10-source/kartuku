@@ -19,39 +19,23 @@
     </p>
   </div>
 
-  <div class="tpl-grid">
-    {% for entry in entries %}
-      <article class="tpl-card">
-        <a class="tpl-art" href="{% url 'cards:preview' entry.template.slug %}"
-           style="--accent: {{ entry.accent }}">
-          {% if entry.thumb %}
-            <img src="{% static entry.thumb %}" alt="Contoh template {{ entry.template.name }}" loading="lazy">
-          {% else %}
-            <span class="tpl-fallback">{{ entry.template.name }}</span>
-          {% endif %}
-          <span class="tpl-peek">Lihat contoh</span>
-        </a>
-        <div class="tpl-body">
-          <h3>{{ entry.template.name }}</h3>
-          <div class="tpl-actions">
-            <a class="btn btn-outline btn-sm" href="{% url 'cards:preview' entry.template.slug %}">Preview</a>
-            <a class="btn btn-primary btn-sm" href="{% url 'cards:editor' entry.template.slug %}">Pakai Ini</a>
-          </div>
-        </div>
-      </article>
-    {% empty %}
-      {% comment %}
-        Dulu di sini tertulis pesan untuk developer beserta tautan ke halaman
-        admin — dan yang membacanya justru pembeli.
-      {% endcomment %}
-      <div class="empty-soon">
-        <p class="soon-badge">Coming soon</p>
-        <p>Template {{ category_label }} masih dalam pengerjaan.</p>
-        <a class="btn btn-primary" href="{% url 'cards:gallery' 'birthday' %}">
-          Lihat template Birthday
-        </a>
-      </div>
-    {% endfor %}
-  </div>
+  {% if entries %}
+    {% include "cards/_template_grid.html" %}
+  {% else %}
+    {% comment %}
+      Dulu di sini tertulis pesan untuk developer beserta tautan ke halaman
+      admin — dan yang membacanya justru pembeli. Sekarang jalan keluarnya
+      menunjuk ke daftar rata: sejak 19 Agu 2026 seluruh template tampil di
+      satu halaman, jadi mengirim orang ke galeri Birthday sudah bukan
+      jawaban yang benar.
+    {% endcomment %}
+    <div class="empty-soon">
+      <p class="soon-badge">Coming soon</p>
+      <p>Template {{ category_label }} masih dalam pengerjaan.</p>
+      <a class="btn btn-primary" href="{% url 'cards:page_templates' %}">
+        Lihat semua template
+      </a>
+    </div>
+  {% endif %}
 </section>
 {% endblock %}

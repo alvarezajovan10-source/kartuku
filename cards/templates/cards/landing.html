@@ -86,53 +86,21 @@
   </div>
 </section>
 
-<!-- ── Pilih jenis kartu ─────────────────────────────────────────────────── -->
+<!-- ── Daftar template ─────────────────────────────────────────────────── -->
 <section class="section" id="template">
   <div class="section-head">
-    <p class="eyebrow">Pilih jenis kartu</p>
-    <h2 class="display">Untuk setiap momen spesial</h2>
+    <p class="eyebrow">Pilih template</p>
+    <h2 class="display">Tinggal pilih, langsung isi</h2>
     <div class="flourish" aria-hidden="true">
       <svg viewBox="0 0 120 14"><path d="M2 7h44M74 7h44" stroke="currentColor" stroke-width="1" fill="none"/><path d="M60 11c-1.4-1.5-3.8-1.2-4.5.7-.6 1.6.8 3.1 2.2 4.2" fill="none" stroke="currentColor" stroke-width="0"/><path d="M60 4.2c-1.2-1.4-3.4-1.1-4 .6-.5 1.5.7 2.9 2 3.9l2 1.6 2-1.6c1.3-1 2.5-2.4 2-3.9-.6-1.7-2.8-2-4-.6z" fill="currentColor"/></svg>
     </div>
     <p class="section-lede">
-      Pilih template yang sesuai dengan momenmu, lalu buat kartu digital yang penuh makna.
+      Semua template yang siap dipakai. Lihat dulu contohnya, baru isi dengan
+      foto dan pesanmu sendiri.
     </p>
   </div>
 
-  <div class="cat-grid">
-    {% for item in categories %}
-      <article class="cat-card{% if item.coming_soon %} is-soon{% endif %}">
-        {% if item.coming_soon %}<span class="soon-badge">Coming soon</span>{% endif %}
-        <div class="cat-art tint-{{ item.tint }}">
-          {% if item.photo %}
-            <img src="{% static item.photo %}" alt="{{ item.title }}" loading="lazy">
-          {% endif %}
-          <span class="cat-icon">
-            {% if item.icon == "cake" %}
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 16c2 0 2 1.4 4 1.4S10 16 12 16s2 1.4 4 1.4S18 16 20 16" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 12V9M12 12V8.5M15 12V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            {% elif item.icon == "ring" %}
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="15" r="5.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9.4 9.6L12 4l2.6 5.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-            {% else %}
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-            {% endif %}
-          </span>
-        </div>
-        <div class="cat-body">
-          <h3>{{ item.title }}</h3>
-          <p>{{ item.blurb }}</p>
-          {% if item.coming_soon %}
-            <span class="cat-link is-soon">Sedang disiapkan</span>
-          {% else %}
-            <a class="cat-link" href="{% url 'cards:gallery' item.category %}">
-              Pilih Template <span aria-hidden="true">→</span>
-            </a>
-          {% endif %}
-        </div>
-      </article>
-    {% empty %}
-      <p class="hint">Belum ada template aktif. Jalankan <code>manage.py seed_templates</code>.</p>
-    {% endfor %}
-  </div>
+  {% include "cards/_template_grid.html" with tampil_tema=1 %}
 </section>
 
 <!-- ── Jalan pintas ke halaman informasi ─────────────────────────────────

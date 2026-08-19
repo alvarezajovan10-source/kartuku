@@ -14,7 +14,12 @@ Kartu asli yang sudah lunas tidak memunculkan apa pun.
   {% if preview %}
     <span class="tag">Contoh</span>
     <span class="txt">Isi di bawah ini cuma contoh — kartumu pakai foto dan pesanmu sendiri.</span>
-    <a class="back-link" href="{% url 'cards:gallery' template.category %}">← Template lain</a>
+    {% comment %}
+      Menunjuk ke daftar rata, bukan galeri per-tema: sejak 19 Agu 2026
+      seluruh template tampil di satu halaman, jadi galeri per-tema bukan
+      lagi jalan yang dipakai orang. Rutenya sengaja tetap hidup.
+    {% endcomment %}
+    <a class="back-link" href="{% url 'cards:page_templates' %}">← Template lain</a>
     <a class="use" href="{% url 'cards:editor' template.slug %}">Pakai template ini</a>
   {% else %}
     <span class="tag warn">Mode pemilik</span>

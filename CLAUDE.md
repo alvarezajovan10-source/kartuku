@@ -301,6 +301,44 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   ternyata diblokir label musik.
 - **Halaman informasi terpisah**: `/template/`, `/cara-kerja/`, `/harga/`,
   `/testimoni/`, `/faq/`.
+- **Lapisan tema DILEWATI sementara** (19 Agu 2026, keputusan pemilik situs).
+  Beranda dan `/template/` sekarang langsung menampilkan seluruh template
+  aktif dalam satu kisi rata; tidak ada lagi kartu tema sebagai pintu masuk.
+
+  > Alasannya aritmetika katalognya, bukan "biar sedikit klik": ada EMPAT
+  > tema tapi cuma DUA yang berisi, dan isinya timpang — di produksi tiga
+  > template di Birthday dan satu di Love Story. Jadi separuh pintu di
+  > beranda buntu ("Coming soon", tidak bisa diklik), dan pintu yang hidup
+  > pun membuka halaman berisi satu barang. Penyaring berguna kalau
+  > pilihannya banyak; dengan tiga template ia bukan menyaring melainkan
+  > menyembunyikan.
+  >
+  > **Rute `/template/<kategori>/` dan `_category_cards()` SENGAJA
+  > DIBIARKAN HIDUP.** Tautan lama yang sudah tersebar tidak boleh mati, dan
+  > lapisan temanya akan dikembalikan begitu minimal tiga tema terisi — biar
+  > itu tinggal menyambung, bukan membangun ulang. `_category_cards()`
+  > karena itu tidak dipanggil siapa pun untuk sementara; jangan dicabut
+  > sebagai "kode mati".
+  >
+  > Nama tema pindah ke tiap kartu (`.tpl-tema`). Tanpa itu tidak ada lagi
+  > yang memberi tahu pembeli bahwa Valentine Story kartu Love Story dan
+  > bukan kartu ulang tahun.
+  >
+  > Markah kartunya diangkat jadi satu partial, `cards/_template_grid.html`,
+  > dipakai BERTIGA — beranda, `/template/`, dan galeri per-tema — supaya
+  > rupanya tidak bisa berbeda di antara ketiganya.
+  >
+  > **Belum ada satu pun gambar contoh.** `static/img/thumb/` tidak ada, jadi
+  > yang tampil `.tpl-fallback`: nama template di atas warna aksennya.
+  > Begitu `img/thumb/<slug>.jpg` ada, kartunya otomatis memakainya tanpa
+  > menyentuh berkas mana pun. Ini pengungkit terbesar berikutnya untuk
+  > halaman ini — pembeli sekarang masih harus mengklik untuk tahu wujud
+  > kartunya.
+  >
+  > Dijaga `DaftarTemplateRataTests` di `cards/tests/test_page_hygiene.py`,
+  > yang menggantikan `KategoriBelumJadiTests` — tes lama itu mengunci
+  > perilaku sebaliknya (keempat tema selalu tampil, yang kosong ditandai
+  > "Coming soon").
 - **Dashboard pemilik** `/kartu-saya/` — daftar semua kartu + link. Terbuka saat
   `DEBUG`, atau untuk staff.
 - **Kode akses sekali pakai** (`AccessCode`) — pengganti Midtrans selama bayar

@@ -247,9 +247,13 @@ class GalleryAndPreviewTests(TestCase):
         response = self.client.get(reverse("cards:gallery", args=["natal"]))
         self.assertEqual(response.status_code, 404)
 
-    def test_landing_points_to_gallery_not_editor(self):
+    def test_landing_menampilkan_template_langsung(self):
+        """Dulu beranda menunjuk ke galeri per-tema. Sejak 19 Agu 2026 lapisan
+        temanya dilewati (lihat DaftarTemplateRataTests): beranda memuat
+        kartu templatenya sendiri, dengan tautan pratinjau dan editor."""
         response = self.client.get(reverse("cards:landing"))
-        self.assertContains(response, reverse("cards:gallery", args=["birthday"]))
+        self.assertContains(response, reverse("cards:preview", args=["amplop-merah"]))
+        self.assertContains(response, reverse("cards:editor", args=["amplop-merah"]))
 
     def test_preview_renders_sample_without_creating_card(self):
         response = self.client.get(reverse("cards:preview", args=["amplop-merah"]))
@@ -712,10 +716,16 @@ class InfoPagesTests(TestCase):
                 response = self.client.get(reverse(f"cards:{name}"))
                 self.assertEqual(response.status_code, 200)
 
-    def test_halaman_template_menampilkan_kategori(self):
+    def test_halaman_template_menampilkan_templatenya(self):
+        """Bukan lagi daftar tema. Nama temanya tetap tertulis di tiap kartu,
+        karena tanpa itu tidak ada yang memberi tahu pembeli sebuah template
+        ditujukan untuk momen apa."""
         response = self.client.get(reverse("cards:page_templates"))
-        self.assertContains(response, "Birthday")
-        self.assertContains(response, reverse("cards:gallery", args=[CardType.BIRTHDAY]))
+        self.assertContains(response, "Amplop Merah")
+        self.assertContains(
+            response, reverse("cards:preview", args=["klasik-ulang-tahun"])
+        )
+        self.assertContains(response, "Ulang Tahun")
 
     def test_harga_diambil_dari_setelan(self):
         from django.conf import settings

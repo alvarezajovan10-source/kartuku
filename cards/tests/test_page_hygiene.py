@@ -104,35 +104,74 @@ class KebocoranTemplateTests(TestCase):
                 self.assertNotIn("TODO", isi)
 
 
-class KategoriBelumJadiTests(TestCase):
-    """Hanya Birthday yang punya template; sisanya harus jelas belum siap."""
+class DaftarTemplateRataTests(TestCase):
+    """Lapisan tema dilewati sementara (19 Agu 2026, keputusan pemilik situs).
+
+    Menggantikan KategoriBelumJadiTests, yang mengunci perilaku sebaliknya:
+    dulu keempat tema selalu tampil, yang kosong ditandai "Coming soon" dan
+    tidak bisa diklik. Itu benar selama temanya jadi pintu masuk.
+
+    Sekarang aritmetikanya tidak mendukung lagi: empat tema, hanya dua
+    berisi, dan isinya timpang (tiga template di Birthday, satu di Love
+    Story). Separuh pintu buntu, dan yang hidup pun menyembunyikan barangnya
+    di balik satu klik. Templatenya sendiri cuma tiga di produksi.
+    """
 
     def setUp(self):
         Template.objects.create(
-            slug="uji-ulang-tahun", name="Uji", category=CardType.BIRTHDAY,
+            slug="uji-ulang-tahun", name="Uji Ultah", category=CardType.BIRTHDAY,
+            is_active=True,
+        )
+        Template.objects.create(
+            slug="uji-cinta", name="Uji Cinta", category=CardType.LOVE_STORY,
             is_active=True,
         )
 
-    def test_kategori_tanpa_template_ditandai_coming_soon(self):
+    def test_beranda_menampilkan_template_bukan_tema(self):
         isi = self.client.get(reverse("cards:landing")).content.decode()
-        self.assertIn("Coming soon", isi)
-        # Kategorinya tetap terlihat — bukan disembunyikan diam-diam.
-        self.assertIn("Anniversary", isi)
+        self.assertIn("Uji Ultah", isi)
+        self.assertIn("Uji Cinta", isi)
+        self.assertNotIn("Coming soon", isi,
+                         "kartu tema kosong muncul lagi di beranda")
 
-    def test_kategori_belum_jadi_tidak_bisa_diklik(self):
-        isi = self.client.get(reverse("cards:landing")).content.decode()
-        for kategori in [CardType.ANNIVERSARY, CardType.LOVE_STORY, CardType.PROPOSAL]:
+    def test_halaman_template_menampilkan_semua_template(self):
+        isi = self.client.get(reverse("cards:page_templates")).content.decode()
+        for nama in ("Uji Ultah", "Uji Cinta"):
+            with self.subTest(template=nama):
+                self.assertIn(nama, isi)
+
+    def test_template_bisa_langsung_dipratinjau_dan_dipakai(self):
+        """Yang dihemat lapisan tema itu bukan kliknya saja: pembeli sekarang
+        melihat nama template DAN dua tombolnya tanpa berpindah halaman."""
+        isi = self.client.get(reverse("cards:page_templates")).content.decode()
+        for slug in ("uji-ulang-tahun", "uji-cinta"):
+            with self.subTest(slug=slug):
+                self.assertIn(reverse("cards:preview", args=[slug]), isi)
+                self.assertIn(reverse("cards:editor", args=[slug]), isi)
+
+    def test_nama_tema_tetap_tertulis_di_tiap_kartu(self):
+        """Tanpa lapisan tema, tidak ada lagi yang memberi tahu pembeli bahwa
+        sebuah template itu kartu Love Story dan bukan kartu ulang tahun.
+        Labelnya karena itu pindah ke kartunya."""
+        isi = self.client.get(reverse("cards:page_templates")).content.decode()
+        self.assertIn("Love Story", isi)
+        self.assertIn("Ulang Tahun", isi)
+
+    def test_rute_galeri_per_tema_tetap_hidup(self):
+        """SENGAJA tidak dicabut. Tautan lama yang sudah tersebar tidak boleh
+        mati, dan lapisan temanya akan dikembalikan begitu minimal tiga tema
+        terisi — biar itu tinggal menyambung, bukan membangun ulang."""
+        for kategori in (CardType.BIRTHDAY, CardType.LOVE_STORY):
             with self.subTest(kategori=kategori):
-                self.assertNotIn(reverse("cards:gallery", args=[kategori]), isi)
-
-    def test_kategori_yang_siap_tetap_bisa_diklik(self):
-        isi = self.client.get(reverse("cards:landing")).content.decode()
-        self.assertIn(reverse("cards:gallery", args=[CardType.BIRTHDAY]), isi)
+                r = self.client.get(reverse("cards:gallery", args=[kategori]))
+                self.assertEqual(r.status_code, 200)
 
     def test_galeri_kosong_menawarkan_jalan_keluar(self):
-        """Pembeli yang tersesat ke kategori kosong harus diarahkan, bukan buntu."""
+        """Pembeli yang tersesat ke kategori kosong harus diarahkan, bukan
+        buntu — dan sekarang diarahkan ke daftar rata, bukan ke galeri
+        Birthday seperti dulu."""
         isi = self.client.get(
             reverse("cards:gallery", args=[CardType.PROPOSAL])
         ).content.decode()
         self.assertIn("Coming soon", isi)
-        self.assertIn(reverse("cards:gallery", args=[CardType.BIRTHDAY]), isi)
+        self.assertIn(reverse("cards:page_templates"), isi)

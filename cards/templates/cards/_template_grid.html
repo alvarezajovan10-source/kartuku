@@ -1,0 +1,39 @@
+{% load static %}
+{% comment %}
+  Kisi kartu template. Dipakai TIGA halaman — beranda, /template/, dan galeri
+  per-tema — supaya rupanya tidak pernah berbeda di antara ketiganya.
+
+  Butuh `entries`: daftar {template, thumb, accent, label}. `label` cuma
+  dipakai kalau `tampil_tema` diisi; di galeri per-tema ia mubazir karena
+  seluruh isinya sudah satu tema.
+
+  Belum ada satu pun gambar contoh (static/img/thumb/ tidak ada), jadi yang
+  tampil sekarang .tpl-fallback: nama templatenya di atas warna aksennya
+  sendiri. Begitu berkas img/thumb/<slug>.jpg ada, kartunya otomatis memakai
+  gambar itu tanpa perlu menyentuh berkas ini.
+{% endcomment %}
+<div class="tpl-grid">
+  {% for entry in entries %}
+    <article class="tpl-card">
+      <a class="tpl-art" href="{% url 'cards:preview' entry.template.slug %}"
+         style="--accent: {{ entry.accent }}">
+        {% if entry.thumb %}
+          <img src="{% static entry.thumb %}" alt="Contoh template {{ entry.template.name }}" loading="lazy">
+        {% else %}
+          <span class="tpl-fallback">{{ entry.template.name }}</span>
+        {% endif %}
+        <span class="tpl-peek">Lihat contoh</span>
+      </a>
+      <div class="tpl-body">
+        <h3>{{ entry.template.name }}</h3>
+        {% if tampil_tema and entry.label %}<p class="tpl-tema">{{ entry.label }}</p>{% endif %}
+        <div class="tpl-actions">
+          <a class="btn btn-outline btn-sm" href="{% url 'cards:preview' entry.template.slug %}">Preview</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'cards:editor' entry.template.slug %}">Pakai Ini</a>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <p class="hint">Belum ada template aktif. Jalankan <code>manage.py seed_templates</code>.</p>
+  {% endfor %}
+</div>

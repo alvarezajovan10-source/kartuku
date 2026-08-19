@@ -100,7 +100,7 @@ def landing(request):
         request,
         "cards/landing.html",
         {
-            "categories": _category_cards(),
+            "entries": _template_cards(),
             "price": settings.CARD_PRICE,
             "hero_photo": _static_if_exists("img/hero.jpg"),
         },
@@ -133,13 +133,42 @@ def _category_cards():
     return categories
 
 
+def _template_cards():
+    """SEMUA template aktif, rata tanpa lapisan tema — satu sumber untuk
+    beranda dan halaman /template/.
+
+    Lapisan tema sengaja dilewati (19 Agu 2026, keputusan pemilik situs).
+    Alasannya bukan "biar sedikit klik", melainkan aritmetika katalognya:
+    ada EMPAT tema tapi cuma DUA yang berisi, dan isinya timpang — tiga
+    template di Birthday, satu di Love Story. Jadi separuh pintu di beranda
+    buntu ("Coming soon", tidak bisa diklik) dan salah satu yang hidup
+    membuka halaman berisi satu barang.
+
+    Penyaring berguna kalau pilihannya banyak. Dengan tiga template, ia
+    bukan menyaring melainkan menyembunyikan.
+
+    SEMENTARA. Kembalikan lapisan temanya begitu minimal tiga tema terisi —
+    _category_cards() dan rute /template/<kategori>/ sengaja DIBIARKAN hidup
+    supaya itu tinggal menyambung, bukan membangun ulang.
+    """
+    return [
+        {
+            "template": template,
+            "thumb": _static_if_exists(f"img/thumb/{template.slug}.jpg"),
+            "accent": (template.config or {}).get("accent", "#c9736e"),
+            "label": dict(CardType.choices).get(template.category, ""),
+        }
+        for template in Template.objects.filter(is_active=True)
+    ]
+
+
 # Halaman statis: tiap bagian landing sekarang punya alamatnya sendiri, supaya
 # bisa dibagikan langsung dan muncul terpisah di hasil pencarian.
 def page_templates(request):
     return render(
         request,
         "cards/pages/templates.html",
-        {"categories": _category_cards(), "price": settings.CARD_PRICE},
+        {"entries": _template_cards(), "price": settings.CARD_PRICE},
     )
 
 

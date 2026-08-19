@@ -470,6 +470,21 @@ img { max-width: 100%; display: block; }
 
 .tpl-body { padding: 16px 18px 20px; }
 .tpl-body h3 { margin: 0 0 14px; font-size: 1.02rem; font-weight: 600; }
+
+/* Nama tema di bawah judul template. Muncul di beranda dan /template/, tidak
+   di galeri per-tema — di sana seluruh isinya sudah satu tema dan menuliskan
+   labelnya di tiap kartu cuma pengulangan.
+
+   Ada karena lapisan tema dilewati (19 Agu 2026): tanpa penanda ini, tidak
+   ada lagi yang memberi tahu pembeli bahwa Valentine Story itu kartu Love
+   Story dan bukan kartu ulang tahun. */
+.tpl-tema {
+  margin: 2px 0 0;
+  font-size: .74rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 .tpl-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .tpl-actions .btn { flex: 1 1 auto; }
 

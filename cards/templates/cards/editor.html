@@ -7,8 +7,10 @@
   Menyembunyikan header situs saat mengedit — lihat aturannya di app.css.
   Di desktop tombol "Buat Kartu" di pojok kanan atas terbaca sebagai "selesai"
   atau "buat link", padahal itu tautan ke daftar template: yang mengkliknya
-  terlempar keluar dari editor. Di HP header sudah menggulung sendiri dan tidak
-  mengganggu, jadi tampilannya sengaja dibiarkan apa adanya.
+  terlempar keluar dari editor. Di HP alasannya lain tapi lebih kuat: header
+  itu position:sticky, jadi pilnya mengambang menutupi bagian atas pratinjau —
+  dan di HP pratinjau justru yang duduk paling atas. Karena itu sekarang
+  disembunyikan di lebar mana pun, bukan cuma di desktop.
 {% endcomment %}
 {% block body_class %}is-editor{% endblock %}
 
@@ -22,7 +24,21 @@
        Aturan: hanya tampilkan yang sedang dibutuhkan. Belum ada yang dipilih
        → panel nyaris kosong. Klik elemen → hanya kontrol elemen itu. -->
   <aside class="ed-panel">
-    <a class="ed-back" href="{% url 'cards:gallery' template.category %}">← Template lain</a>
+    {% comment %}
+      Tidak ada tautan "← Template lain" di sini lagi. Dulu ia duduk paling
+      atas di panel, dan di HP panel berada TEPAT DI BAWAH pratinjau — jadi
+      tautan itu jatuh persis di jalur jempol yang sedang menggulir turun
+      dari kartu ke kontrolnya. Menekannya tanpa sengaja berarti keluar dari
+      editor di tengah pekerjaan.
+
+      Draf tetap tersimpan otomatis, tapi tidak ada jalan kembali ke draf itu:
+      URL editor tidak membawa ?card= dan /kartu-saya/ tertutup untuk pembeli
+      biasa — jadi ongkos salah tekan bukan sekadar satu klik.
+
+      Jalan keluar yang sah sekarang tombol Back browser. Kalau nanti perlu
+      pintu keluar di dalam halaman lagi, taruh di BAWAH tombol "Generate
+      Link", bukan di atas panel.
+    {% endcomment %}
 
     <!-- Diam sampai ada yang diklik -->
     <div class="ed-idle" x-show="!sel">
@@ -256,7 +272,12 @@
   <div class="crop-modal" x-show="cropOpen" x-cloak @keydown.escape.window="cancelCrop()">
     <div class="crop-box">
       <p class="crop-title">Atur fotonya — geser & perbesar</p>
-      <canvas x-ref="cropCanvas" width="640" height="640"
+      {% comment %}
+        Ukuran kanvas disetel JS dari bentuk bingkai tujuannya — lihat
+        nextCrop() di alpine-editor.js. Angka di sini cuma bekal awal
+        sebelum foto pertama dibuka.
+      {% endcomment %}
+      <canvas x-ref="cropCanvas" width="900" height="900"
               @pointerdown="cropDown($event)"
               @pointermove="cropDrag($event)"
               @pointerup="cropUp($event)" @pointercancel="cropUp($event)"></canvas>

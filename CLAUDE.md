@@ -318,6 +318,63 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   `python3 tools/pa.py "cd ~/giftcard && /home/kartuku/.virtualenvs/kartuku/bin/python manage.py seed_templates"`
   — tanpa itu produksi masih memakai config lama dan template baru tidak
   pernah muncul.
+- **Halaman editor tanpa chrome situs** (19 Agu 2026, permintaan pemilik
+  situs). Tiga hal dicabut/diperbesar; ketiganya soal jempol di HP.
+
+  - **Header situs disembunyikan di SEMUA lebar**, bukan cuma >=941px.
+    Ambang lama dipasang karena pemicunya dianggap tombol "Buat Kartu"
+    (`.header-cta`), yang memang sudah `display:none` di bawah 941px. Yang
+    luput: `.site-header` itu `position:sticky` + `z-index:50`, jadi pil
+    putih "KARTUKU" MENGAMBANG menutupi bagian atas layar — dan di HP `.ed`
+    memakai `column-reverse`, artinya yang duduk paling atas justru
+    pratinjau kartunya.
+    Pasangannya wajib: `.ed` sekarang `height:100vh` di aturannya sendiri.
+    `calc(100vh - 72px)` yang lama menyisihkan ruang untuk header yang tidak
+    pernah ada lagi, dan sisanya jadi pita kosong di bawah editor.
+  - **Tautan "← Template lain" dicabut dari panel.** Ia duduk paling atas di
+    `.ed-panel`, yaitu TEPAT DI BAWAH pratinjau di HP — persis di jalur
+    jempol yang menggulir turun dari kartu ke kontrolnya.
+
+    > **Ini membatalkan aturan lama "harus tetap ada jalan keluar di dalam
+    > halaman".** Sekarang TIDAK ADA: satu-satunya jalan kembali adalah
+    > tombol Back browser. Ongkos salah tekannya memang tidak nol — drafnya
+    > tersimpan otomatis, tapi tidak ada jalan kembali ke draf itu (URL
+    > editor tidak membawa `?card=`, `/kartu-saya/` tertutup untuk pembeli
+    > biasa). Pemilik situs sudah diberi tahu dan tetap memilih mencabutnya.
+    > Kalau suatu saat dipasang lagi, taruh di BAWAH tombol "Generate Link",
+    > jangan di atas panel. Dijaga `test_tautan_keluar_dicabut_dari_panel`.
+
+    Footer sengaja TIDAK ikut disembunyikan di HP: ia tidak mengambang,
+    duduk setelah tombol "Generate Link", dan catatan pembayarannya berguna
+    dibaca tepat sebelum tombol itu ditekan.
+  - **Penggeser `.ed-slider` diperbesar** — keluhannya "bulatan zoom foto
+    sering kali tidak tergeser di HP".
+
+    > Yang menyelesaikannya BUKAN besar bulatannya, melainkan **kotak
+    > sentuhnya**. Range bawaan cuma setinggi batangnya sendiri. Diukur A/B
+    > di perender sungguhan, seret dimulai sekian piksel di atas garis
+    > tengah: aturan lama (kotak 16px) sudah MELESET pada 12px, aturan baru
+    > (kotak 44px) masih ikut pada 20px. Jatah melesetnya naik dari +-8px ke
+    > +-22px. Bulatannya sendiri 22px + cincin putih 3px = 28px, terukur
+    > dari piksel hasil render.
+    >
+    > Treknya sengaja dibuat setinggi kotaknya (44px) lalu batang 6px-nya
+    > dicat sebagai background gradient yang dipusatkan. Cara yang lebih
+    > lazim — trek setipis 6px lalu thumb digeser `margin-top` negatif —
+    > bergantung pada apakah mesin render memusatkan kotak trek secara
+    > vertikal, dan itu tidak sama di semua mesin.
+    >
+    > `-webkit-appearance:none` mematikan tampilan bawaan di WebKit/Blink
+    > saja; pasangan `::-moz-range-*` WAJIB ikut ditulis, kalau tidak
+    > Firefox menampilkan penggeser bawaannya yang kecil — bug yang sama,
+    > hanya di browser lain.
+    >
+    > Aturan ini kena SEMUA penggeser di editor (jarak huruf, jarak baris,
+    > sudut membulat), bukan cuma yang di modal crop. Itu disengaja: widget
+    > dan masalahnya sama.
+
+    Penjaganya `PenggeserSentuhTests` di `cards/tests/test_editor_ux.py`.
+
 - **Template Game 8-Bit** (5 Agu 2026) — kartu MENDATAR 16:9 pertama
   (`data-stage="lebar"`), 8 babak, dua karakter piksel yang berjalan
   menemani penerima, babak tiup lilin, dan ubin Momen yang bisa dibalik ke

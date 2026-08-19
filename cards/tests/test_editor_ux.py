@@ -6,6 +6,7 @@ sumbernya — tidak sempurna, tapi menangkap justru cara masing-masing bug bisa
 kembali.
 """
 
+import re
 from pathlib import Path
 
 from django.conf import settings
@@ -19,11 +20,44 @@ def baca(nama):
     return (Path(settings.BASE_DIR) / nama).read_text(encoding="utf-8")
 
 
-class HeaderEditorTests(TestCase):
-    """Bug 1 — tombol 'Buat Kartu' di header melempar user keluar dari editor.
+def tanpa_komentar_django(html):
+    """Buang {% comment %}…{% endcomment %} sebelum memeriksa isi halaman.
 
-    Di desktop tombol itu terbaca sebagai 'selesai'/'buat link'; yang mengkliknya
-    kembali ke daftar template di tengah pekerjaannya.
+    Komentar Django tidak ikut ke browser, tapi ADA di berkas template —
+    dan komentar yang menjelaskan kenapa sesuatu dicabut hampir selalu
+    menyebut nama benda itu. Tanpa penyaring ini, assertNotIn justru gagal
+    karena penjelasannya sendiri.
+    """
+    return re.sub(r"{%\s*comment\s*%}.*?{%\s*endcomment\s*%}", "", html, flags=re.S)
+
+
+def tanpa_komentar_css(css):
+    """Buang /* … */ sebelum memeriksa isi CSS.
+
+    Komentar di berkas ini panjang dan menyebut nilai-nilai yang justru sudah
+    TIDAK dipakai lagi ("dulu calc(100vh - 72px), sekarang …"). Memeriksa CSS
+    mentah membuat penjelasan itu sendiri yang menggagalkan tesnya.
+    """
+    return re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+
+
+def di_luar_media(css, selektor):
+    """True kalau `selektor` berada di tingkat teratas, bukan di dalam @media.
+
+    Dihitung dari keseimbangan kurung kurawal sebelum selektornya — cara yang
+    tidak peduli pada spasi, urutan, atau komentar yang disisipkan belakangan.
+    """
+    bersih = tanpa_komentar_css(css)
+    posisi = bersih.index(selektor)
+    depan = bersih[:posisi]
+    return depan.count("{") == depan.count("}")
+
+
+class HeaderEditorTests(TestCase):
+    """Bug 1 — chrome situs mencuri ruang & perhatian di halaman editor.
+
+    Dua keluhan berbeda, satu akar: header dan tautan keluar sama-sama duduk
+    di jalur yang dipakai orang untuk mengedit.
     """
 
     def setUp(self):
@@ -32,19 +66,6 @@ class HeaderEditorTests(TestCase):
             config={"renderer": "birthday"},
         )
 
-    def blok_editor_desktop(self):
-        """Isi @media yang memuat aturan editor desktop.
-
-        Dibaca sebagai satu blok utuh, bukan sekian karakter setelah selektor —
-        menambah satu aturan atau komentar di dalamnya tidak boleh membuat test
-        ini gagal palsu.
-        """
-        css = baca("static/css/app.css")
-        awal = css.index("body.is-editor .site-header")
-        buka = css.rindex("@media", 0, awal)
-        tutup = css.index("\n}", awal)
-        return css[buka:tutup]
-
     def test_halaman_editor_menandai_dirinya(self):
         isi = self.client.get(reverse("cards:editor", args=["uji"])).content.decode()
         self.assertIn('<body class="is-editor"', isi)
@@ -52,49 +73,75 @@ class HeaderEditorTests(TestCase):
     def test_halaman_lain_tidak_ikut_tertandai(self):
         """Hook body_class harus kosong di tempat lain — kalau bocor, header
         situs ikut hilang di halaman jualan."""
-        for nama in ["landing", "page_templates", "page_harga" if False else "page_pricing"]:
+        for nama in ["landing", "page_templates", "page_pricing"]:
             with self.subTest(halaman=nama):
                 isi = self.client.get(reverse(f"cards:{nama}")).content.decode()
                 self.assertNotIn("is-editor", isi)
 
-    def test_header_disembunyikan_hanya_di_desktop(self):
-        """Ambangnya 941px, bukan 900px.
+    def test_header_disembunyikan_di_semua_lebar(self):
+        """Bukan cuma di desktop — itu versi lamanya.
 
-        Pemicunya adalah .header-cta ("Buat Kartu"), yang sudah display:none di
-        dalam @media (max-width: 940px). Di bawah 941px jebakannya tidak ada dan
-        header masih berguna sebagai navigasi — menyembunyikannya di sana
-        merugikan tanpa alasan. Breakpoint tata letak editor (900px) sengaja
-        BERBEDA dan tidak boleh dipakai di sini.
+        Ambang 941px dulu dipakai karena pemicunya dianggap tombol "Buat
+        Kartu" (.header-cta), yang memang sudah display:none di bawah 941px.
+        Ternyata di HP masalahnya lain dan lebih besar: .site-header
+        position:sticky, jadi pilnya MENGAMBANG di atas pratinjau — dan di HP
+        (.ed column-reverse) pratinjau justru yang duduk paling atas. Kalau
+        aturan ini kembali terkurung di dalam @media, pil itu balik menutupi
+        kartu yang sedang dikerjakan.
         """
         css = baca("static/css/app.css")
         self.assertIn("body.is-editor .site-header { display: none; }", css)
+        self.assertTrue(
+            di_luar_media(css, "body.is-editor .site-header"),
+            "aturan header editor terkurung di dalam @media lagi",
+        )
 
-        potong = css.split("body.is-editor .site-header")[0]
-        media_terdekat = potong.rsplit("@media", 1)[1].split(")")[0]
-        self.assertIn("min-width: 941px", media_terdekat)
+    def test_tinggi_editor_tidak_lagi_menyisihkan_ruang_header(self):
+        """Pasangan yang wajib. Selama header masih mungkin muncul, `.ed`
+        memakai calc(100vh - 72px) supaya footer tidak menyembul. Karena
+        header sekarang tidak pernah ada di halaman ini, sisa 72px itu jadi
+        pita kosong di bawah editor — dan itu regresi yang tidak terlihat di
+        test lain."""
+        css = baca("static/css/app.css")
+        blok = css[css.index("\n.ed {"):]
+        blok = blok[:blok.index("\n}")]
+        self.assertIn("height: 100vh;", blok)
+        self.assertNotIn("calc(100vh - 72px)", tanpa_komentar_css(css))
 
-    def test_tinggi_editor_ikut_disesuaikan(self):
-        """Pasangan yang wajib. `.ed` memakai calc(100vh - 72px) karena
-        memperhitungkan header. Menyembunyikan header tanpa mengubah tinggi
-        membuat editor 72px lebih pendek dari layar dan footer menyembul —
-        regresi halus yang tidak akan terlihat di test lain."""
-        blok = self.blok_editor_desktop()
-        self.assertIn("body.is-editor .ed", blok)
-        self.assertIn("100vh", blok)
+    def test_footer_disembunyikan_di_desktop(self):
+        """Footer punya masalah yang sama persis dengan header: dirender di
+        luar {% block body %}. Di desktop tanpa baris ini editor bukan layar
+        penuh — ada footer gelap menggantung di bawah dan halaman bisa digulir
+        menjauh dari kartunya.
 
-    def test_footer_ikut_disembunyikan(self):
-        """Footer punya masalah yang sama persis dengan header: dirender di luar
-        {% block body %}. Menyembunyikan header saja tidak cukup — editor tetap
-        bukan layar penuh, ada footer gelap menggantung di bawah dan halaman
-        bisa digulir menjauh dari kartunya."""
+        Di HP footer sengaja DIBIARKAN: ia tidak mengambang, duduk setelah
+        tombol "Generate Link", dan catatan pembayarannya berguna dibaca tepat
+        sebelum tombol itu ditekan.
+        """
         css = baca("static/css/app.css")
         self.assertIn("body.is-editor .site-footer { display: none; }", css)
+        self.assertFalse(
+            di_luar_media(css, "body.is-editor .site-footer"),
+            "footer editor kini disembunyikan di HP juga — disengaja?",
+        )
 
-    def test_masih_ada_jalan_keluar_dari_editor(self):
-        """Header disembunyikan, jadi satu-satunya jalan kembali adalah tautan
-        di panel kiri. Kalau itu ikut hilang, user terjebak."""
+    def test_tautan_keluar_dicabut_dari_panel(self):
+        """Kebalikan dari test lamanya, dan itu memang keputusan yang berubah.
+
+        Dulu "← Template lain" dipertahankan sebagai satu-satunya jalan keluar
+        setelah header disembunyikan. Di HP tautan itu duduk paling atas di
+        panel — yaitu TEPAT DI BAWAH pratinjau, persis di jalur jempol yang
+        menggulir turun dari kartu ke kontrolnya — jadi ia lebih sering
+        tertekan tanpa sengaja daripada dipakai. Ongkos salah tekannya besar:
+        drafnya tersimpan, tapi tidak ada jalan kembali ke draf itu.
+
+        Jalan keluar sekarang tombol Back browser. Kalau suatu saat pintu
+        keluar di dalam halaman dibutuhkan lagi, tempatnya di BAWAH tombol
+        "Generate Link".
+        """
         isi = self.client.get(reverse("cards:editor", args=["uji"])).content.decode()
-        self.assertIn("Template lain", isi)
+        self.assertNotIn("Template lain", tanpa_komentar_django(isi))
+        self.assertNotIn('class="ed-back"', isi)
 
 
 class GulirPratinjauTests(TestCase):
@@ -173,3 +220,70 @@ class CaptionFotoTests(TestCase):
         )
         isi = self.client.get(reverse("cards:editor", args=["uji"])).content.decode()
         self.assertIn("Muncul sebagai tulisan tangan", isi)
+
+
+class PenggeserSentuhTests(TestCase):
+    """Bug 5 — bulatan perbesaran foto "sering kali tidak tergeser" di HP.
+
+    Dilaporkan pemilik situs 19 Agu 2026 tentang modal crop. Range bawaan
+    hanya setinggi batangnya sendiri, jadi jempol yang meleset sedikit ke atas
+    atau ke bawah tidak mengenai input sama sekali — dan tidak ada umpan balik
+    apa pun yang memberi tahu kenapa tidak terjadi apa-apa.
+    """
+
+    def blok(self, selektor):
+        css = baca("static/css/app.css")
+        awal = css.index(selektor + " {")
+        return css[awal:css.index("}", awal)]
+
+    def test_kotak_sentuh_setinggi_target_sentuh_minimum(self):
+        """44px = batas minimum Apple HIG (Material menyarankan 48dp).
+
+        Angka ini yang menyelesaikan keluhannya, BUKAN besar bulatannya:
+        yang meleset hampir selalu meleset secara vertikal, dan sebelum ini
+        seluruh kotak sentuhnya cuma setebal batang.
+        """
+        blok = self.blok('.ed-slider input[type="range"]')
+        self.assertIn("height: 44px;", blok)
+
+    def test_gerakan_menyerong_tidak_direbut_gulir(self):
+        """Tanpa touch-action:none, gerakan yang sedikit menyerong ditafsirkan
+        browser sebagai gulir halaman di tengah menggeser — penggesernya
+        berhenti mengikuti jari. Kanvas crop sudah memakai penjaga yang sama."""
+        self.assertIn("touch-action: none;", self.blok('.ed-slider input[type="range"]'))
+
+    def test_bulatan_cukup_besar_untuk_jempol(self):
+        blok = self.blok('.ed-slider input[type="range"]::-webkit-slider-thumb')
+        self.assertIn("width: 28px;", blok)
+        self.assertIn("height: 28px;", blok)
+
+    def test_thumb_dipusatkan_dengan_aritmetika_pasti(self):
+        """Trek dibuat setinggi kotaknya (44px) lalu batang 6px-nya dicat
+        sebagai background gradient yang dipusatkan. Cara yang lebih lazim —
+        trek setipis 6px lalu thumb digeser margin-top negatif — bergantung
+        pada apakah mesin render memusatkan kotak trek secara vertikal, dan
+        itu tidak sama di semua mesin. Dengan trek setinggi kotak,
+        margin-top = (44 - 28) / 2 = 8, dan itu berlaku di mana pun."""
+        trek = self.blok('.ed-slider input[type="range"]::-webkit-slider-runnable-track')
+        self.assertIn("height: 44px;", trek)
+        self.assertIn("no-repeat", trek)
+        self.assertIn("margin-top: 8px;", self.blok(
+            '.ed-slider input[type="range"]::-webkit-slider-thumb'))
+
+    def test_firefox_ikut_diurus(self):
+        """-webkit-appearance:none mematikan tampilan bawaan di WebKit/Blink
+        saja. Tanpa pasangan -moz-, Firefox menampilkan penggeser bawaannya
+        yang kecil — persis bug ini, hanya di browser lain."""
+        for bagian in ("::-moz-range-track", "::-moz-range-thumb"):
+            with self.subTest(bagian=bagian):
+                self.blok('.ed-slider input[type="range"]' + bagian)
+
+    def test_penggeser_perbesaran_memakai_kelas_yang_sama(self):
+        """Keluhannya soal penggeser di modal crop. Kalau suatu saat ia
+        diberi kelas sendiri, aturan di atas berhenti menyentuhnya tanpa satu
+        pun tes lain yang gagal."""
+        isi = baca("cards/templates/cards/editor.html")
+        blok = isi[isi.index('class="crop-box"'):isi.index("crop-actions")]
+        self.assertIn('class="ed-slider"', blok)
+        self.assertIn('type="range"', blok)
+

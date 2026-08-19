@@ -595,7 +595,9 @@ img { max-width: 100%; display: block; }
 .ed {
   display: grid;
   grid-template-columns: 300px 1fr;
-  height: calc(100vh - 72px);
+  /* 100vh, BUKAN calc(100vh - 72px): header situs tidak pernah dirender di
+     halaman editor pada lebar mana pun — lihat body.is-editor di bawah. */
+  height: 100vh;
 }
 
 .ed-panel {
@@ -782,7 +784,96 @@ img { max-width: 100%; display: block; }
 .ed-slider {
   display: block; font-size: .76rem; color: var(--muted); margin-top: 8px;
 }
-.ed-slider input { width: 100%; accent-color: var(--rose); margin-top: 2px; }
+/* ── Penggeser: dibuat sebesar jempol ────────────────────────────────────
+   Keluhan aslinya dari mengedit di HP: bulatan pengatur perbesaran foto
+   "sering kali tidak tergeser". Penyebabnya bukan bulatannya kurang
+   mencolok, melainkan KOTAK SENTUHNYA. Range bawaan hanya setinggi
+   batangnya sendiri (belasan piksel); jempol yang mendarat sedikit di atas
+   atau di bawah batang tidak mengenai input sama sekali, dan tidak terjadi
+   apa-apa — tidak ada umpan balik apa pun yang memberi tahu kenapa.
+
+   Jadi dua hal dipisah:
+     - yang TERLIHAT  → batang setipis 6px, bulatan 28px;
+     - yang TERSENTUH → seluruh kotak setinggi 44px (batas minimum target
+       sentuh Apple HIG; Material menyarankan 48dp).
+
+   Trek sengaja dibuat setinggi kotaknya (44px) lalu batang 6px-nya dicat
+   sebagai background gradient yang dipusatkan. Cara yang lebih lazim —
+   trek 6px lalu thumb digeser dengan margin-top negatif — bergantung pada
+   apakah mesin render memusatkan kotak trek secara vertikal, dan itu tidak
+   sama di semua mesin. Dengan trek setinggi kotak, margin-top thumb jadi
+   aritmetika pasti: (44 - 28) / 2 = 8.
+
+   touch-action:none supaya gerakan yang sedikit menyerong tidak direbut
+   oleh gulir halaman di tengah menggeser — kanvas crop sudah memakai
+   penjaga yang sama.
+
+   Diukur A/B di perender sungguhan (dua penggeser berdampingan, aturan lama
+   vs baru, seret dimulai sekian piksel DI ATAS garis tengah batang):
+
+     | meleset | lama (kotak 16px) | baru (kotak 44px) |
+     |---------|-------------------|-------------------|
+     |   0 px  | ikut              | ikut              |
+     |   8 px  | ikut              | ikut              |
+     |  12 px  | MELESET           | ikut              |
+     |  20 px  | MELESET           | ikut              |
+
+   Jadi jatah melesetnya naik dari +-8px ke +-22px. Bulatannya sendiri cuma
+   berubah dari bawaan ke 28px — itu yang TERLIHAT berubah, tapi bukan itu
+   yang menyelesaikan keluhannya. */
+.ed-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  touch-action: none;
+  cursor: pointer;
+}
+.ed-slider input[type="range"]:focus { outline: none; }
+.ed-slider input[type="range"]:focus-visible { outline: 2px solid var(--rose-soft); outline-offset: 2px; }
+
+.ed-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 44px;
+  border-radius: 0;
+  border: 0;
+  background: linear-gradient(var(--line, #e8ddd3), var(--line, #e8ddd3))
+              center / 100% 6px no-repeat;
+}
+.ed-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: 8px;              /* (44 - 28) / 2 */
+  border-radius: 50%;
+  background: var(--rose);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+}
+.ed-slider input[type="range"]:active::-webkit-slider-thumb { background: var(--rose-deep, var(--rose)); }
+
+/* Firefox memusatkan thumb di dalam treknya sendiri, jadi tidak perlu
+   margin — tapi treknya tetap dibuat setinggi kotak supaya batang 6px-nya
+   duduk di tempat yang sama dengan versi WebKit. */
+.ed-slider input[type="range"]::-moz-range-track {
+  height: 44px;
+  border: 0;
+  background: linear-gradient(var(--line, #e8ddd3), var(--line, #e8ddd3))
+              center / 100% 6px no-repeat;
+}
+.ed-slider input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--rose);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+}
 
 .ed-thumb img { width: 100%; border-radius: 8px; }
 .ed-note { font-size: .78rem; color: var(--muted); margin: 0; }
@@ -1004,31 +1095,41 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   .ed-fontlist { max-height: 220px; }
 }
 
-/* ── Editor di desktop: tanpa header situs ───────────────────────────────
-   Tombol "Buat Kartu" di pojok kanan atas terbaca sebagai "selesai"/"buat
-   link", padahal itu tautan ke daftar template — yang mengkliknya terlempar
-   keluar dari editor di tengah pekerjaannya. Draf-nya sendiri tersimpan
-   (autosave), tapi user tidak punya jalan kembali: URL editor tidak membawa
-   ?card=, dan /kartu-saya/ tertutup untuk pembeli biasa.
+/* ── Editor: tanpa header situs, di SEMUA lebar ──────────────────────────
+   Mula-mula aturan ini hanya berlaku di >=941px. Alasannya masuk akal waktu
+   itu: tombol "Buat Kartu" di pojok kanan atas terbaca sebagai
+   "selesai"/"buat link", padahal itu tautan ke daftar template — yang
+   mengkliknya terlempar keluar dari editor di tengah pekerjaannya. Pemicunya
+   .header-cta, yang sudah display:none di dalam @media (max-width: 940px),
+   jadi di bawah 941px jebakannya memang tidak ada dan header dibiarkan hidup
+   sebagai navigasi.
 
-   941px, BUKAN 900px seperti breakpoint tata letak editor. Tombol pemicunya
-   adalah .header-cta, yang sudah display:none di dalam @media (max-width:940px)
-   — jadi di bawah 941px jebakannya memang tidak ada, dan header di sana masih
-   berguna sebagai navigasi. Memakai 901px akan menyembunyikan header di
-   rentang 901–940px tanpa alasan.
+   Yang luput: di HP header bukan sekadar navigasi. Ia position:sticky dengan
+   z-index 50, jadi pil putih "KARTUKU" MENGAMBANG menutupi bagian atas
+   layar — dan di HP editor memakai column-reverse, artinya yang duduk paling
+   atas justru pratinjau kartunya. Pil itu menutupi kartu yang sedang
+   dikerjakan, di layar yang ruangnya paling sempit. Karena itu sekarang
+   disembunyikan di lebar mana pun.
 
-   Tingginya WAJIB ikut disesuaikan. `.ed` memakai calc(100vh - 72px) karena
-   memperhitungkan header; tanpa baris kedua, editor jadi 72px lebih pendek
-   dari layar dan footer menyembul di bawahnya.
+   Konsekuensi yang disengaja: tidak ada lagi jalan keluar dari editor di
+   dalam halaman — tautan "<- Template lain" di panel kiri ikut dicabut
+   karena terlalu mudah tertekan tanpa sengaja (lihat editor.html). Jalan
+   kembali sekarang tombol Back browser. Draf tersimpan otomatis, jadi yang
+   keluar tidak kehilangan pekerjaannya.
 
-   Jalan keluar dari editor tetap ada di panel kiri ("← Template lain"). */
+   Tinggi editor tidak lagi diatur di sini. Karena header tidak pernah ada di
+   halaman ini, `.ed` memakai height:100vh langsung di aturannya sendiri —
+   bukan tambalan di dalam @media yang harus diingat orang berikutnya. */
+body.is-editor .site-header { display: none; }
+
+/* Footer juga dirender di luar {% block body %}, jadi halaman anak tidak bisa
+   mematikannya sendiri. Tanpa baris ini editor desktop bukan layar penuh:
+   footer gelap menggantung di bawah dan halaman bisa digulir menjauh dari
+   kartunya. Di HP footer TIDAK disembunyikan — ia tidak mengambang, duduk
+   setelah tombol "Generate Link", dan catatan pembayarannya justru berguna
+   dibaca tepat sebelum tombol itu ditekan. */
 @media (min-width: 941px) {
-  body.is-editor .site-header { display: none; }
-  /* Footer juga dirender di luar {% block body %}. Tanpa baris ini editor
-     tetap bukan layar penuh — footer gelap menggantung di bawah dan halaman
-     jadi bisa digulir menjauh dari kartunya. */
   body.is-editor .site-footer { display: none; }
-  body.is-editor .ed { height: 100vh; }
 }
 
 .ed-crop img {

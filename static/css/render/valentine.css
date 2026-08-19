@@ -155,7 +155,11 @@ img { -webkit-user-drag: none; user-drag: none; }
 
 #debu {
   position: absolute;
-  inset: 0;
+  /* TANPA inset. Letak dan ukurannya disetel ukurKanvas() di valentine.js:
+     kanvasnya sengaja LEBIH BESAR daripada kertas (TEPI_DEBU px di keempat
+     sisi) supaya debu bisa melayang sedikit ke luar kertas sebelum habis.
+     Kalau angka itu ditulis juga di sini, salah satunya akan bergeser
+     sendiri dan debunya melenceng dari kertasnya. */
   /* Di ATAS halaman — debunya melayang meninggalkan kertas, bukan
      terperangkap di belakangnya. */
   z-index: 30;

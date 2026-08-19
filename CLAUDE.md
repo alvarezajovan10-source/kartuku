@@ -627,6 +627,61 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
     > `z-index: 25`; tanpa itu arah MUNDUR tidak simetris karena urutan
     > tumpukan menaruhnya di bawah halaman tujuan.
     >
+    > **Digarap ulang 19 Agu 2026** atas permintaan pemilik situs: lebih
+    > cantik, lebih santai, dan tidak berhamburan ke luar kartu. Tiga hal:
+    >
+    > 1. **Kanvas debu dulu kena skala DUA KALI, dan cacatnya cuma bergejala
+    >    di layar lebar.** `ukurKanvas()` memakai `getBoundingClientRect()`,
+    >    yang mengembalikan piksel SESUDAH `#card-stage` diskalakan, lalu
+    >    memasang angka itu balik sebagai `style.width` — yang berlaku
+    >    SEBELUM penskalaan. Terukur: pada 1440x900 skala panggungnya 1,534
+    >    dan kanvasnya jadi 1,53x halaman, meluber 53% ke kanan dan bawah.
+    >    Di HP skalanya kebetulan tepat 1,000, jadi salahnya TIDAK bergejala
+    >    sama sekali di sana — itu sebabnya ia lolos berbulan-bulan dan
+    >    seluruh pemeriksa. Sekarang `offsetWidth`/`offsetHeight`, yang
+    >    satuannya sama dengan `style.width`. Dijaga
+    >    `test_kanvas_debu_diukur_dalam_piksel_lokal`.
+    >
+    > 2. **1100 -> 2500 ms, dan kecepatan debunya WAJIB ikut turun.** Ini
+    >    pasangan yang gampang terlewat: pada kecepatan lama (0,34 px/ms)
+    >    dan durasi baru, butir tercepat menempuh 850 px sedangkan halamannya
+    >    cuma 551,6 px — seluruh debu sudah keluar layar sebelum peralihan
+    >    separuh jalan, dan paruh keduanya jadi halaman memudar tanpa debu.
+    >    Tidak ada error, tidak ada yang merah; efeknya saja yang hilang.
+    >    Dijaga `test_debu_tidak_pernah_menempuh_lebih_dari_satu_halaman`.
+    >
+    >    Halamannya juga habis pada **72%** peralihan, bukan 100%: seperempat
+    >    waktu terakhir yang dihabiskan menonton halaman bersisa beberapa
+    >    persen opasitas tidak terlihat berubah, cuma terasa lambat. Sisa
+    >    waktunya jadi milik debu yang masih melayang di atas halaman baru.
+    >
+    > 3. **Butirnya digambar dari SPRITE, bukan `arc()` rata.** Nyala
+    >    bergradasi butuh `createRadialGradient`, dan membuatnya 260 kali per
+    >    frame pada 60 fps berarti 15.600 gradien per detik. Sprite dibuat
+    >    sekali per warna (dibulatkan ke 16 tingkat per kanal) lalu dipakai
+    >    ulang lewat `drawImage`. Terukur sesudahnya: 60 fps dan jeda frame
+    >    terlama 17,7 ms, bahkan saat CPU dicekik 6x — tidak ada tersendat di
+    >    frame pertama. Dijaga
+    >    `test_nyala_butir_dari_sprite_bukan_gradien_tiap_frame`.
+    >
+    >    Sepersepuluh butir berbentuk **hati** (`PORSI_HATI`), sisanya tetap
+    >    debu bulat. Porsinya sengaja kecil: pada porsi besar efeknya berhenti
+    >    terbaca sebagai "halaman larut jadi debu" dan berubah jadi hujan
+    >    hiasan yang menempel di depan kartu.
+    >
+    > **Debu boleh melayang SEDIKIT ke luar kertas** (pilihan pemilik situs),
+    > dan ruang itu harus dibuat: kertas dan bingkai kartu adalah kotak yang
+    > sama persis (390x552 lokal, terukur sama di pratinjau berdiri sendiri
+    > MAUPUN iframe editor), jadi kanvasnya yang dilebarkan `TEPI_DEBU` px ke
+    > keempat sisi. Angkanya cuma hidup di JS — `#debu` di CSS sengaja tanpa
+    > `inset`, karena angka yang hidup di dua tempat akan bergeser sendiri.
+    >
+    > Butirnya **meredup melintasi tepi kertas**, tidak berhenti di situ.
+    > Perlu karena di layar lebar tepi atas kertas berimpit dengan tepi
+    > `#card-viewport` yang `overflow:hidden` (terukur: pada 1440x900 halaman
+    > menempati y 0..846 dari 900), jadi tanpa peredupan debu yang naik
+    > tergunting rata di garis yang persis lurus.
+    >
     > Penjaganya `tools/cek_valentine_debu.js` (14 uji). `cek_valentine_balik.js`
     > **melewati dirinya sendiri** kalau GAYA bukan mekanik balik lembar,
     > dan sebaliknya — jadi keduanya bisa dijalankan berurutan tanpa merah

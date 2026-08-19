@@ -105,12 +105,48 @@
      Lama satu peralihan. "Perlahan" yang diminta: cukup lambat untuk
      terbaca sebagai memudar, cukup cepat untuk tidak menghalangi orang
      yang ingin membaca cepat. */
-  var LAMA_LARUT = 1100;
+  var LAMA_LARUT = 2500;
+
+  /* 2500 ms, naik dari 1100 (19 Agu 2026, permintaan pemilik situs: "lebih
+     santai"). Kecepatan naik debunya WAJIB ikut turun, dan itu bukan selera
+     melainkan aritmetika: pada 0,10-0,34 px/ms yang lama, butir tercepat
+     menempuh 850 px dalam 2,5 detik — sedangkan halamannya cuma setinggi
+     552 px. Seluruh debu akan sudah keluar layar jauh sebelum peralihannya
+     selesai, dan yang tersisa di paruh kedua cuma halaman memudar tanpa
+     debu sama sekali. Angka di bawah menjaga jarak tempuhnya kira-kira
+     sama seperti dulu (110-375 px), cuma ditempuh lebih lama. */
   var JUMLAH_DEBU = 260;      // "ramai", tapi masih 60 fps di HP kelas bawah
-  var DEBU_NAIK = [0.10, 0.34];   // px per ms, ke atas
-  var DEBU_SAMPING = 0.055;       // amplitudo goyang mendatar
-  var DEBU_UKURAN = [1.1, 3.4];   // jari-jari px
+  var DEBU_NAIK = [0.044, 0.150];  // px per ms, ke atas
+  var DEBU_SAMPING = 0.020;        // amplitudo goyang mendatar
+  var DEBU_UKURAN = [0.9, 4.2];    // jari-jari px, sebaran dilebarkan
   var PETAK_WARNA = 12;       // sisi kisi cuplikan warna halaman (12x17)
+
+  /* Sebagian kecil butir berbentuk HATI, sisanya tetap debu bulat.
+     Sepersepuluh, dan porsi itu sengaja kecil: hati adalah AKSEN. Waktu
+     dicoba pada porsi besar, efeknya berhenti terbaca sebagai "halaman
+     larut jadi debu" dan berubah jadi hujan hiasan yang menempel di depan
+     kartu. */
+  var PORSI_HATI = 0.10;
+
+  /* Ruang di LUAR kertas tempat debu boleh melayang sebelum habis, dalam px
+     desain. Kertas dan bingkai kartu itu kotak yang sama persis (390x552),
+     jadi ruang ini tidak ada dengan sendirinya — kanvasnya yang dilebarkan
+     ke luar sebanyak ini di keempat sisi.
+
+     Dibatasi #card-viewport yang overflow:hidden, jadi debu tidak pernah
+     bisa lolos ke luar bingkai kartu betapa pun lebar layarnya. */
+  var TEPI_DEBU = 44;
+
+  /* Pudar di perbatasan: mulai meredup PUDAR_TEPI[0] px sebelum tepi kertas,
+     habis PUDAR_TEPI[1] px sesudahnya. Menstraddle tepinya, bukan berhenti
+     di situ — itu yang membuat debunya terbaca melayang keluar, bukan
+     terpotong penggaris.
+
+     Perlu karena di layar lebar tepi ATAS kertas berimpit dengan tepi
+     #card-viewport (terukur: pada 1440x900 halaman menempati y 0..846 dari
+     900), jadi tanpa peredupan ini debu yang naik akan tergunting rata di
+     garis yang persis lurus. */
+  var PUDAR_TEPI = [20, 30];
 
   // Kurva & lama transisi persis seperti spek yang diminta.
   var LAMA_ROTASI = 600;
@@ -390,16 +426,106 @@
 
   function ukurKanvas() {
     if (!kanvas || !buku) return;
-    var r = buku.getBoundingClientRect();
+
+    /* offsetWidth/Height, BUKAN getBoundingClientRect().
+
+       Ini pernah salah dan cacatnya cuma muncul di layar lebar.
+       getBoundingClientRect() mengembalikan piksel SESUDAH panggungnya
+       diskalakan (#card-stage memakai transform: matrix(...)), sedangkan
+       style.width berlaku SEBELUM penskalaan — jadi angkanya kena skala dua
+       kali. Terukur:
+
+           layar         skala panggung   kanvas debu jadi
+           390x844            1,000          1,00x halaman   <- kebetulan pas
+           1440x900           1,534          1,53x halaman   <- meluber 53%
+
+       Di HP skalanya kebetulan tepat 1,0, jadi salahnya tidak bergejala sama
+       sekali; di desktop debunya berhamburan sampai ke luar kartu. Dilaporkan
+       pemilik situs 19 Agu 2026. offsetWidth mengembalikan px LOKAL, satuan
+       yang sama dengan style.width, jadi berapa pun skalanya tidak lagi
+       berpengaruh. Dijaga test_kanvas_debu_diukur_dalam_piksel_lokal. */
+    var w = buku.offsetWidth + TEPI_DEBU * 2;
+    var h = buku.offsetHeight + TEPI_DEBU * 2;
+
     /* DPR dibatasi 2: di layar 3x, kanvas seluas halaman berarti tiga kali
        lipat piksel yang harus digambar tiap frame tanpa ada yang bisa
        melihat bedanya pada titik debu selebar 2 px. */
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    kanvas.width = Math.round(r.width * dpr);
-    kanvas.height = Math.round(r.height * dpr);
-    kanvas.style.width = r.width + "px";
-    kanvas.style.height = r.height + "px";
+    kanvas.width = Math.round(w * dpr);
+    kanvas.height = Math.round(h * dpr);
+    kanvas.style.width = w + "px";
+    kanvas.style.height = h + "px";
+    // Digeser keluar supaya kertas duduk di tengah kanvas. Ditaruh di sini,
+    // bukan di CSS, supaya TEPI_DEBU cuma tertulis di SATU tempat.
+    kanvas.style.left = -TEPI_DEBU + "px";
+    kanvas.style.top = -TEPI_DEBU + "px";
+    halamanW = buku.offsetWidth;
+    halamanH = buku.offsetHeight;
     if (ktx) ktx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  /* ── Rupa butir ───────────────────────────────────────────────────────
+     Tiap butir digambar dari SPRITE yang sudah jadi, bukan dengan menyusun
+     path tiap frame. Alasannya ongkos: nyala bergradasi butuh
+     createRadialGradient, dan membuatnya 260 kali per frame pada 60 fps
+     berarti 15.600 gradien per detik. Sprite-nya dibuat sekali per warna
+     lalu dipakai ulang lewat drawImage, yang murah.
+
+     Warnanya dibulatkan ke 16 tingkat per kanal sebelum jadi kunci cache.
+     Satu halaman biasanya cuma menghasilkan belasan warna berbeda sesudah
+     pembulatan, jadi cache-nya kecil dan nyaris selalu kena. */
+  var SISI_SPRITE = 64;
+  var spriteCache = {};
+
+  function jalurHati(c, s) {
+    c.beginPath();
+    c.moveTo(0, s * 0.33);
+    c.bezierCurveTo(0, s * 0.10, -s * 0.50, -s * 0.10, -s * 0.50, -s * 0.33);
+    c.bezierCurveTo(-s * 0.50, -s * 0.60, -s * 0.15, -s * 0.62, 0, -s * 0.33);
+    c.bezierCurveTo(s * 0.15, -s * 0.62, s * 0.50, -s * 0.60, s * 0.50, -s * 0.33);
+    c.bezierCurveTo(s * 0.50, -s * 0.10, 0, s * 0.10, 0, s * 0.33);
+    c.closePath();
+  }
+
+  function sprite(bentuk, r, g, b) {
+    var kunci = bentuk + ((r >> 4) << 8 | (g >> 4) << 4 | (b >> 4));
+    if (spriteCache[kunci]) return spriteCache[kunci];
+
+    var c = document.createElement("canvas");
+    c.width = c.height = SISI_SPRITE;
+    var cc = c.getContext("2d");
+    var t = SISI_SPRITE / 2;
+    var warna = (r | 0) + "," + (g | 0) + "," + (b | 0);
+
+    if (bentuk === "h") {
+      /* Hati: nyala lembut di belakangnya, bentuknya di depan. Tanpa nyala
+         itu hatinya terbaca sebagai stiker yang ditempel, bukan sesuatu yang
+         berpendar seperti debunya. */
+      var n = cc.createRadialGradient(t, t, 0, t, t, t);
+      n.addColorStop(0, "rgba(" + warna + ",0.5)");
+      n.addColorStop(0.5, "rgba(" + warna + ",0.16)");
+      n.addColorStop(1, "rgba(" + warna + ",0)");
+      cc.fillStyle = n;
+      cc.fillRect(0, 0, SISI_SPRITE, SISI_SPRITE);
+      cc.translate(t, t);
+      jalurHati(cc, SISI_SPRITE * 0.62);
+      cc.fillStyle = "rgba(" + warna + ",1)";
+      cc.fill();
+    } else {
+      /* Debu: gradien radial dengan inti hampir pekat lalu turun cepat.
+         Perhentian di 0,25 itu yang membedakannya dari bulatan rata — tanpa
+         itu hasilnya piringan bertepi tegas, dan justru tepi tegas itu yang
+         membuat versi lama terlihat seperti titik cat. */
+      var gr = cc.createRadialGradient(t, t, 0, t, t, t);
+      gr.addColorStop(0, "rgba(" + warna + ",1)");
+      gr.addColorStop(0.25, "rgba(" + warna + ",0.72)");
+      gr.addColorStop(0.6, "rgba(" + warna + ",0.20)");
+      gr.addColorStop(1, "rgba(" + warna + ",0)");
+      cc.fillStyle = gr;
+      cc.fillRect(0, 0, SISI_SPRITE, SISI_SPRITE);
+    }
+    spriteCache[kunci] = c;
+    return c;
   }
 
   /* Warna debu diambil dari PELAT halamannya sendiri, jadi tiap halaman
@@ -500,6 +626,26 @@
     return daftar;
   }
 
+  /* Seberapa terang butir di titik (x,y) boleh menyala, mengingat jaraknya
+     dari tepi kertas. 1 di dalam kertas, meluruh jadi 0 di dalam pita
+     TEPI_DEBU di luarnya.
+
+     Dihitung per SISI lalu diambil yang terkecil, jadi butir yang keluar
+     lewat sudut memudar seperti yang lewat sisi lurus. */
+  function pudarTepi(x, y) {
+    var kiri = x - TEPI_DEBU;
+    var atas = y - TEPI_DEBU;
+    var kanan = TEPI_DEBU + halamanW - x;
+    var bawah = TEPI_DEBU + halamanH - y;
+    var d = Math.min(kiri, atas, kanan, bawah);
+    if (d >= -PUDAR_TEPI[0]) return 1;              // masih jauh di dalam
+    var lewat = -d - PUDAR_TEPI[0];                 // seberapa jauh melewati
+    return jepit(1 - lewat / (PUDAR_TEPI[0] + PUDAR_TEPI[1]));
+  }
+
+  // Diisi ukurKanvas(); dipakai pudarTepi().
+  var halamanW = 0, halamanH = 0;
+
   /* Membersihkan SELURUH sisa peralihan, siapa pun yang meninggalkannya.
 
      Ini yang dulu hilang, dan akibatnya parah: peralihan yang disusul
@@ -556,8 +702,12 @@
     }
 
     ukurKanvas();
-    var rBuku = buku.getBoundingClientRect();
-    var rHal = elDari.getBoundingClientRect();
+    /* Koordinat butir dihitung dalam px LOKAL, sama seperti kanvasnya —
+       lihat catatan panjang di ukurKanvas(). Kertas dan #buku itu kotak yang
+       sama persis (terukur 390x552 lokal di kedua konteks: pratinjau
+       berdiri sendiri MAUPUN iframe editor), jadi tidak perlu diukur
+       terpisah. Titik (0,0) kanvas ada di TEPI_DEBU px di luar sudut kertas. */
+    var halW = buku.offsetWidth, halH = buku.offsetHeight;
 
     warnaHalaman(dari, function (warna) {
       var butir = [];
@@ -582,13 +732,32 @@
                    (warna[q].v - pv) * (warna[q].v - pv);
           if (d2 < jarak) { jarak = d2; w = warna[q]; }
         }
+        /* Ukuran diundi dengan pangkat 2, bukan rata. Undian rata memberi
+           terlalu banyak butir berukuran menengah dan hasilnya terbaca
+           seragam; dipangkatkan, mayoritasnya jadi halus dan hanya
+           segelintir yang besar — dan justru segelintir itu yang memberi
+           kesan ada kedalaman. */
+        var kasar = Math.pow(Math.random(), 2);
+        var hati = Math.random() < PORSI_HATI;
         butir.push({
-          x: rHal.left - rBuku.left + pu * rHal.width,
-          y: rHal.top - rBuku.top + pv * rHal.height,
+          x: TEPI_DEBU + pu * halW,
+          y: TEPI_DEBU + pv * halH,
           naik: DEBU_NAIK[0] + Math.random() * (DEBU_NAIK[1] - DEBU_NAIK[0]),
           fase: Math.random() * Math.PI * 2,
           ayun: 0.4 + Math.random() * 0.8,
-          jari: DEBU_UKURAN[0] + Math.random() * (DEBU_UKURAN[1] - DEBU_UKURAN[0]),
+          // Hati dibuat lebih besar daripada debu: pada ukuran debu, bentuk
+          // hatinya tidak terbaca sama sekali dan cuma jadi bintik gemuk.
+          jari: (DEBU_UKURAN[0] + kasar * (DEBU_UKURAN[1] - DEBU_UKURAN[0])) * (hati ? 2.1 : 1),
+          hati: hati,
+          // Hati berputar pelan; arah dan lajunya diundi supaya tidak ada
+          // dua yang bergerak serempak.
+          putar: (Math.random() - 0.5) * 0.0016,
+          sudut: (Math.random() - 0.5) * 0.9,
+          // Kedip halus. Butir debu sungguhan menangkap cahaya sesekali;
+          // tanpa ini semuanya meredup dengan kurva yang sama persis dan
+          // terbaca sebagai satu lapisan yang di-fade, bukan banyak butir.
+          kedip: 0.75 + Math.random() * 0.25,
+          lajuKedip: 0.002 + Math.random() * 0.004,
           // Ditunda acak supaya debunya tidak berangkat serempak seperti
           // satu barisan — yang membuatnya terbaca sebagai efek, bukan debu.
           tunda: Math.random() * 0.45,
@@ -628,7 +797,15 @@
            bukan dua gambar saling silang. Sebagai bonus, skip beruntun jadi
            tegas: halaman tujuan tidak pernah setengah pudar menunggu
            gilirannya. */
-        elDari.style.opacity = String(awalDari * Math.pow(1 - p, 1.5));
+        /* Halamannya habis pada 72% peralihan, bukan 100%.
+
+           Dengan 2,5 detik, membiarkannya memudar sampai detik terakhir
+           berarti seperempat waktu terakhir dihabiskan menonton halaman yang
+           tinggal beberapa persen opasitasnya — tidak terlihat berubah, cuma
+           terasa lambat. Diselesaikan lebih awal, sisa waktunya jadi milik
+           debu yang masih melayang di atas halaman baru, dan ITU yang
+           terbaca sebagai "santai". */
+        elDari.style.opacity = String(awalDari * Math.pow(1 - jepit(p / 0.72), 1.5));
 
         ktx.clearRect(0, 0, kanvas.width, kanvas.height);
         ktx.globalCompositeOperation = "lighter";
@@ -640,14 +817,31 @@
           var umur = kini - t0 - b.tunda * LAMA_LARUT;
           var x = b.x + Math.sin(b.fase + umur * 0.004) * b.ayun * DEBU_SAMPING * umur;
           var y = b.y - b.naik * umur;
+
           // Menyala di awal lalu pudar — itu "berpendar", bukan sekadar hilang.
           var a = Math.sin(Math.PI * q) * 0.95;
-          if (a <= 0.01) continue;
-          ktx.beginPath();
-          ktx.fillStyle = "rgba(" + (b.r|0) + "," + (b.g|0) + "," + (b.b|0) + "," + a.toFixed(3) + ")";
-          ktx.arc(x, y, b.jari * (1 - q * 0.45), 0, 6.2832);
-          ktx.fill();
+          // Kedip halus di atas kurva itu, beda fase tiap butir.
+          a *= b.kedip + (1 - b.kedip) * (0.5 + 0.5 * Math.sin(b.fase + umur * b.lajuKedip));
+          a *= pudarTepi(x, y);
+          if (a <= 0.012) continue;
+
+          var jari = b.jari * (1 - q * 0.45);
+          var img = sprite(b.hati ? "h" : "d", b.r, b.g, b.b);
+          ktx.globalAlpha = a;
+          if (b.hati) {
+            ktx.save();
+            ktx.translate(x, y);
+            ktx.rotate(b.sudut + umur * b.putar);
+            ktx.drawImage(img, -jari * 2, -jari * 2, jari * 4, jari * 4);
+            ktx.restore();
+          } else {
+            // Sprite-nya bernyala sampai ke tepi kotaknya, jadi digambar
+            // selebar 4x jari-jari: intinya sebesar jari-jari yang diminta,
+            // sisanya pendar yang meluruh.
+            ktx.drawImage(img, x - jari * 2, y - jari * 2, jari * 4, jari * 4);
+          }
         }
+        ktx.globalAlpha = 1;
         ktx.globalCompositeOperation = "source-over";
 
         if (p < 1) return requestAnimationFrame(bingkai);

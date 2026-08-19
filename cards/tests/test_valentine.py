@@ -572,3 +572,125 @@ class Halaman12Tests(TestCase):
         self.assertTrue(skrip.exists())
         self.assertIn("hal12.webp", skrip.read_text())
 
+
+class DebuPeralihanTests(TestCase):
+    """Mekanik "partikel" digarap ulang 19 Agu 2026 atas permintaan pemilik
+    situs: lebih cantik, lebih santai, dan TIDAK berhamburan ke luar kartu.
+    """
+
+    def js(self):
+        return (Path(settings.BASE_DIR) / "static" / "js" / "render" / "valentine.js").read_text()
+
+    def tanpa_komentar(self, kode):
+        """Buang komentar sebelum memeriksa isi kode.
+
+        Komentar di berkas ini panjang dan justru menyebut nama-nama yang
+        sudah TIDAK dipakai lagi ("dulu getBoundingClientRect, sekarang ...").
+        Memeriksa kode mentah membuat penjelasannya sendiri yang
+        menggagalkan tesnya.
+        """
+        kode = re.sub(r"/\*.*?\*/", "", kode, flags=re.S)
+        return re.sub(r"(?m)//.*$", "", kode)
+
+    def angka(self, js, nama):
+        m = re.search(r"\bvar %s = ([\d.]+);" % nama, js)
+        self.assertIsNotNone(m, f"{nama} hilang dari valentine.js")
+        return float(m.group(1))
+
+    def test_kanvas_debu_diukur_dalam_piksel_lokal(self):
+        """Bug yang cuma bergejala di layar lebar, dan ini penjaganya.
+
+        `getBoundingClientRect()` mengembalikan piksel SESUDAH panggungnya
+        diskalakan (#card-stage memakai transform), sedangkan `style.width`
+        berlaku SEBELUM penskalaan — jadi angkanya kena skala dua kali.
+        Terukur sebelum diperbaiki: pada 1440x900 skala panggungnya 1,534 dan
+        kanvas debunya jadi 1,53x halaman, meluber 53% ke luar kartu. Di HP
+        skalanya kebetulan tepat 1,000, jadi cacatnya TIDAK bergejala sama
+        sekali di sana — itu sebabnya ia lolos berbulan-bulan.
+
+        offsetWidth mengembalikan px lokal, satuan yang sama dengan
+        style.width.
+        """
+        js = self.js()
+        blok = self.tanpa_komentar(
+            js.split("function ukurKanvas()", 1)[1].split("\n  }", 1)[0])
+        self.assertIn("offsetWidth", blok)
+        self.assertIn("offsetHeight", blok)
+        self.assertNotIn(
+            "getBoundingClientRect", blok,
+            "ukurKanvas memakai rect layar lagi — kanvas debu akan kena skala dua kali",
+        )
+
+    def test_debu_tidak_pernah_menempuh_lebih_dari_satu_halaman(self):
+        """Jebakan pasangan: memperlambat peralihan TANPA memperlambat debunya.
+
+        Pada kecepatan lama (0,34 px/ms) dan durasi baru (2500 ms) butir
+        tercepat menempuh 850 px, sedangkan halamannya cuma 551,6 px —
+        seluruh debu sudah keluar layar sebelum peralihannya separuh jalan,
+        dan paruh keduanya jadi halaman memudar tanpa debu sama sekali.
+        Tidak ada error, tidak ada tes lain yang merah; cuma efeknya hilang.
+        """
+        js = self.js()
+        lama = self.angka(js, "LAMA_LARUT")
+        m = re.search(r"var DEBU_NAIK = \[([\d.]+), ([\d.]+)\]", js)
+        self.assertIsNotNone(m, "DEBU_NAIK hilang")
+        tempuh = float(m.group(2)) * lama
+        self.assertLessEqual(
+            tempuh, 551.6,
+            f"butir tercepat menempuh {tempuh:.0f} px dalam satu peralihan, "
+            f"lebih tinggi daripada halamannya (551,6 px) — turunkan DEBU_NAIK",
+        )
+
+    def test_peralihan_cukup_santai(self):
+        """1100 ms terasa terburu-buru menurut pemilik situs. Angkanya boleh
+        disetel lagi, tapi jangan diam-diam dikembalikan ke bawah 1,5 detik."""
+        self.assertGreaterEqual(self.angka(self.js(), "LAMA_LARUT"), 1500)
+
+    def test_hati_cuma_aksen(self):
+        """Hati sengaja SEDIKIT. Pada porsi besar efeknya berhenti terbaca
+        sebagai "halaman larut jadi debu" dan berubah jadi hujan hiasan."""
+        porsi = self.angka(self.js(), "PORSI_HATI")
+        self.assertGreater(porsi, 0, "hati hilang dari debunya")
+        self.assertLessEqual(porsi, 0.25, "hati terlalu banyak — ia aksen, bukan isi")
+
+    def test_butir_pudar_di_perbatasan_kertas(self):
+        """Debu boleh melayang sedikit ke luar kertas (pilihan pemilik situs),
+        tapi tidak boleh TERPOTONG di situ.
+
+        Perlu karena di layar lebar tepi atas kertas berimpit dengan tepi
+        #card-viewport yang overflow:hidden — terukur, pada 1440x900 halaman
+        menempati y 0..846 dari 900. Tanpa peredupan, debu yang naik
+        tergunting rata di garis yang persis lurus.
+        """
+        js = self.js()
+        self.assertIn("function pudarTepi(", js)
+        blok = js.split("function bingkai(", 1)[1]
+        self.assertIn("pudarTepi(", blok, "pudarTepi tidak dipakai saat menggambar")
+
+    def test_nyala_butir_dari_sprite_bukan_gradien_tiap_frame(self):
+        """Nyala bergradasi butuh createRadialGradient. Membuatnya 260 kali
+        per frame pada 60 fps berarti 15.600 gradien per detik — itu yang
+        dulu membuat versi bergradasi ditolak. Sprite dibuat sekali per warna
+        lalu dipakai ulang lewat drawImage.
+
+        Diukur sesudah perubahan: 60 fps, jeda frame terlama 17,7 ms, bahkan
+        saat CPU dicekik 6x.
+        """
+        js = self.js()
+        self.assertIn("spriteCache", js)
+        gambar = js.split("function bingkai(", 1)[1]
+        self.assertNotIn(
+            "createRadialGradient", gambar,
+            "gradien dibuat di dalam loop gambar — itu 260 gradien per frame",
+        )
+
+    def test_tepi_debu_cuma_tertulis_sekali(self):
+        """Kanvas digeser keluar lewat style.left/top dari JS, bukan lewat
+        inset negatif di CSS. Kalau angkanya hidup di dua tempat, salah satu
+        akan bergeser sendiri dan debunya jadi melenceng dari kertas."""
+        js = self.js()
+        self.assertIn("var TEPI_DEBU", js)
+        self.assertIn("kanvas.style.left = -TEPI_DEBU", js)
+        blok = CSS.read_text().split("#debu", 1)[1].split("}", 1)[0]
+        self.assertNotIn("inset:", blok.replace(" ", ""))
+

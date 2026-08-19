@@ -364,6 +364,42 @@
     <div class="muka belakang"><span class="redup"></span></div>
   </section>
 
+  <!-- ═══════════ 12. PENUTUP — HATI RENDA ═══════════ -->
+  {% comment %}
+    Sumber KETIGA template ini, sesudah LOVESTORY-2.pdf (hal 1-10) dan kolase
+    JPG (hal 11): sebuah PDF satu halaman kiriman pemilik situs (19 Agu 2026),
+    diolah tools/buat_pelat_hal12.py. Jangan sunting hal12.webp langsung.
+
+    Halaman ini TIDAK punya teks sama sekali — desainnya memang tidak punya,
+    dan tidak ada yang ditambahkan. Isinya satu bingkai foto.
+
+    Bentuk hatinya datang dari LUBANG di pelat, bukan dari CSS: .bingkai di
+    bawah tetap persegi (kotak pembatas hatinya), fotonya duduk di BELAKANG
+    pelat, dan renda putih yang menjorok ke dalam tetap tergambar di ATAS
+    foto — persis seperti pita halaman 8 dan logam liontin halaman 7. Karena
+    itu jangan coba memberi bingkai ini clip-path hati sendiri: yang
+    memotongnya sudah pelatnya, dan dua potongan akan saling menggerogoti.
+
+    Lubangnya sengaja 2 px (di resolusi sumber) lebih besar daripada tepi foto
+    aslinya. Sisa antialias di perbatasan masih menyimpan ~10% campuran foto
+    lama, dan yang tertinggal kalau itu dibiarkan bukan cacat abstrak —
+    melainkan segaris wajah pasangan orang lain di pinggir foto pembeli.
+  {% endcomment %}
+  <section class="scene lembar" id="hal12">
+    <div class="muka depan"><div class="kertas">
+      {% with photo=frame_photos|get:"f_hati" %}
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}"
+           style="--kiri:21.467%;--atas:31.604%;--lebar:57.065%;--tinggi:37.272%"
+           {% frame card editing "f_hati" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+      {% endwith %}
+      <div class="pelat" style="--pelat:url('{% static_v 'img/valentine/hal12.webp' %}')"></div>
+    </div><span class="jatuh"></span><span class="redup"></span></div>
+    <div class="muka belakang"><span class="redup"></span></div>
+  </section>
+
   {% comment %}
     Wadah bilah. Diisi valentine.js saat halaman mulai dibalik: lembar
     aslinya mundur, sepuluh salinan potongannya yang melengkung. Kosong

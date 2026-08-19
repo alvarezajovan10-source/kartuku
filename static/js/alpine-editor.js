@@ -30,6 +30,7 @@ window.cardEditor = function () {
     hal7: "Hal 7 — Liontin", hal8: "Hal 8 — Galeri pita",
     hal9: "Hal 9 — Galeri jepitan", hal10: "Hal 10 — Things I Love About You",
     hal11: "Hal 11 — My Wish For You",
+    hal12: "Hal 12 — Hati renda",
   };
 
   var specByKey = {};

@@ -390,9 +390,13 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   diperbarui ke desain 11 halaman 11 Agu 2026) — majalah A4 **sebelas
   halaman** yang **dibalik lembar demi lembar dengan jari**.
   Stage baru `data-stage="buku"`: sama seperti "lebar", halamannya harus muat
-  UTUH, hanya perbandingannya A4 (390 × 551,6). **15 bingkai foto, 31 teks**
-  (19 Agu 2026; sebelumnya 16 bingkai & 25 teks — halaman 11 kehilangan
-  bingkai fotonya dan daftar isi halaman 3 jadi teks).
+  UTUH, hanya perbandingannya A4 (390 × 551,6). **DUA BELAS halaman sejak
+  19 Agu 2026** — halaman 12 ditambahkan atas permintaan pemilik situs, lihat
+  bloknya di bawah. **16 bingkai foto, 31 teks.**
+
+  > Jumlah halaman TIDAK di-hardcode di mana pun: `valentine.js` menghitung
+  > `document.querySelectorAll(".lembar")`, dan titik-titik penunjuk halaman
+  > ikut dari situ. Menambah satu `<section class="scene lembar">` sudah cukup.
 
   Cara kerjanya beda sendiri dari template lain, dan ini WAJIB dipahami
   sebelum menyentuhnya:
@@ -871,8 +875,12 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   - **Halaman 11 — "My wish for you"** (19 Agu 2026). Dulu foto pembeli
     sehalaman penuh (`f_akhir`); sekarang kolase kiriman pemilik situs
     dengan dua teks di atasnya, dan **tidak punya bingkai foto sama sekali**.
+    Penutup berfoto kembali ada di halaman 12 (19 Agu 2026), tapi bukan
+    bingkai yang sama: bentuknya hati dan tidak sehalaman penuh, jadi
+    TIDAK bertanda `"asli"`.
 
-    > **Satu-satunya pelat yang BUKAN dari LOVESTORY-2.pdf.** Di PDF itu
+    > **Pelat pertama yang BUKAN dari LOVESTORY-2.pdf** (yang kedua halaman
+    > 12, sumbernya lain lagi). Di PDF itu
     > halaman 11 krem polos. Kolasenya dikirim terpisah sebagai JPG dan
     > diolah `tools/buat_pelat_hal11.py` — bukan `buat_pelat_valentine.py`.
     > Halaman 11 karena itu TETAP terdaftar di `TANPA_PELAT` pada skrip yang
@@ -909,6 +917,78 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
     > asalnya dari keempat konstanta lain: yang empat dicocokkan ke garis
     > alas desain Canva, halaman ini tidak punya desain untuk dicocoki, jadi
     > 0,33 itu metrik fontnya sendiri.
+
+  - **Halaman 12 — penutup hati renda** (19 Agu 2026, permintaan pemilik
+    situs). Kertas kraft merah dengan bingkai renda putih berbentuk hati;
+    foto di dalam hatinya bisa diganti pembeli (`f_hati`). **Tidak ada teks
+    sama sekali** di halaman ini — desainnya memang tidak punya, dan tidak
+    ada yang ditambahkan.
+
+    > **SUMBER KETIGA template ini**, sesudah `LOVESTORY-2.pdf` (hal 1-10)
+    > dan kolase JPG (hal 11): sebuah PDF satu halaman kiriman pemilik situs,
+    > diolah `tools/buat_pelat_hal12.py`. Tidak seperti halaman 11, halaman
+    > ini TIDAK perlu didaftarkan di `TANPA_PELAT` — `LOVESTORY-2.pdf` cuma
+    > 11 halaman, jadi tidak ada apa pun di sana yang bisa menimpanya.
+    >
+    > **Lubang fotonya tidak bisa diukur dari PDF-nya**, dan itu yang
+    > membedakannya dari sepuluh halaman pertama. Di sana tiap foto pengisi
+    > adalah objek gambar tersendiri, jadi bentuk lubangnya didapat dengan
+    > merender halaman dua kali (pengisi putih rata / hitam rata) dan
+    > mengambil selisihnya. PDF ini seluruh halamannya SATU bitmap 736x1308
+    > yang sudah rata — nol objek teks, nol vektor. Bentuk hatinya karena itu
+    > dipulihkan dari pikselnya sendiri.
+    >
+    > **Yang memisahkan renda dari foto adalah SATURASI, bukan kecerahan.**
+    > Cara yang paling jelas justru yang gagal: renda RGB(225,220,214) dan
+    > baju putih si lelaki di dalam foto RGB(226,216,206) praktis sama
+    > terangnya. Yang berbeda nada hangatnya — fotonya sepia (R-B = 20..25),
+    > rendanya netral (R-B = 4..13). Dinormalkan terhadap kecerahan itu jadi
+    > saturasi, dan jaraknya melebar: renda 0,04-0,05, foto 0,09-0,43,
+    > kertas merah 0,55-0,66. Ambangnya 0,065; disapu 0,055-0,080 dan
+    > hasilnya nyaris tidak bergerak, jadi tidak genting.
+    >
+    > **Sisa cacatnya ditambal dengan CERMIN, bukan dengan menurunkan
+    > ambang.** Baju putih itu tetap menggigit tepi kanan sedikit; di sisi
+    > kiri pada ketinggian yang sama isinya rambut dan gaun gelap, jadi
+    > terbaca sempurna. Boleh dicerminkan karena hatinya terukur simetris:
+    > titik tengah tiap baris mask meleset dari sumbu paling jauh 4 px, dan
+    > hampir semua baris di bawah 1,5 px.
+    >
+    > **Lubangnya sengaja 2 px lebih besar** daripada tepi foto aslinya.
+    > Cincin 1 px tepat di luar batas terukur masih menyimpan ~10% campuran
+    > foto lama (saturasi 0,051 lawan 0,047 rendanya). Dua piksel dari pita
+    > renda selebar ~60 px tidak terlihat; segaris wajah pasangan orang lain
+    > di pinggir foto pembeli sangat terlihat.
+    >
+    > **Rasio dibetulkan dengan memotong ATAS dan BAWAH** (267 baris: 133
+    > atas, 134 bawah), bukan diregangkan dan bukan dipotong dari samping.
+    > Aman karena hatinya terukur duduk tepat di tengah gambar: kotak doily
+    > y 389..920, titik tengahnya 654,5; tengah gambar 654,0.
+    >
+    > Bentuk hatinya datang dari LUBANG di pelat, BUKAN dari CSS. `.bingkai`
+    > di template tetap persegi — kotak pembatas hatinya — dan fotonya duduk
+    > di belakang pelat seperti pita halaman 8 dan logam liontin halaman 7.
+    > **Jangan memberi bingkai ini `clip-path` hati sendiri**: yang memotong
+    > sudah pelatnya, dan dua potongan akan saling menggerogoti.
+    >
+    > Skripnya **memeriksa hasilnya sendiri** sebelum menyimpan, dan harus
+    > dua arah: `periksa_tanpa_sisa_foto` (tidak ada sisa foto lama di tepi
+    > lubang) dan `periksa_renda_utuh` (rendanya tidak ikut termakan).
+    > Perlu dua-duanya karena melebarkan lubang sampai bersih itu gampang —
+    > cukup lebarkan sampai seluruh rendanya hilang.
+    >
+    > Satu pemeriksa sempat salah rancang dan itu instruktif: keterisian
+    > kotak dipakai untuk menilai "bentuknya masih hati?", padahal hatinya
+    > mengisi 67,3% kotaknya dan doily selebar penuh — persis kegagalan yang
+    > mau ditangkap — 66,8%. Dua angka yang hampir sama tidak membedakan apa
+    > pun. Diganti perbandingan kotak hati terhadap kotak doily (~73%).
+    >
+    > Penjaga di sisi situs: `Halaman12Tests`. Yang terpenting di sana
+    > mencocokkan koordinat persen `.bingkai` di `valentine.html` dengan
+    > kotak alfa yang sesungguhnya di `hal12.webp` — dua benda di berkas
+    > berbeda yang bisa bergeser sendiri-sendiri tanpa satu pun tes lain
+    > merah, dan kalau meleset yang muncul di sisi yang kurang bukan foto
+    > melainkan `--kertas-bg` merah.
 
   - Penjaganya di `cards/tests/test_valentine.py`.
 

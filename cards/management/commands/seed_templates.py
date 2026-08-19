@@ -181,10 +181,18 @@ SEEDS = [
                 {"key": "f_klip2", "label": "Galeri jepitan — kanan atas", "area": "hal9", "rasio": 0.847},
                 {"key": "f_klip3", "label": "Galeri jepitan — kiri bawah", "area": "hal9", "rasio": 0.847},
                 {"key": "f_klip4", "label": "Galeri jepitan — kanan bawah", "area": "hal9", "rasio": 0.847},
-                # Lima belas bingkai, bukan enam belas. "f_akhir" — foto
-                # pembeli sehalaman penuh di halaman 11 — dicabut 18 Agu 2026:
-                # halaman itu sekarang kolase kiriman pemilik situs dengan dua
-                # teks di atasnya, dan tidak ada lagi tempat untuk foto.
+                # Bentuk hatinya datang dari LUBANG di pelat halaman 12,
+                # bukan dari CSS — bingkainya sendiri persegi, yaitu kotak
+                # pembatas hatinya. "rasio" 1,0825 karena hatinya memang
+                # sedikit lebih lebar daripada tinggi (416x384 px terukur di
+                # gambar sumbernya), jadi kotak crop di editor pun begitu.
+                {"key": "f_hati", "label": "Foto penutup — hati renda", "area": "hal12", "rasio": 1.0825},
+                # Enam belas bingkai. Sempat lima belas: "f_akhir" — foto
+                # pembeli sehalaman penuh di halaman 11 — dicabut 18 Agu 2026
+                # waktu halaman itu jadi kolase bertulisan "My wish for you".
+                # Halaman 12 (19 Agu 2026) mengembalikan satu bingkai penutup,
+                # tapi bukan yang itu: bentuknya hati, bukan sehalaman penuh,
+                # jadi TIDAK bertanda "asli" dan tidak memakai batas 8MB.
             ],
             # Bawaan di bawah ini disalin PERSIS dari desain Canva-nya,
             # termasuk pemenggalan barisnya. Jangan "dirapikan": pembeli

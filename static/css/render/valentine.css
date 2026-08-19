@@ -549,6 +549,14 @@ img { -webkit-user-drag: none; user-drag: none; }
    pesannya berhenti jauh sebelum tepi kanan. */
 #hal11 { --kertas-bg: #440402; }
 
+/* Halaman 12 — penutup hati renda (19 Agu 2026).
+   Kertas kraft merahnya DIUKUR, bukan dicocok-cocokkan: median empat sudut
+   pelatnya #99443c, dengan simpangan baku cuma ~3 per kanal. Warna ini
+   dipakai dua tempat yang tidak kelihatan hubungannya — punggung lembar saat
+   halaman ini dibalik, dan cadangan warna debu peralihan kalau pelatnya
+   ternyata tidak menyisakan piksel opak untuk dicuplik. */
+#hal12 { --kertas-bg: #99443c; }
+
 /* Judul, di tempat huruf potongan koran "HAPPY BIRTHDAY" dulu berada.
    Dijatah dua baris: "My wish for you" muat satu baris, tapi pembeli yang
    menulis lebih panjang harus punya baris kedua sebelum --muat mulai

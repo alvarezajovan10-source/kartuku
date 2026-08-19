@@ -38,16 +38,20 @@ class BahanValentineTests(TestCase):
         halamannya cuma terbuka kosong."""
         isi = RENDER.read_text()
         rujukan = re.findall(r"img/valentine/[\w.]+\.webp", isi)
-        # 11 pelat halaman + 1 lapisan atas (hal04atas).
+        # 12 pelat halaman + 1 lapisan atas (hal04atas).
         #
-        # Halaman 11 SEKARANG punya pelat, dan sampai 18 Agu 2026 justru
-        # dikunci sebaliknya di sini — dulu isinya foto pembeli sehalaman
-        # penuh. Pelatnya datang dari tools/buat_pelat_hal11.py, BUKAN dari
-        # tools/buat_pelat_valentine.py, jadi halaman 11 tetap terdaftar di
-        # TANPA_PELAT pada skrip yang satu itu supaya tidak ditimpa halaman
-        # krem kosong dari PDF-nya.
-        self.assertEqual(len(rujukan), 12, "harus 11 pelat halaman + 1 lapisan atas")
+        # TIGA sumber, dan itu yang paling gampang dilupakan orang berikutnya:
+        #   hal 1-10  LOVESTORY-2.pdf     -> tools/buat_pelat_valentine.py
+        #   hal 11    kolase JPG          -> tools/buat_pelat_hal11.py
+        #   hal 12    PDF hati renda      -> tools/buat_pelat_hal12.py
+        #
+        # Halaman 11 tetap terdaftar di TANPA_PELAT pada skrip yang pertama
+        # supaya tidak ditimpa halaman krem kosong dari PDF-nya. Halaman 12
+        # tidak perlu penjagaan itu — LOVESTORY-2.pdf cuma 11 halaman, jadi
+        # tidak ada apa pun di sana yang bisa menimpanya.
+        self.assertEqual(len(rujukan), 13, "harus 12 pelat halaman + 1 lapisan atas")
         self.assertIn("hal11.webp", isi, "halaman 11 harus memakai pelat kolasenya")
+        self.assertIn("hal12.webp", isi, "halaman 12 harus memakai pelat hati rendanya")
         for nama in rujukan:
             with self.subTest(pelat=nama):
                 self.assertTrue(
@@ -467,3 +471,104 @@ class HalamanValentineTests(TestCase):
         ).content.decode()
         self.assertEqual(html.count('class="ketuk"'), len(config()["frames"]))
         self.assertEqual(html.count("data-frame="), len(config()["frames"]))
+
+
+class Halaman12Tests(TestCase):
+    """Penutup hati renda (19 Agu 2026, PDF kiriman pemilik situs).
+
+    Halaman ini beda dari sebelas lainnya dalam satu hal yang penting untuk
+    tes: bentuk hatinya TIDAK ada di CSS mana pun. Ia semata lubang alfa di
+    hal12.webp, dan .bingkai di template cuma kotak pembatasnya. Dua benda
+    yang harus cocok itu hidup di berkas berbeda — koordinat persen di HTML
+    dan piksel transparan di WebP — jadi keduanya bisa bergeser sendiri-
+    sendiri tanpa satu pun tes lain merah.
+    """
+
+    def kotak_bingkai(self):
+        """Ambil --kiri/--atas/--lebar/--tinggi bingkai f_hati dari template."""
+        isi = RENDER.read_text()
+        blok = isi[isi.index('id="hal12"'):]
+        m = re.search(
+            r"--kiri:([\d.]+)%;--atas:([\d.]+)%;--lebar:([\d.]+)%;--tinggi:([\d.]+)%",
+            blok,
+        )
+        self.assertIsNotNone(m, "bingkai f_hati tidak punya keempat koordinatnya")
+        return [float(x) for x in m.groups()]
+
+    def test_lubang_hati_di_pelat_sepadan_dengan_kotak_bingkainya(self):
+        """Kotak bingkai harus MENUTUPI lubang hatinya, bukan sekadar dekat.
+
+        Kalau kotaknya bergeser, fotonya tidak hilang — ia cuma tidak lagi
+        mengisi seluruh hati, dan yang muncul di sisi yang kurang adalah
+        --kertas-bg merah. Tanpa tes ini, ketidakcocokan itu baru ketahuan
+        dari melihat kartunya.
+
+        Toleransinya 1 poin persen: LANCZOS saat pelatnya diperbesar
+        menggeser tepi alfa kurang dari satu piksel pelat (0,08%), jadi 1%
+        longgar untuk derau tapi jauh lebih ketat daripada salah salin.
+        """
+        from PIL import Image
+
+        pelat = Image.open(
+            Path(settings.BASE_DIR) / "static" / "img" / "valentine" / "hal12.webp"
+        ).convert("RGBA")
+        W, H = pelat.size
+        alfa = pelat.getchannel("A")
+        # getbbox() pada alfa yang DIBALIK: kotak piksel yang tidak opak.
+        lubang = Image.eval(alfa, lambda v: 255 - v).getbbox()
+        self.assertIsNotNone(lubang, "hal12.webp tidak punya lubang transparan")
+        x0, y0, x1, y1 = lubang
+        nyata = [100 * x0 / W, 100 * y0 / H, 100 * (x1 - x0) / W, 100 * (y1 - y0) / H]
+
+        for nama, a, b in zip(("kiri", "atas", "lebar", "tinggi"),
+                              self.kotak_bingkai(), nyata):
+            with self.subTest(sisi=nama):
+                self.assertAlmostEqual(
+                    a, b, delta=1.0,
+                    msg=f"--{nama} di valentine.html {a:.3f}% vs lubang pelat "
+                        f"{b:.3f}% — jalankan ulang tools/buat_pelat_hal12.py "
+                        f"dan salin angka yang dicetaknya",
+                )
+
+    def test_rasio_crop_mengikuti_bentuk_lubangnya(self):
+        """Kotak crop di editor harus sebentuk dengan kotak hatinya.
+
+        Kalau tidak, pembeli memilih bagian fotonya pada bentuk yang bukan
+        bentuk tampilannya — bug yang sama yang dulu membuat foto sampul
+        terlihat salah potong waktu kanvas crop masih 640x640 tetap.
+        """
+        bingkai = {f["key"]: f for f in config()["frames"]}
+        self.assertIn("f_hati", bingkai, "bingkai penutup halaman 12 hilang")
+        _, _, lebar, tinggi = self.kotak_bingkai()
+        # Persen di atas relatif terhadap sisi yang berbeda, jadi rasio
+        # sesungguhnya = (lebar% x W) / (tinggi% x H) dengan W/H = A4.
+        diharap = (lebar * 390) / (tinggi * 551.6)
+        self.assertAlmostEqual(bingkai["f_hati"]["rasio"], diharap, delta=0.02)
+
+    def test_penutup_tidak_bertanda_asli(self):
+        """"asli" (2400 px, batas berkas 8MB) dipakai bingkai yang fotonya
+        MEMENUHI satu halaman penuh — sampul, dan dulu penutup lama. Hati
+        renda ini cuma 57% lebar halaman, jadi tidak termasuk: menandainya
+        "asli" berarti menyuruh pembeli mengunggah berkas 8MB untuk lubang
+        yang tidak butuh sebesar itu."""
+        bingkai = {f["key"]: f for f in config()["frames"]}
+        self.assertFalse(bingkai["f_hati"].get("asli", False))
+
+    def test_halaman_12_memang_tanpa_teks(self):
+        """Desainnya tidak punya teks satu pun, dan tidak ada yang
+        ditambahkan. Kalau suatu saat teks dipasang di sini, ia WAJIB diberi
+        data-baris/data-maks seperti teks lain — dijaga tes lain — jadi yang
+        dikunci di sini cuma keputusannya, supaya perubahannya disengaja."""
+        isi = RENDER.read_text()
+        blok = isi[isi.index('id="hal12"'):]
+        blok = blok[:blok.index("</section>")]
+        self.assertNotIn('class="tx', blok)
+
+    def test_pelat_hal12_punya_skripnya_sendiri(self):
+        """Halaman 12 tidak bisa dibuat ulang oleh buat_pelat_valentine.py —
+        desainnya tidak ada di LOVESTORY-2.pdf. Tanpa skrip ini, pelatnya
+        jadi berkas yatim yang tidak bisa dibangun ulang kalau hilang."""
+        skrip = Path(settings.BASE_DIR) / "tools" / "buat_pelat_hal12.py"
+        self.assertTrue(skrip.exists())
+        self.assertIn("hal12.webp", skrip.read_text())
+

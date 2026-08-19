@@ -1,0 +1,1000 @@
+/* VALENTINE STORY — majalah yang dibalik lembar demi lembar.
+   ─────────────────────────────────────────────────────────────────────────
+   Halamannya BUKAN digambar ulang di CSS. Tiap halaman adalah satu pelat
+   PNG hasil ekspor Canva aslinya, dengan dua lubang saja:
+
+     * teks yang boleh disunting pembeli dihapus dari pelat, lalu ditulis
+       ulang sebagai elemen HTML di koordinat yang sama;
+     * area foto dijadikan transparan, dan foto pembeli dipasang DI BELAKANG
+       pelat.
+
+   Foto di belakang, bukan di atas — itu yang menjaga urutan gambar aslinya.
+   Di halaman 8 pita menjuntai ke atas foto, di halaman 7 logam liontin
+   menutupi tepi hatinya, di halaman 4 coretan merah melintasi fotonya.
+   Kalau foto ditempel di atas pelat, semua benda itu tertutup.
+
+   Koordinat teks dan lubang foto memakai PERSEN halaman, bukan px, jadi
+   satu-satunya angka yang harus cocok dengan pelatnya adalah perbandingan
+   A4 (595,5 x 842,25 pt) — dan itu dikunci --w0/--h0 di bawah.
+
+   Kanvas kanonis: lihat static/css/card-stage.css. */
+
+:root {
+  /* Kartu "buku": 390 x (842,25/595,5). Harus sama dengan H0_BUKU di
+     static/js/card-stage.js — kalau beda, halaman meleset dari pelatnya. */
+  --w0: 390px;
+  --h0: 551.6px;
+
+  --merah: #aa1717;
+  --merah-terang: #ff1414;
+  --kosong: #3c3333;   /* warna bingkai foto kosong milik Canva sendiri */
+
+  /* Setengah selisih naik-turun font (ascent - descent), dalam em.
+     Dipakai menghitung di mana garis alas huruf jatuh:
+
+         jarak puncak kotak ke garis alas = (line-height / 2 + --c) em
+
+     Sukunya line-height/2 datang dari half-leading dan berlaku untuk font
+     apa pun; --c murni sifat fontnya. Dipisah begini supaya kalau pembeli
+     mengubah jarak baris lewat editor, teksnya TETAP duduk di garis yang
+     sama pada pelat — rumusnya ikut menyesuaikan sendiri.
+
+     Angkanya DIUKUR di Chrome, bukan ditebak: tools/cek_valentine.js.
+     Meleset 0,02em saja sudah terlihat sebagai teks yang melayang. */
+  --c-serif: 0.2818;   /* Bellefair */
+  --c-allura: 0.1457;
+  --c-kaushan: 0.3569;
+  --c-pinyon: 0.2163;
+  /* Caveat dipakai HANYA di halaman 11, dan angkanya beda asalnya dari
+     keempat di atas. Yang empat itu dicocokkan ke garis alas desain Canva
+     lewat tools/cek_valentine.js; halaman 11 tata letaknya baru dan tidak
+     punya garis alas desain untuk dicocoki, jadi 0,33 di bawah adalah
+     metrik fontnya sendiri — diukur dengan menaruh strut lebar-nol sesudah
+     teks lalu membandingkan puncak kotak dengan garis alasnya, dan hasilnya
+     sama pada line-height 1 maupun 1,6. */
+  --c-caveat: 0.33;
+}
+
+html { font-size: 16px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: #14100f;
+  font-family: 'Bellefair', Georgia, serif;
+  overscroll-behavior: none;
+  /* Seluruh gerak jari diurus JS, dan seretan boleh dimulai dari mana saja
+     di layar — bukan cuma di atas halamannya. Tanpa ini, seretan yang
+     dimulai di pita kosong atas/bawah ikut terbaca browser sebagai
+     menggulir dan balik halamannya tersendat. */
+  touch-action: none;
+  /* Menyeret lembar tidak boleh ikut menyorot teks halaman. */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Buku ──────────────────────────────────────────────────────────────── */
+
+#buku {
+  position: absolute;
+  inset: 0;
+  /* Sudut pandang. Makin kecil makin dramatis; 1400 kira-kira setara dengan
+     memegang majalah sejauh lengan. */
+  perspective: 1700px;   /* makin besar makin landai, kurang terasa "dibalik" */
+  perspective-origin: 58% 50%;
+  /* Seluruh gerak jari diurus JS. Tanpa ini, menyeret mendatar di HP ikut
+     terbaca browser sebagai menggulir/zoom dan balik halamannya tersendat. */
+  touch-action: none;
+}
+
+img { -webkit-user-drag: none; user-drag: none; }
+
+.lembar {
+  position: absolute;
+  inset: 0;
+  /* Punggung buku di tepi KIRI — di situlah lembarnya berputar. */
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  /* Keadaan diam saja. Selama membalik, transform-nya ditulis LANGSUNG ke
+     style oleh valentine.js — lihat catatan di taruh() soal kenapa bukan
+     lewat custom property. */
+  transform: rotateY(0deg);
+  will-change: transform;
+}
+
+/* Urutan tumpukan kertas. Tanpa ini halaman berikutnya menutupi yang sedang
+   dibaca, dan lembar yang sedang dibalik ke belakang lewat DI BAWAH halaman
+   yang seharusnya ia tutupi. */
+.lembar:nth-child(1)  { z-index: 20; }
+.lembar:nth-child(2)  { z-index: 19; }
+.lembar:nth-child(3)  { z-index: 18; }
+.lembar:nth-child(4)  { z-index: 17; }
+.lembar:nth-child(5)  { z-index: 16; }
+.lembar:nth-child(6)  { z-index: 15; }
+.lembar:nth-child(7)  { z-index: 14; }
+.lembar:nth-child(8)  { z-index: 13; }
+.lembar:nth-child(9)  { z-index: 12; }
+.lembar:nth-child(10) { z-index: 11; }
+
+/* Lembar yang jauh dari halaman yang sedang dibaca disembunyikan sama
+   sekali. Bukan demi kerapian: sepuluh pelat 1241x1755 yang semuanya
+   ter-decode sekaligus memakan ratusan MB di HP kelas bawah, dan tab-nya
+   ditutup paksa sistem. JS menyalakan .dekat untuk beberapa lembar di
+   sekitar halaman yang dibaca saja. */
+.lembar:not(.dekat) { visibility: hidden; }
+.lembar:not(.dekat) .pelat, .lembar:not(.dekat) .atas { background-image: none; }
+
+/* ── mode "partikel" ──────────────────────────────────────────────────
+   Tidak ada lembar yang diputar: yang terlihat hanya halaman yang sedang
+   dibaca, plus halaman tujuan selama peralihan (.masuk). Selebihnya benar
+   -benar disembunyikan — tanpa ini seluruh tumpukan tertumpuk di tempat
+   yang sama dan halaman paling atas yang menang, bukan yang aktif.
+
+   Ditandai dari #buku[data-gaya], yang disetel valentine.js. Dengan begitu
+   mengganti GAYA cukup satu kata di JS dan CSS-nya ikut, tanpa ada aturan
+   yang perlu dicabut manual. */
+#buku[data-gaya="partikel"] .lembar { visibility: hidden; opacity: 0; }
+#buku[data-gaya="partikel"] .lembar.active,
+#buku[data-gaya="partikel"] .lembar.masuk,
+#buku[data-gaya="partikel"] .lembar.keluar { visibility: visible; opacity: 1; }
+
+/* Halaman yang sedang larut duduk DI ATAS semuanya.
+
+   Tanpa ini arahnya tidak simetris: urutan tumpukan memberi halaman awal
+   z-index lebih tinggi, jadi saat MAJU halaman lama memang di atas dan
+   larutnya terlihat — tapi saat MUNDUR ia ada di BAWAH halaman tujuan,
+   larutnya tertutup, dan peralihan terbaca sebagai halaman baru yang
+   menyembul begitu saja. 25 di atas 20, nilai tertinggi tumpukan. */
+#buku[data-gaya="partikel"] .lembar.keluar { z-index: 25; }
+/* Punggung lembar tidak pernah terlihat di mode ini — tidak ada yang
+   dibalik. Tanpa aturan ini ia menumpuk di atas muka depannya. */
+#buku[data-gaya="partikel"] .muka.belakang { display: none; }
+/* Bayangan lembar-di-atasnya dan zona ketuk tepi ikut tidak berlaku:
+   dua-duanya bahasa "buku yang dibalik". */
+#buku[data-gaya="partikel"] .jatuh,
+#buku[data-gaya="partikel"] .zona { display: none; }
+
+#debu {
+  position: absolute;
+  inset: 0;
+  /* Di ATAS halaman — debunya melayang meninggalkan kertas, bukan
+     terperangkap di belakangnya. */
+  z-index: 30;
+  pointer-events: none;
+}
+
+.muka {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  background: var(--kertas-bg, #fffaf1);
+  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, .75);
+}
+.muka.belakang { transform: rotateY(180deg); }
+
+/* Muka yang membelakangi pembaca disembunyikan LANGSUNG, tidak diserahkan
+   ke `backface-visibility` di atas. Kelas .terbalik dipasang valentine.js
+   di taruh() begitu lembarnya lewat setengah putaran — alasan lengkapnya
+   ada di komentar fungsi itu. Singkatnya: WebKit tidak mematuhi
+   backface-visibility di sini, dan satu-satunya cara membuatnya patuh
+   (memberi .muka.depan transform 3D sendiri) justru mengosongkan isi
+   halamannya.
+
+   Ini disetel pada elemennya SENDIRI, bukan diwarisi dari induk — itu
+   bedanya dengan #rig, yang harus pakai `display` justru karena WebKit
+   tidak mewariskan visibility ke anak ber-transform 3D. */
+/* Lembar yang sudah pindah ke KIRI tetap menampilkan isi halamannya, dan
+   terbaca normal — permintaan pemilik situs 14 Agu 2026: "yg disebelah kiri
+   itu jadi halaman sebelumnya yg dibagian kanan, tidak mirror".
+
+   Caranya bukan menyalin isi halaman ke punggungnya. Muka DEPAN-nya yang
+   tetap ditampilkan, lalu dicerminkan balik dengan scaleX(-1): dilihat dari
+   belakang ia sudah tercermin sekali, jadi cerminan kedua mengembalikannya
+   terbaca. Nol penggandaan pelat, nol tambahan memori — penting, karena
+   pelat 1241x1755 yang ter-decode berlipat itu yang dulu membuat tab
+   tertutup paksa di HP kelas bawah.
+
+   backface-visibility dikembalikan ke `visible` khusus di keadaan ini:
+   tanpa itu Chrome (yang MEMATUHI backface-visibility) akan menyembunyikan
+   muka depan justru saat kita ingin ia terlihat. */
+.lembar.terbalik .muka.depan {
+  backface-visibility: visible;
+  transform: scaleX(-1);
+}
+.lembar.terbalik .muka.belakang { visibility: hidden; }
+.lembar:not(.terbalik) .muka.belakang { visibility: hidden; }
+
+/* Sisi belakang kertas: warna kertas halaman itu sendiri, dengan serat
+   halus. Sengaja TIDAK memantulkan tinta halaman depannya — di majalah
+   sungguhan, balik halaman 1 adalah halaman 2, bukan cermin halaman 1. */
+.belakang::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, .16), rgba(0, 0, 0, 0) 14%),
+    repeating-linear-gradient(92deg, rgba(0, 0, 0, .022) 0 2px, rgba(255, 255, 255, .022) 2px 4px);
+}
+
+/* ── Halaman ───────────────────────────────────────────────────────────── */
+
+.kertas { position: absolute; inset: 0; }
+
+.pelat, .atas {
+  position: absolute;
+  inset: 0;
+  background-image: var(--pelat);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+.pelat { z-index: 2; }
+/* Hiasan yang di desain aslinya digambar DI ATAS teks (tangkai bunga
+   halaman 4). Dipisah supaya urutannya tidak terbalik. */
+.atas { z-index: 5; }
+
+/* Lipatan punggung buku. Satu-satunya lapisan yang bukan bagian dari
+   desain Canva — tanpa itu halamannya terbaca sebagai gambar datar, bukan
+   kertas yang dijilid. Sengaja tipis. */
+.kertas::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 7%;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(40, 20, 14, .17), rgba(40, 20, 14, 0));
+}
+
+/* ── Foto ──────────────────────────────────────────────────────────────── */
+
+/* Pembungkus TIDAK boleh membuat konteks penumpukan sendiri (tanpa
+   transform/opacity/z-index), supaya anaknya bisa berdiri di dua sisi
+   pelat: gambarnya di belakang, permukaan ketuknya di depan. */
+.bingkai {
+  position: absolute;
+  left: var(--kiri);
+  top: var(--atas);
+  width: var(--lebar);
+  height: var(--tinggi);
+}
+/* Foto sengaja digambar SEDIKIT LEBIH BESAR daripada bingkainya (--tembus),
+   dan itu bukan kelonggaran asal-asalan.
+
+   Kotak bingkai di valentine.html datang dari slots.json, yang dihitung
+   komponen() di tools/buat_pelat_valentine.py — dan komponen() bekerja pada
+   mask yang sudah diperkecil 4x lalu mengembalikan kotaknya pada kisi 4 px.
+   Pembulatan itu membuat kotaknya JATUH DI DALAM lubang pelat yang
+   sebenarnya. Terukur pada kesebelas pelat: tepi kanan dan bawah konsisten
+   kurang 1-3 px pelat (pelat 1241 px = 390 px desain, jadi paling lebar
+   0,94 px desain).
+
+   Selebar itu lubangnya tidak tertutup foto, dan yang mengintip dari
+   baliknya adalah --kertas-bg. Di halaman berkertas krem — hal 4 #fffaf1,
+   hal 6 #fefbf3, hal 7 #e6ded4, hal 9 #fffaf4 — sisa itu terbaca sebagai
+   GARIS PUTIH tipis di sisi kanan dan bawah tiap foto.
+
+   Melebarkan fotonya aman justru karena foto ada DI BELAKANG pelat: apa pun
+   yang lewat dari tepi lubang tertutup pelat yang opak di luar lubang, dan
+   yang sehalaman penuh (hal 1) dipotong .muka yang sudah overflow:hidden.
+   Jarak antar lubang terdekat 24 px pelat, jadi tidak ada foto yang bisa
+   bocor ke lubang tetangganya.
+
+   Yang DIPERBAIKI di sini gejalanya, bukan sebabnya. Sebabnya ada di
+   komponen(); membetulkannya berarti menghitung ulang keenam belas koordinat
+   di valentine.html. Kalau suatu hari itu dikerjakan, --tembus boleh
+   dikembalikan ke 0 — tapi jangan dinolkan sebelum itu.
+
+   .ketuk sengaja TIDAK ikut dilebarkan: ia sasaran klik di editor, dan
+   melebarkannya membuat sorotan bingkai meleset dari lubangnya. */
+.bingkai .gbr {
+  position: absolute;
+  inset: calc(-1 * var(--tembus, 1.5px));
+  z-index: 1;
+  overflow: hidden;
+  background: var(--kosong);
+}
+.bingkai img {
+  width: 100%;
+  height: 100%;
+  object-fit: var(--fit, cover);
+  object-position: var(--ox, 50%) var(--oy, 50%);
+  transform: scale(var(--zoom, 1));
+  transform-origin: var(--ox, 50%) var(--oy, 50%);
+  border-radius: var(--br, 0);
+  display: block;
+}
+/* editing.css menyetel [data-frame].is-empty{position:relative} untuk
+   template lain. Dua kelas mengalahkan .bingkai yang cuma satu, dan berkas
+   itu dimuat SESUDAH berkas ini — akibatnya, begitu pembeli membuka editor
+   dengan kartu yang masih kosong, kelima belas bingkai foto lepas dari
+   posisinya dan menumpuk berurutan di atas halaman. Selektor ber-id ini
+   yang menahannya. */
+#buku .bingkai { position: absolute; }
+
+/* Permukaan ketuk, hanya ada saat menyunting. Ia yang menerima klik dan
+   memakai sorotan, karena pelat menutupi gambarnya — termasuk menutupi
+   penanda "+ foto" bawaan editing.css, yang karena itu dimatikan di sini
+   lalu digambar ulang di lapisan yang benar. */
+.bingkai .ketuk { position: absolute; inset: 0; z-index: 3; }
+#buku [data-frame].is-empty::after { display: none; }
+[data-frame].is-selected .ketuk { outline: 2px solid #dd6a63; outline-offset: -2px; }
+[data-frame].is-empty .ketuk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(110, 92, 92, .34);
+  outline: 2px dashed rgba(255, 255, 255, .75);
+  outline-offset: -5px;
+  color: #fff;
+  font-family: ui-sans-serif, -apple-system, sans-serif;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+}
+[data-frame].is-empty .ketuk::before { content: "+ foto"; }
+
+/* ── Teks ──────────────────────────────────────────────────────────────── */
+
+.tx {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  /* Ditaruh pada GARIS ALAS huruf, bukan puncak kotaknya. Itu satu-satunya
+     jangkar yang tidak bergeser waktu pembeli mengganti font atau ukuran —
+     dan teks yang bergeser sedikit saja langsung terlihat salah di atas
+     pelat yang posisinya tetap. */
+  transform: translateY(calc((var(--jb) / 2 + var(--cf)) * -1em));
+  font-family: var(--f, 'Bellefair', Georgia, serif);
+  /* Font bersumbu ukuran optis mengubah metrik naik-turunnya mengikuti
+     ukuran huruf, dan satu angka --c tidak lagi berlaku untuk semua teks.
+     Dimatikan supaya metriknya tetap. */
+  font-optical-sizing: none;
+  font-weight: var(--fw, 400);
+  font-style: var(--fi, normal);
+  letter-spacing: var(--ls, normal);
+  line-height: var(--jb);
+  text-align: var(--al, left);
+  color: var(--c, #000);
+  white-space: pre-line;      /* baris yang diketik pembeli dihormati */
+  overflow-wrap: break-word;
+  /* --muat: pengecil otomatis saat teks pembeli lebih panjang daripada
+     bawaannya (lihat valentine.js). Bernilai 1 selama teksnya sepanjang
+     bawaan, jadi desain aslinya TIDAK berubah sama sekali — ia baru
+     bekerja kalau tanpa itu halamannya jebol. */
+  /* --jb0 = jarak baris bawaan elemen ini, --lh = pilihan pembeli. */
+  --jb: var(--lh, var(--jb0, 1));
+  --cf: var(--c-serif);
+}
+.tx.allura  { font-family: var(--f, 'Allura', cursive);         --cf: var(--c-allura); }
+.tx.kaushan { font-family: var(--f, 'Kaushan Script', cursive); --cf: var(--c-kaushan); }
+.tx.pinyon  { font-family: var(--f, 'Pinyon Script', cursive);  --cf: var(--c-pinyon); }
+.tx.caveat  { font-family: var(--f, 'Caveat', cursive);         --cf: var(--c-caveat); }
+
+/* — halaman 1: sampul — */
+#hal1 { --kertas-bg: #2b2320; }
+.t-mast     { left: 11.100%; top: 15.744%; font-size: calc(54.99px * var(--fs, 1) * var(--muat, 1)); color: var(--c, #fff); }
+.t-script   { left: 45.306%; top: 22.214%; font-size: calc(48.90px * var(--fs, 1) * var(--muat, 1)); color: var(--c, var(--merah-terang)); }
+.t-edisi    { left:  4.316%; top: 54.153%; width: 57.700%; font-size: calc(25.04px * var(--fs, 1) * var(--muat, 1)); --jb0: 0.883; color: var(--c, #fff); }
+.t-tanggal  { left:  7.473%; top: 67.343%; font-size: calc(20.45px * var(--fs, 1) * var(--muat, 1)); color: var(--c, var(--merah-terang)); }
+.t-nama     { left: 61.495%; top: 69.694%; width: 38.000%; font-size: calc(27.27px * var(--fs, 1) * var(--muat, 1)); --jb0: 0.956; color: var(--c, #fff); }
+.t-tagline  { left: 30.000%; top: 79.905%; width: 63.750%; font-size: calc(24.53px * var(--fs, 1) * var(--muat, 1)); --jb0: 1.001; color: var(--c, var(--merah-terang)); text-align: var(--al, right); }
+
+/* — halaman 2: strip film — */
+#hal2 { --kertas-bg: #750909; }
+.t-kata { left: 64.484%; top: 91.196%; font-size: calc(14.62px * var(--fs, 1) * var(--muat, 1)); color: var(--c, #fff); }
+
+/* — halaman 3: daftar isi —
+   Judul "Contents" menyatu dengan pelat; keempat barisnya teks HTML.
+   Angka left/top di bawah bukan kira-kira: semuanya titik asal (origin) span
+   aslinya di PDF, jadi tiap baris duduk persis di garis alas desainnya dan
+   sejajar dengan bulatan yang masih tertinggal di pelat.
+   14,325% = 85,3pt; lebar 70,175% membawa tepi kanannya ke 503,2pt, tepi
+   yang dipakai bersama oleh "4-5" dan "10" di desain aslinya. */
+#hal3 { --kertas-bg: #efe9d8; }
+.t-isi {
+  left: 14.325%;
+  width: 70.175%;
+  /* 19,0px, DIUKUR bukan dihitung. Ukuran desainnya 33pt = 21,59px, tapi
+     itu angka BostonAngel-Light; Bellefair merender 3-10% lebih lebar per
+     baris yang sama. Disapu di perender sungguhan pada 21,59 / 20,8 / 20,2 /
+     19,6 / 19,0 / 18,4:
+
+       fs      lebar label 1..4        pimpin 1..4     --muat terkecil
+       21,59   173 228 170 212         65 25 68 38     0,850
+       20,2    162 213 159 199         78 41 81 53     0,850
+       19,6    157 207 155 227         84 48 87 22     1,000
+       19,0    152 201 150 220         90 55 92 30     1,000
+
+     Dari 20,2px ke atas, baris terpanjang ("THINGS I LOVE ABOUT U") sudah
+     dikecilkan otomatis PADA TEKS BAWAANNYA — artinya nol kelonggaran
+     tersisa begitu pembeli mengetik yang lebih panjang. Pada 19,0px keempat
+     baris muat pada --muat 1, dan baris terpanjang itu justru jatuh persis
+     selebar desainnya (220 vs 220,1). Ketiga baris lain 3-9% lebih pendek
+     daripada desain; selisihnya dimakan .pimpin, yang memang untuk itu.
+
+     Kalau fontnya diganti, SAPU ULANG — jangan menskalakan angka ini. */
+  font-size: calc(19.0px * var(--fs, 1) * var(--muat, 1));
+  color: var(--c, #703e2c);
+  display: flex;
+  align-items: baseline;
+}
+/* Label DIBIARKAN bisa membungkus (tanpa nowrap). Itu satu-satunya cara
+   --muat ikut bekerja: pengecil otomatis di valentine.js memicu pada TINGGI,
+   jadi label yang dipaksa satu baris akan melimpah keluar halaman tanpa
+   pernah mengecil. Dibiarkan membungkus, tingginya naik, --muat mengecilkan
+   hurufnya, dan barisnya kembali muat satu baris. */
+.t-isi .lb { min-width: 0; }
+/* Pengganti deretan garis bawah desain aslinya. flex:1 membuatnya memakan
+   sisa ruang berapa pun panjang labelnya; min-width menjaga ia tetap
+   terbaca sebagai garis, bukan titik, waktu labelnya panjang. */
+.t-isi .pimpin {
+  flex: 1 1 auto;
+  min-width: .9em;
+  margin: 0 .22em;
+  border-bottom: .075em solid currentColor;
+}
+.t-isi .no { flex: 0 0 auto; white-space: nowrap; }
+.t-isi1 { top: 46.377%; }
+.t-isi2 { top: 51.844%; }
+.t-isi3 { top: 57.312%; }
+.t-isi4 { top: 62.780%; }
+
+/* — halaman 4: the day we met — */
+#hal4 { --kertas-bg: #fffaf1; }
+.t-judul4 { left: 3.275%; top: 26.061%; width: 48.000%; font-size: calc(35.09px * var(--fs, 1) * var(--muat, 1)); --jb0: 1.372;
+  /* Judul ini diberi jarak huruf lewat SPASI sungguhan di teksnya
+     ("T H E DAY"), bukan lewat letter-spacing. Spasi Bellefair lebih
+     sempit daripada font aslinya, jadi tanpa tambahan ini barisnya
+     terbaca "WEMET", bukan "W E M E T". */
+  word-spacing: var(--ws, .16em); }
+.t-body4  { left: 4.131%; top: 50.697%; width: 91.671%; font-size: calc(15.07px * var(--fs, 1) * var(--muat, 1)); --jb0: 1.173; text-align: var(--al, justify); }
+/* Satu-satunya .tx yang isinya elemen, bukan teks. white-space:pre-line
+   harus dicabut di pembungkusnya: kalau tidak, baris baru di antara tag
+   <div> dan <p> di berkas HTML ikut dihitung sebagai baris kosong, dan
+   seluruh paragrafnya turun satu baris dari tempatnya di pelat. */
+.t-body4 { white-space: normal; }
+.t-body4 p { margin: 0 0 calc(var(--jb) * 1em); white-space: pre-line; }
+.t-body4 p:last-child { margin-bottom: 0; }
+
+/* — halaman 5: kalender (angkanya menyatu dengan pelat) — */
+#hal5 { --kertas-bg: #750909; }
+.t-bulan { left: 24.987%; top: 32.638%; font-size: calc(83.99px * var(--fs, 1) * var(--muat, 1)); }
+
+/* — halaman 6: our love — */
+#hal6 { --kertas-bg: #fefbf3; }
+.t-judul6 {
+  left: 11.721%; top: 15.542%;
+  font-size: calc(83.20px * var(--fs, 1) * var(--muat, 1));
+  color: var(--c, var(--merah));
+  /* Bayangan merah muda di desain aslinya: salinan huruf yang sama,
+     digeser 8,3pt ke kanan-bawah. */
+  text-shadow: .0444em .0444em 0 #d47979;
+}
+.t-h6a { left:  5.760%; top: 27.771%; font-size: calc(29.54px * var(--fs, 1) * var(--muat, 1)); color: var(--c, var(--merah)); }
+.t-t6a { left:  4.131%; top: 32.710%; width: 60.000%; font-size: calc(19.19px * var(--fs, 1) * var(--muat, 1)); --jb0: 1.024; }
+.t-h6b { left: 20.000%; top: 81.733%; width: 73.870%; font-size: calc(27.12px * var(--fs, 1) * var(--muat, 1)); color: var(--c, var(--merah)); text-align: var(--al, right); }
+.t-t6b { left: 16.507%; top: 86.827%; width: 80.437%; font-size: calc(17.97px * var(--fs, 1) * var(--muat, 1)); --jb0: 1.283; text-align: var(--al, right); }
+/* DICABUT 11 Agu 2026, mengikuti desain baru. Dulu di sini ada gema putih
+   (text-shadow 0 .17em 0 #fff) — efek "lift" milik Canva, yang saat itu
+   memang perlu karena latar halaman ini bulatan hitam besar dan huruf
+   hitamnya hilang tiap kali melintasinya. Latarnya sekarang tekstur rajut
+   krem dan pemilik situs mematikan efek lift-nya di Canva; terbukti dari
+   PDF-nya: di ekspor lama tiap baris tertulis TIGA kali (satu salinan
+   putih digeser 4,8pt ke bawah), di ekspor baru cuma sekali.
+   Kalau suatu saat teksnya terlihat "melayang" di atas rajutan, itu bukan
+   alasan memasangnya lagi — periksa dulu apakah Canva-nya memang berubah. */
+
+/* — halaman 7: liontin — */
+#hal7 { --kertas-bg: #e6ded4; }
+.t-eternal { left: 12.578%; top: 26.346%; font-size: calc(30.46px * var(--fs, 1) * var(--muat, 1)); color: var(--c, var(--merah)); }
+.t-pasang  { left: 49.673%; top: 75.418%; width: 50.000%; font-size: calc(33.79px * var(--fs, 1) * var(--muat, 1)); color: var(--c, var(--merah)); }
+.t-tutup   { left: 10.076%; top: 83.419%; width: 80.605%; font-size: calc(15.87px * var(--fs, 1) * var(--muat, 1)); --jb0: 1.300; text-align: var(--al, center); color: var(--c, var(--merah)); }
+
+/* — halaman 8, 9 — */
+#hal8 .kertas  { --kertas-bg: #4a0a0a; }
+#hal9 .kertas  { --kertas-bg: #fffaf4; }
+
+/* — halaman 10: things i love about you — */
+#hal10 { --kertas-bg: #750909; }
+
+/* Empat kalimat di dalam elips merah muda. Beda sendiri dari semua teks
+   lain di berkas ini, dan sengaja:
+
+   1. DIPUSATKAN, bukan digantung pada garis alas. Teks lain menempel pada
+      garis alas yang diambil dari PDF-nya, karena di situ ada tulisan Canva
+      yang harus ditimpa persis. Di sini elipsnya KOSONG di desain aslinya —
+      tidak ada garis alas untuk ditiru. Yang benar untuk bentuk oval adalah
+      duduk di tengah, supaya satu baris dan dua baris sama-sama enak
+      dilihat. Karena itu --cf tidak berlaku dan transform-nya ditimpa.
+   2. Ukuran kotaknya 72% x 46% dari elipsnya. Bukan angka bulat yang
+      dikira-kira: sebuah kotak setengah-lebar w dan setengah-tinggi h muat
+      di dalam elips ber-sumbu a dan b kalau (w/a)^2 + (h/b)^2 <= 1. Dengan
+      0,72 dan 0,46 hasilnya 0,73 — masih di dalam, dengan sisa ruang yang
+      membuat huruf tidak menempel ke garis putus-putusnya.
+
+   Titik tengah tiap elips diukur dari pelat yang sudah jadi (gugus piksel
+   merah muda), bukan dari koordinat PDF: yang harus dituju adalah yang
+   benar-benar terlihat pembeli. */
+.tx.t-love {
+  /* menimpa jangkar garis alas milik .tx */
+  transform: translateY(-50%);
+  text-align: var(--al, center);
+  width: var(--lbr);
+  left: var(--kr);
+  top: var(--tg);
+  font-size: calc(16.5px * var(--fs, 1) * var(--muat, 1));
+  --jb0: 1.16;
+  color: var(--c, #750909);
+}
+.t-love1 { --kr: 11.236%; --tg: 49.687%; --lbr: 34.579%; }
+.t-love2 { --kr: 50.134%; --tg: 64.957%; --lbr: 37.363%; }
+.t-love3 { --kr: 11.101%; --tg: 77.493%; --lbr: 33.882%; }
+.t-love4 { --kr: 52.074%; --tg: 90.370%; --lbr: 35.739%; }
+
+/* — halaman 11: penutup "My wish for you" —
+   Pelatnya kolase kiriman pemilik situs, bukan halaman PDF; dibuat
+   tools/buat_pelat_hal11.py. --kertas-bg disamakan dengan merah tua kolase
+   itu supaya tidak ada kedipan krem sebelum pelatnya ter-decode.
+
+   Halaman ini TIDAK punya bingkai foto lagi (dulu "f_akhir", sehalaman
+   penuh). Aturan #hal11 .gbr yang dulu ada di sini ikut dicabut bersamanya.
+
+   Kedua kotak teks menghindari hiasan yang tetap ada di pelat: bibir merah
+   berhenti di x 32%, bintang besar mengisi x 25-41% pada y 23-32%, dua
+   bintang kecil duduk di x 70-95% pada y 57-68%, dan sobekan koran masuk
+   dari tepi kanan bawah. Itu sebabnya judulnya digeser ke kanan dan
+   pesannya berhenti jauh sebelum tepi kanan. */
+#hal11 { --kertas-bg: #440402; }
+
+/* Judul, di tempat huruf potongan koran "HAPPY BIRTHDAY" dulu berada.
+   Dijatah dua baris: "My wish for you" muat satu baris, tapi pembeli yang
+   menulis lebih panjang harus punya baris kedua sebelum --muat mulai
+   mengecilkan hurufnya. */
+.t-wish {
+  left: 34.500%;
+  top: 15.500%;
+  width: 61.000%;
+  font-size: calc(38.00px * var(--fs, 1) * var(--muat, 1));
+  --jb0: 1.02;
+  font-weight: var(--fw, 700);
+  color: var(--c, #fff);
+  text-align: var(--al, center);
+}
+/* Pesan penutup. Mengalir bebas seperti surat halaman 4, jadi dijatah
+   dengan data-maks (persen tinggi halaman), bukan jumlah baris. */
+.t-pesan {
+  left: 9.000%;
+  top: 38.000%;
+  width: 72.000%;
+  font-size: calc(16.40px * var(--fs, 1) * var(--muat, 1));
+  --jb0: 1.52;
+  color: var(--c, #fff);
+}
+
+/* --cf tiap teks, hasil ukur tools/cek_valentine.js.
+   Nilai per-font di :root cuma titik awal. Angka pastinya berbeda sedikit
+   tiap elemen karena Chrome membulatkan metrik naik-turun font ke piksel
+   bulat sebelum menghitung half-leading — sisa pembulatan itu tergantung
+   ukuran hurufnya, jadi tidak bisa diwakili satu angka per font.
+   Setelah mengubah font atau ukuran teks mana pun, JALANKAN ULANG
+   pemeriksanya dan salin lagi angka-angka ini.
+
+   Ditulis .tx.t-xxx, bukan .t-xxx: aturan font di atas memakai dua kelas
+   (.tx.allura), jadi satu kelas saja kalah spesifisitas dan override-nya
+   diam-diam tidak pernah berlaku. */
+.tx.t-mast { --cf: 0.3002; }
+.tx.t-script { --cf: 0.1544; }
+.tx.t-edisi { --cf: 0.2775; }
+.tx.t-tanggal { --cf: 0.2826; }
+.tx.t-nama { --cf: 0.2922; }
+.tx.t-tagline { --cf: 0.2743; }
+.tx.t-kata { --cf: 0.1160; }
+.tx.t-judul4 { --cf: 0.2830; }
+.tx.t-body4 { --cf: 0.2763; }
+.tx.t-bulan { --cf: 0.1668; }
+.tx.t-judul6 { --cf: 0.3534; }
+.tx.t-h6a { --cf: 0.2787; }
+.tx.t-t6a { --cf: 0.2698; }
+.tx.t-h6b { --cf: 0.2745; }
+.tx.t-t6b { --cf: 0.3048; }
+.tx.t-eternal { --cf: 0.2223; }
+.tx.t-pasang { --cf: 0.2104; }
+.tx.t-tutup { --cf: 0.2955; }
+
+/* Bayangan sampul. Foto di desain aslinya gelap, jadi tulisan putih di
+   atasnya terbaca tanpa bantuan apa pun — tapi pembeli bisa memasang foto
+   apa saja, dan di atas foto terang tulisannya hilang sama sekali. Gradien
+   ini menahan itu: gelap tipis di atas (tempat LOVESTORY) dan di bawah
+   (tempat edisi, tanggal, nama), bening di tengah supaya wajah di foto
+   tidak ikut tertutup. Pola sampul majalah pada umumnya.
+
+   z-index 2 dan ditulis SESUDAH .pelat: keduanya di lapis yang sama, jadi
+   yang belakangan menang. Di bawah .ketuk (3) supaya sorotan bingkai saat
+   menyunting tidak ikut teredam. */
+.tirai {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(18, 9, 9, .44), rgba(18, 9, 9, .18) 23%, rgba(18, 9, 9, 0) 38%),
+    linear-gradient(0deg, rgba(18, 9, 9, .52), rgba(18, 9, 9, .30) 26%, rgba(18, 9, 9, .12) 45%, rgba(18, 9, 9, 0) 62%);
+}
+
+/* ── Kalender halaman 5: hati yang bisa dipindah ───────────────────────── */
+
+/* Angka 1..31 TETAP menyatu dengan pelat gambar — hurufnya huruf Canva asli.
+   Yang dicabut dari pelat cuma hatinya (lihat CABUT_HIASAN di
+   tools/buat_pelat_valentine.py), supaya bisa berpindah ke tanggal yang
+   dipilih pembeli. Koordinat di bawah adalah titik tengah tiap angka,
+   diambil per karakter dari PDF-nya. */
+.kalender { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+
+.lingkaran {
+  position: absolute;
+  /* Bawaan = posisi tanggal 13, sama dengan desain aslinya. Dipakai juga
+     sebagai jaring pengaman: kalau nilainya di luar 1..31, hatinya tetap
+     duduk di tempat yang masuk akal, bukan melompat ke pojok halaman. */
+  left: var(--x, 77.157%);
+  top: var(--y, 60.231%);
+  width: 14.232%;
+  height: 11.005%;
+  /* -50% memusatkan ke angkanya; selisih kecil di atasnya menempatkan hati
+     PERSIS seperti di desain aslinya, yang memang tidak tepat di tengah. */
+  transform: translate(-45.45%, -52.96%);
+  fill: #fff;
+}
+
+/* Sasaran ketuk tiap tanggal — hanya ada saat menyunting. */
+.hari {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 9%;
+  height: 6.2%;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.hari:hover { background: rgba(255, 255, 255, .18); }
+.hari:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
+.hh1 { --x: 8.122%; --y: 51.587%; }
+.hh2 { --x: 21.605%; --y: 51.587%; }
+.hh3 { --x: 35.614%; --y: 51.587%; }
+.hh4 { --x: 49.646%; --y: 51.587%; }
+.hh5 { --x: 63.638%; --y: 51.587%; }
+.hh6 { --x: 77.578%; --y: 51.587%; }
+.hh7 { --x: 91.454%; --y: 51.587%; }
+.hh8 { --x: 8.584%; --y: 60.23%; }
+.hh9 { --x: 20.958%; --y: 60.23%; }
+.hh10 { --x: 36.252%; --y: 60.23%; }
+.hh11 { --x: 48.631%; --y: 60.23%; }
+.hh12 { --x: 64.31%; --y: 60.23%; }
+.hh13 { --x: 77.16%; --y: 60.23%; }
+.hh14 { --x: 90.042%; --y: 60.23%; }
+.hh15 { --x: 10.665%; --y: 69.128%; }
+.hh16 { --x: 20.398%; --y: 69.128%; }
+.hh17 { --x: 36.38%; --y: 69.077%; }
+.hh18 { --x: 47.904%; --y: 69.077%; }
+.hh19 { --x: 64.553%; --y: 69.0%; }
+.hh20 { --x: 76.744%; --y: 69.0%; }
+.hh21 { --x: 89.978%; --y: 68.846%; }
+.hh22 { --x: 10.698%; --y: 77.967%; }
+.hh23 { --x: 20.132%; --y: 77.967%; }
+.hh24 { --x: 36.224%; --y: 77.967%; }
+.hh25 { --x: 47.745%; --y: 77.967%; }
+.hh26 { --x: 64.572%; --y: 77.967%; }
+.hh27 { --x: 77.267%; --y: 77.967%; }
+.hh28 { --x: 90.041%; --y: 77.967%; }
+.hh29 { --x: 11.208%; --y: 86.78%; }
+.hh30 { --x: 19.545%; --y: 86.78%; }
+.hh31 { --x: 35.387%; --y: 86.78%; }
+
+/* ── Cahaya & bayangan saat membalik ───────────────────────────────────── */
+
+/* Inilah yang membuat lembarnya terbaca sebagai kertas, bukan gambar yang
+   diputar: sisi yang terangkat menghadap menjauhi cahaya lalu meredup,
+   dan halaman di bawahnya kejatuhan bayangan dari lembar yang terangkat. */
+.redup {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0;            /* diisi valentine.js selama membalik */
+  background: linear-gradient(275deg, rgba(28, 12, 8, .55), rgba(28, 12, 8, .05) 62%);
+}
+.belakang .redup { background: linear-gradient(85deg, rgba(28, 12, 8, .5), rgba(28, 12, 8, .04) 62%); }
+
+/* ── Rig bilah: halaman yang MELENGKUNG ────────────────────────────────
+   Selama dibalik, lembar aslinya disembunyikan dan digantikan sepuluh
+   bilah tegak di sini. Tiap bilah adalah jendela ke satu potongan tegak
+   halaman — di dalamnya klon utuh .kertas yang digeser ke kiri lalu
+   dipotong. Sudut tiap bilah dihitung valentine.js; lihat catatan panjang
+   di kepala berkas itu soal kenapa bidang tunggal yang diputar selalu
+   terbaca sebagai kaca.
+
+   overflow:hidden dipasang di MUKA, bukan di bilahnya: elemen ber-overflow
+   memaksa isinya jadi datar, sementara bilahnya harus tetap preserve-3d
+   supaya sisi depan dan belakangnya bisa saling membelakangi. */
+/* Rig disembunyikan dengan `display`, BUKAN `visibility`.
+
+   Dulu `visibility: hidden`, dan di Chrome itu cukup. Di Safari TIDAK:
+   #rig ber-`transform-style: preserve-3d`, dan bilah di dalamnya punya
+   transform 3D sendiri — Safari merender anak-anak itu ke ruang 3D bersama
+   dan tidak mewarisi `visibility: hidden` milik induknya. Akibatnya, begitu
+   sebuah putaran selesai, keenam belas bilah tetap tergambar pada sudut
+   terakhirnya (~180 derajat, yaitu terlempar ke KIRI halaman) sebagai pita
+   tegak berisi potongan isi halaman yang ter-smear.
+
+   Tidak pernah terlihat sebelum 14 Agu 2026 karena gaya yang dipakai
+   "rotasi": rig-nya ada tapi tidak pernah diberi transform sama sekali,
+   jadi tidak ada yang bisa bocor. Ia langsung muncul begitu gaya "bilah"
+   dinyalakan.
+
+   `display: none` menghapusnya dari rendering di semua mesin. Aman untuk
+   dipasang-lepas tiap putaran: pakaiRig() tidak pernah MENGUKUR apa pun
+   dari rig (posisi & lebar bilah dihitung dari konstanta, bukan dari
+   getBoundingClientRect), jadi tidak ada yang bergantung pada rig sudah
+   punya layout sebelum transform-nya disetel. */
+#rig {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  display: none;
+  pointer-events: none;
+}
+#rig.jalan { display: block; }
+
+/* Lembar asli mundur selama rig bekerja. Ditulis sesudah aturan .dekat di
+   atas supaya menang tanpa perlu !important. */
+.lembar.diganti-rig { visibility: hidden; }
+
+.pias {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.pias-muka {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+/* Sisi DEPAN sengaja tanpa latar: klon halamannya sudah menutup penuh, dan
+   latar apa pun di belakangnya hanya jadi warna yang dicampur tepi
+   antialias di batas potongan — itu yang memunculkan garis rambut tegak
+   antar bilah. */
+.pias-muka.belakang {
+  transform: rotateY(180deg);
+  /* Kertas, bukan warna latar halamannya. Balik sampul yang fotonya gelap
+     tetap kertas putih; memakai --kertas-bg membuat separuh lembar terlihat
+     seperti lubang hitam begitu lipatannya lewat 90 derajat. */
+  background: #ece3d7;
+}
+/* Sisi belakang kertas: polos, tanpa isi halaman — di majalah sungguhan
+   balik halaman 1 adalah halaman 2, bukan cermin halaman 1. */
+.pias-muka.belakang .pias-jendela { display: none; }
+.pias-muka.belakang::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(92deg,
+    rgba(0, 0, 0, .022) 0 2px, rgba(255, 255, 255, .022) 2px 4px);
+}
+
+.pias-jendela { position: absolute; top: 0; }
+
+/* Gelap per bilah. Nilainya dihitung dari sudut bilah itu sendiri, jadi
+   bagian yang membelok menjauhi cahaya benar-benar menggelap — itulah
+   bayangan yang mengikuti kelengkungan, dan itu mustahil waktu halamannya
+   masih satu bidang datar. */
+/* Hanya gradasi GELAP. Lapisan kilau putih sempat ada di sini dan dicabut:
+   tepinya jatuh persis di batas potongan tiap bilah, dan sisa antialias
+   putihnya menumpuk di atas isi bilah tetangga — sepuluh batas jadi sepuluh
+   garis terang tegak yang terbaca sebagai "retakan kaca". Diuji dengan
+   Laplacian pada halaman abu rata: dengan kilau 4,11, tanpa kilau 0,49,
+   sementara halaman diam sendiri 0,80. Mengurangi tumpang-tindih,
+   melandaikan pangkatnya, dan menambah titik gradien semuanya TIDAK
+   menolong; mencabutnya menolong sepenuhnya.
+
+   Sisi terangnya tidak hilang: gradasi ini MENGHILANG di bagian yang
+   menghadap cahaya, jadi di sana kertasnya tampil pada kecerahan penuh. */
+.pias-redup {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+
+/* Bayangan yang dijatuhkan lembar terangkat ke halaman di bawahnya.
+   Ditaruh DI DALAM halaman yang menerimanya, bukan sebagai satu lapisan
+   bersama: tiap lembar punya z-index sendiri, jadi lapisan bersama tidak
+   bisa berdiri di antara dua lembar yang mana pun. */
+.jatuh {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 66%;
+  z-index: 7;
+  pointer-events: none;
+  opacity: 0;            /* diisi valentine.js selama membalik */
+  background: linear-gradient(90deg, rgba(20, 8, 6, .52), rgba(20, 8, 6, 0));
+}
+
+/* ── Gaya "rotasi": mendarat dengan transisi CSS ───────────────────────
+   Kelasnya di #buku, bukan di lembarnya: bayangan yang ikut beralih
+   (.jatuh) tinggal di halaman BERIKUTNYA, jadi dari lembar yang berputar
+   ia tidak terjangkau selektor mana pun. */
+#buku.melayang .lembar { transition: transform 600ms cubic-bezier(.645, .045, .355, 1); }
+#buku.melayang .redup,
+#buku.melayang .jatuh { transition: opacity 600ms cubic-bezier(.645, .045, .355, 1); }
+
+/* ── Ketuk tepi ────────────────────────────────────────────────────────
+   Hanya di kartu terbit. Saat menyunting, zona ini akan menelan klik pada
+   teks dan bingkai foto yang kebetulan dekat tepi — dan pembeli tidak akan
+   pernah tahu kenapa elemennya tidak bisa dipilih. */
+.zona {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 22%;
+  z-index: 30;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.zona.kanan { right: 0; }
+.zona.kiri { left: 0; }
+
+/* Sudut kertas terangkat saat kursor mendekat. Bukan hiasan: tanpa itu
+   tidak ada apa pun yang memberi tahu bahwa halamannya bisa dibalik dengan
+   ditarik. Di layar sentuh tidak ada hover, jadi di sana petunjuknya tetap
+   tulisan "geser untuk membuka". */
+.zona::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  border-style: solid;
+  border-width: 0 0 46px 46px;
+  /* Segitiga: sisi bawah = balik kertas, sisi atas = bayangan lipatannya. */
+  border-color: transparent transparent #efe7dc transparent;
+  filter: drop-shadow(-3px -3px 5px rgba(30, 14, 10, .45));
+  transition: opacity .22s ease, border-width .22s ease;
+  pointer-events: none;
+}
+.zona.kiri::after {
+  right: auto;
+  left: 0;
+  border-width: 0 46px 46px 0;
+  border-color: transparent transparent #efe7dc transparent;
+  filter: drop-shadow(3px -3px 5px rgba(30, 14, 10, .45));
+}
+.zona:hover::after { opacity: 1; border-bottom-width: 62px; }
+.zona.kanan:hover::after { border-left-width: 62px; }
+.zona.kiri:hover::after { border-right-width: 62px; }
+
+/* ── Tumpukan halaman di tepi ──────────────────────────────────────────
+   Beberapa garis tipis yang memberi tahu masih ada lembar lain di bawah.
+   Ditaruh di buku, bukan di lembarnya, supaya ia DIAM waktu halaman
+   berputar — persis seperti tumpukan kertas sungguhan yang tidak ikut
+   bergerak. */
+.tumpuk {
+  position: absolute;
+  top: 1.2%;
+  bottom: 1.2%;
+  width: 5px;
+  /* Di ATAS lembar-lembarnya (z 11-20): ia duduk di luar tepi halaman, dan
+     kalau berada di bawah, bayangan .muka menutupinya.
+
+     Sengaja DI LUAR tepi, bukan di dalam: di dalam berarti menutupi 5 px
+     karya Canva di kedua sisi tiap halaman. Konsekuensinya ia hanya
+     terlihat di layar yang lebih lebar daripada halamannya — di HP tegak
+     halaman memenuhi lebar layar, jadi tidak ada tempat untuk tumpukannya. */
+  z-index: 25;
+  pointer-events: none;
+}
+.tumpuk.kanan {
+  right: -5px;
+  background: repeating-linear-gradient(90deg,
+    rgba(255, 255, 255, .55) 0 1px, rgba(120, 96, 84, .38) 1px 2px);
+  box-shadow: 2px 0 6px -2px rgba(30, 14, 10, .5);
+  border-radius: 0 2px 2px 0;
+}
+.tumpuk.kiri {
+  left: -5px;
+  background: repeating-linear-gradient(90deg,
+    rgba(120, 96, 84, .38) 0 1px, rgba(255, 255, 255, .55) 1px 2px);
+  box-shadow: -2px 0 6px -2px rgba(30, 14, 10, .5);
+  border-radius: 2px 0 0 2px;
+}
+
+
+/* ── Navigasi ──────────────────────────────────────────────────────────── */
+/* DI LUAR kanvas kartu (lihat cards/_stage_head.html) supaya ukurannya tetap
+   normal di layar lebar dan tidak ikut diskalakan bersama halaman. */
+
+.nav {
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(20, 12, 10, .62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.nav button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
+  color: #f6e9e4;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.nav button:disabled { opacity: .3; cursor: default; }
+/* Tombol ♪ dulu di sini. Dicabut 18 Agu 2026 bersama seluruh suara membalik
+   halaman — lihat catatan di valentine.js. */
+.dots { display: flex; gap: 5px; }
+.dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(246, 233, 228, .34);
+  cursor: pointer;
+  transition: transform .2s ease, background .2s ease;
+}
+.dots i.on { background: #f6e9e4; transform: scale(1.45); }
+
+/* Petunjuk sekali jalan: tanpa ini tidak ada apa pun di halaman sampul yang
+   memberi tahu penerima bahwa kartunya bisa dibalik. */
+#petunjuk {
+  position: fixed;
+  right: 14px;
+  bottom: 54px;
+  z-index: 39;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(20, 12, 10, .62);
+  color: #f6e9e4;
+  font-family: 'Bellefair', Georgia, serif;
+  font-size: 12px;
+  letter-spacing: .04em;
+  pointer-events: none;
+  animation: tarik 2.6s ease-in-out infinite;
+}
+#petunjuk.pergi { opacity: 0; transition: opacity .5s ease; }
+@keyframes tarik {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-9px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #petunjuk { animation: none; }
+}

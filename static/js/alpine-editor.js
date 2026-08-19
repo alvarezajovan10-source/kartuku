@@ -22,6 +22,14 @@ window.cardEditor = function () {
     title: "Layar Judul", player: "Pilih Pemain", levelup: "Naik Level",
     dialog: "Surat", wishes: "Wishes", powerups: "Momen",
     kue: "Tiup Lilin", gameover: "Penutup",
+    // Valentine Story. Halamannya majalah, jadi namanya nomor halaman —
+    // itu yang dilihat pembeli waktu membalik lembarnya.
+    hal1: "Hal 1 — Sampul", hal2: "Hal 2 — Strip film",
+    hal3: "Hal 3 — Daftar isi", hal4: "Hal 4 — The Day We Met",
+    hal5: "Hal 5 — Kalender", hal6: "Hal 6 — Our Love",
+    hal7: "Hal 7 — Liontin", hal8: "Hal 8 — Galeri pita",
+    hal9: "Hal 9 — Galeri jepitan", hal10: "Hal 10 — Things I Love About You",
+    hal11: "Hal 11 — My Wish For You",
   };
 
   var specByKey = {};
@@ -194,6 +202,10 @@ window.cardEditor = function () {
             bentuk = "";
           }
           wadah.classList.toggle("is-lebar", bentuk === "lebar");
+          // Kartu buku: halaman A4 harus muat utuh. Di kotak berproporsi HP
+          // (390x844) halamannya cuma mengisi dua pertiga tinggi, dan sisanya
+          // pita gelap kosong — pembeli mengira kartunya belum jadi.
+          wadah.classList.toggle("is-buku", bentuk === "buku");
         });
       }
 
@@ -208,6 +220,13 @@ window.cardEditor = function () {
           // SUDAH tersimpan. Editan yang masih di memori dipasang ulang di
           // sini — tanpa ini, mengunggah foto akan menghapus tampilan editan.
           self.replay();
+        }
+        /* Teks yang diatur lewat klik di dalam kartu (tanggal yang
+           dilingkari di kalender). Pratinjaunya sudah berubah sendiri, jadi
+           di sini tinggal disimpan. */
+        if (data.type === "settext" && typeof data.key === "string") {
+          self.texts[data.key] = String(data.value == null ? "" : data.value);
+          self.queueSave();
         }
         if (data.type === "select") {
           self.sel = data.key;
@@ -486,10 +505,31 @@ window.cardEditor = function () {
       var img = new Image();
       img.onload = function () {
         var canvas = self.$refs.cropCanvas;
+        var spec = specByKey[item.slot] || {};
+
+        /* Kotak crop dibentuk mengikuti BINGKAI tujuannya, bukan bujur
+           sangkar tetap. Dulu selalu 640x640, dan itu dua masalah sekaligus:
+           pembeli memilih bagian foto di bentuk yang bukan bentuk tampilannya,
+           dan hasil potongannya — yang persis isi kanvas ini — tidak pernah
+           lebih besar dari 640 px, jadi foto sampul yang memenuhi satu
+           halaman penuh selalu terlihat pecah. */
+        var rasio = spec.rasio || 1;
+        var sisi = spec.asli ? 2400 : 1100;   // px sisi panjang yang dituju
+        var w = rasio >= 1 ? sisi : Math.round(sisi * rasio);
+        var h = rasio >= 1 ? Math.round(sisi / rasio) : sisi;
+
+        /* Jangan pernah memperbesar: kalau fotonya lebih kecil daripada
+           kotak yang dituju, kotaknya yang dikecilkan. Membesarkan piksel
+           tidak menambah detail, cuma menambah ukuran berkas. */
+        var faktor = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+        if (faktor > 1) { w = Math.round(w / faktor); h = Math.round(h / faktor); }
+        canvas.width = Math.max(320, w);
+        canvas.height = Math.max(320, h);
+
         // Skala awal = "cover": foto memenuhi kotak, sisa bisa digeser.
         var base = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
         self.crop = {
-          img: img, slot: item.slot, zoom: 1, base: base,
+          img: img, slot: item.slot, zoom: 1, base: base, asli: !!spec.asli,
           dx: (canvas.width - img.naturalWidth * base) / 2,
           dy: (canvas.height - img.naturalHeight * base) / 2,
           drag: null,
@@ -586,7 +626,9 @@ window.cardEditor = function () {
           })
           .catch(function (err) { self.error = err.message; self.cropOpen = false; })
           .finally(function () { self.busy = false; });
-      }, "image/jpeg", 0.9);
+        // Foto sampul disimpan dengan kualitas lebih tinggi: ia terpampang
+        // sebesar satu halaman penuh, jadi artefak kompresi kelihatan.
+      }, "image/jpeg", this.crop.asli ? 0.95 : 0.9);
     },
 
     uploadGallery: function (event) {

@@ -52,14 +52,29 @@ ALLOWED_IMAGE_FORMATS = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp"}
 MAX_DIMENSION = 1600
 JPEG_QUALITY = 82
 
+# Bingkai bertanda "asli": foto yang memenuhi satu halaman penuh. Dikecilkan
+# ke 1600 px, foto seperti itu terlihat pecah — di kartu buku, satu foto bisa
+# merentang selebar halaman pada layar retina.
+MAX_DIMENSION_BESAR = 2400
+JPEG_QUALITY_BESAR = 92
 
-def validate_and_compress_photo(uploaded) -> InMemoryUploadedFile:
+
+def validate_and_compress_photo(uploaded, besar: bool = False) -> InMemoryUploadedFile:
     """Validasi MIME asli (lewat Pillow, bukan ekstensi), resize, lalu kompres.
 
     Semua foto dinormalisasi ke JPEG supaya ukuran & rendering konsisten.
+
+    `besar=True` untuk bingkai yang fotonya memenuhi halaman: batas berkasnya
+    lebih longgar dan sisi panjangnya dibiarkan sampai 2400 px. Validasinya
+    TIDAK dilonggarkan — berkas tetap dibuka Pillow dulu, dan itu yang
+    menahan berkas yang menyamar sebagai gambar.
     """
-    if uploaded.size > settings.MAX_PHOTO_BYTES:
-        limit_mb = settings.MAX_PHOTO_BYTES // (1024 * 1024)
+    batas = settings.MAX_PHOTO_BYTES_BESAR if besar else settings.MAX_PHOTO_BYTES
+    sisi = MAX_DIMENSION_BESAR if besar else MAX_DIMENSION
+    mutu = JPEG_QUALITY_BESAR if besar else JPEG_QUALITY
+
+    if uploaded.size > batas:
+        limit_mb = batas // (1024 * 1024)
         raise ValidationError(f"Ukuran foto maksimal {limit_mb}MB.")
 
     try:
@@ -74,10 +89,10 @@ def validate_and_compress_photo(uploaded) -> InMemoryUploadedFile:
         raise ValidationError("Format foto harus JPG, PNG, atau WEBP.")
 
     image = image.convert("RGB")
-    image.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
+    image.thumbnail((sisi, sisi), Image.LANCZOS)
 
     buffer = io.BytesIO()
-    image.save(buffer, format="JPEG", quality=JPEG_QUALITY, optimize=True)
+    image.save(buffer, format="JPEG", quality=mutu, optimize=True)
     buffer.seek(0)
 
     name = (uploaded.name or "foto").rsplit(".", 1)[0][:40] + ".jpg"

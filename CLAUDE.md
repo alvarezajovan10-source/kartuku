@@ -329,6 +329,558 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   > diangkat sebelum deploy dan pemilik situs memilih tetap memakainya.
   > Versi latar gambar-sendiri ada di branch `template-8bit` (tertinggal
   > jauh). Jangan angkat lagi sebagai risiko baru — sudah diputuskan.
+- **Template Valentine Story** (7 Agu 2026, kategori **Love Story**;
+  diperbarui ke desain 11 halaman 11 Agu 2026) — majalah A4 **sebelas
+  halaman** yang **dibalik lembar demi lembar dengan jari**.
+  Stage baru `data-stage="buku"`: sama seperti "lebar", halamannya harus muat
+  UTUH, hanya perbandingannya A4 (390 × 551,6). **15 bingkai foto, 31 teks**
+  (19 Agu 2026; sebelumnya 16 bingkai & 25 teks — halaman 11 kehilangan
+  bingkai fotonya dan daftar isi halaman 3 jadi teks).
+
+  Cara kerjanya beda sendiri dari template lain, dan ini WAJIB dipahami
+  sebelum menyentuhnya:
+
+  - **Halamannya bukan CSS, melainkan gambar.** Tiap halaman satu pelat WebP
+    di `static/img/valentine/`, hasil ekspor Canva milik pemilik situs
+    (`~/Downloads/LOVESTORY-2.pdf`) — dibuat `tools/buat_pelat_valentine.py`.
+    Jangan sunting WebP-nya langsung; jalankan ulang skripnya.
+
+    > **Nomor `xref` gambar BERUBAH tiap ekspor ulang Canva.** Versi pertama
+    > skrip itu menghafal `PENGISI = {1: [289], 4: [323], ...}`. Saat ekspor
+    > kedua datang, foto sampul yang sama persis (md5 identik, posisi
+    > identik) sudah bernomor 319 — dan nomor 289 masih ada di PDF-nya, jadi
+    > skripnya TIDAK error, cuma melubangi gambar yang keliru. Sekarang
+    > pengisi dikenali dari isinya (`PENGISI_UKURAN` 1438×560 untuk gambar
+    > pengisi bawaan Canva, `PENGISI_SATU_SATUNYA` untuk sampul). Jangan
+    > kembali ke daftar nomor.
+  - **Teks yang bisa disunting DIHAPUS dari pelat**, lalu ditulis ulang
+    sebagai HTML di koordinat yang sama. Yang sengaja dibiarkan menyatu
+    dengan gambarnya — huruf Canva aslinya tetap utuh, tapi tidak bisa
+    diubah pembeli: judul "Contents" (hal 3), angka kalender (hal 5), dan
+    judul "THINGS I LOVE ABOUT YOU" (hal 10).
+
+    > **ISI daftar isi hal 3 SEKARANG BISA DISUNTING** (19 Agu 2026,
+    > permintaan pemilik situs; sebelumnya seluruh halaman itu menyatu dengan
+    > pelat). Empat barisnya jadi teks HTML `isi1..isi4`; judul "Contents"
+    > tetap gambar karena fontnya Brightwall 102pt, satu-satunya di halaman
+    > itu dan tanpa padanan bebas.
+    >
+    > Baris kelima desainnya, "MUSIC ____ 11-12", **dicabut** — majalahnya
+    > cuma 11 halaman, jadi halaman yang ditunjuknya tidak pernah ada.
+    >
+    > Dua jebakan yang sudah dibayar mahal, keduanya di
+    > `tools/buat_pelat_valentine.py`:
+    >
+    > 1. **Redaksi membunuh span yang KOTAKNYA bersinggungan, bukan yang
+    >    tintanya bertumpuk.** Kotak "Contents" menjulur ke bawah sampai
+    >    y=395 mengikuti ekor sapuan huruf C-nya, dan kotak baris pertama
+    >    daftar mulai di y=355 — jadi meredaksi baris pertama IKUT menghapus
+    >    judulnya, tanpa error apa pun. Judulnya dikembalikan lewat
+    >    `SELAMATKAN_TEKS`: dua render tambahan, dan piksel yang berbeda di
+    >    antara keduanya ditempel balik. Tabrakan itu berlaku DUA ARAH, jadi
+    >    pemulihannya WAJIB dibatasi kotak — tanpa itu baris pertama ikut
+    >    hidup lagi sebagai potongan ("HE DAY WE MET___ 4"). Batasnya diukur:
+    >    tinta judul berhenti di 340,3pt, tinta baris mulai 368,6pt.
+    > 2. **Bulatan daftarnya VEKTOR, bukan teks** — redaksi teks tidak
+    >    menyentuhnya, dan bulatan kelima tertinggal sendirian. Dicabut lewat
+    >    `CABUT_VEKTOR`, dan HARUS dengan
+    >    `PDF_REDACT_LINE_ART_REMOVE_IF_COVERED`. `IF_TOUCHED` akan ikut
+    >    mencabut dua persegi latar sehalaman penuh dan mengosongkan seluruh
+    >    halaman.
+    >
+    > Ukuran hurufnya **19,0px, hasil sapuan**, bukan 21,59px (= 33pt desain).
+    > Bellefair merender 3-10% lebih lebar daripada BostonAngel-Light, dan
+    > dari 20,2px ke atas baris terpanjang sudah dikecilkan `--muat` PADA
+    > TEKS BAWAANNYA — nol kelonggaran begitu pembeli mengetik. Tabel
+    > sapuannya ada di komentar `.t-isi` di valentine.css.
+    Yang hal 10 bukan pilihan gaya melainkan keharusan: efek glow-nya sudah
+    dibakar Canva jadi gambar. **Sudah diuji** — meredaksi objek teksnya
+    tidak membuat hurufnya hilang sedikit pun; yang tersisa di PDF cuma
+    lapisan teks tak terlihat. Satu-satunya cara mencabutnya adalah menimpa
+    kelopak bunga dan sobekan koran di belakangnya. Jangan coba lagi.
+  - **Halaman 10 & 11 (11 Agu 2026).** Hal 10 "Things I Love About You":
+    empat elips merah muda yang di desainnya KOSONG — tidak ada contoh
+    tulisan untuk ditiru. Teksnya karena itu **dipusatkan** di titik tengah
+    elips (`data-tengah`, `.tx.t-love{transform:translateY(-50%)}`), bukan
+    digantung pada garis alas seperti semua teks lain, karena di dalam oval
+    satu baris dan dua baris dua-duanya harus duduk di tengah. Kotak teksnya
+    72% × 46% dari elipsnya: sebuah kotak muat di dalam elips kalau
+    `(w/a)² + (h/b)² ≤ 1`, dan 0,72/0,46 memberi 0,73.
+    Hal 11 **dirombak total 19 Agu 2026** — lihat blok "Halaman 11" di bawah.
+    Ia tidak lagi foto pembeli sehalaman penuh.
+  - **Foto ada DI BELAKANG pelat**, lewat lubang transparan yang bentuknya
+    diukur dari render, bukan ditebak. Itu yang membuat pita halaman 8,
+    logam liontin halaman 7, dan coretan halaman 4 tetap berada di ATAS
+    foto seperti desain aslinya. Jangan pindahkan foto ke atas pelat.
+  - **Font Canva-nya berbayar** (BostonAngel-Light, Amsterdam-Four,
+    MadelynFill, BurguesScript) dan lisensinya cuma berlaku di dalam Canva —
+    tidak boleh dipasang di situs. Penggantinya Bellefair, Allura, Kaushan
+    Script, Pinyon Script, dipilih dengan mengukur lebar barisnya. Ukuran
+    tiap teks lalu disetel supaya LEBAR barisnya sama persis dengan desain,
+    bukan supaya tinggi hurufnya sama — itu yang menjaga tata letaknya.
+  - **Teks pembeli yang lebih panjang dari bawaannya dikecilkan otomatis**
+    (`--muat` di valentine.js). Tiap teks menyatakan jatah ruangnya lewat
+    `data-baris` (atau `data-maks` untuk surat halaman 4). Selama teksnya
+    sepanjang bawaan, pengalinya tetap 1 dan desainnya tidak berubah
+    sepiksel pun. Tanpa ini, nama panjang seperti "MUHAMMAD RIZKI PRATAMA &
+    SITI NURHALIZA RAHMAWATI" menabrak tulisan lain dan keluar halaman.
+    Teks baru WAJIB diberi `data-baris` — ada tesnya.
+  - **Angka `--cf` di valentine.css hasil UKUR, bukan hitung.** Setelah
+    mengubah font, ukuran teks, atau pelatnya, jalankan ulang
+    `tools/cek_valentine.js` dan salin lagi angkanya. Empat pemeriksa lain:
+    `cek_valentine_lebar.js` (lebar baris), `cek_valentine_balik.js` (balik
+    lembar), `cek_valentine_editor.js` (klik teks & foto),
+    `cek_valentine_ukuran.js` (muat di semua layar). Semuanya perlu
+    `NODE_PATH` ke node_modules berisi puppeteer-core.
+  - **DUA gaya membalik, dipilih lewat satu kata `GAYA` di valentine.js.**
+    `"bilah"` (**dipakai sekarang, sejak 14 Agu 2026**) = enam belas bilah
+    melengkung (dijelaskan di bawah). `"rotasi"` = satu bidang diputar
+    rotateY dengan transisi CSS 600 ms `cubic-bezier(.645,.045,.355,1)`,
+    mengikuti spek gaya heyzine. Dua-duanya lengkap dan bisa dipakai;
+    JANGAN hapus salah satunya — keputusannya sudah berbalik **dua kali**,
+    dan membangun ulang jalur bilah memakan berjam-jam pengukuran.
+
+    > **Pembalikan kedua (14 Agu 2026).** Keluhan pemilik situs: "seperti
+    > menarik kayu". Itu keluhan yang SAMA dengan "seperti keramik kaca"
+    > yang dulu melahirkan jalur bilah — bidang datar yang diputar
+    > siluetnya memang selalu segi empat bertepi lurus, dan tidak ada nilai
+    > transisi yang memperbaikinya. Karena itu jalurnya yang diganti, bukan
+    > angkanya. Anggap keputusan ini akan berbalik lagi.
+    >
+    > Kelengkungannya sekaligus **diperdalam** atas permintaan "seperti
+    > membuka kain", lewat satu konstanta baru `LURUH` (pangkat peluruhan
+    > kelengkungan; 1 = perilaku lama). Dengan `LURUH = 0,30` puncak sebaran
+    > sudut naik dari **40,3° ke ~72°**. Angka-angka itu diukur dari
+    > fungsinya sendiri (200 cuplikan sepanjang putaran); tabel lengkapnya
+    > di komentar `taruh()`.
+    >
+    > **Jumlah bilah = 12, dan itu hasil tawar-menawar DUA artefak yang
+    > tarik-menarik.** Diukur di WebKit:
+    >
+    > | bilah | seam Safari/baris | faceting |
+    > |---|---|---|
+    > | 10 | 5,45 | 12,32° |
+    > | **12** | **5,99** | **10,12°** |
+    > | 14 | 7,97 | 9,14° |
+    > | 16 | 8,99 | 7,94° |
+    >
+    > Menambah bilah menghaluskan lengkungnya tapi MENAMBAH garis gelap
+    > tegak antar bilah di Safari — satu garis per batas bilah. Sempat
+    > dipasang 16, dan itulah "pecah pecah" yang dikeluhkan pemilik situs.
+    > **Kelengkungan tidak berpengaruh sama sekali pada seam**: 16 bilah
+    > pada `LURUH` 1,0 dan 0,30 sama-sama 8,96. Jadi lengkung dalam itu
+    > gratis; yang mahal cuma jumlah bilahnya.
+    >
+    > Pemilik situs memberi kelonggaran lompatan sampai 15°, dan ambang di
+    > `cek_valentine_balik.js` dinaikkan 8 → 15 mengikuti itu. Pada 12 bilah
+    > lompatannya 10,12° — di dalam jatah, tapi memang di atas 8° yang lama.
+    >
+    > `TINDIH` tetap **1,5**, dan ini sudah diuji DUA KALI dengan kesimpulan
+    > berbeda — perhatikan bedanya. Di Chrome menaikkannya tidak berpengaruh
+    > (Laplacian 2,900 → 2,957 pada 1,5 → 6). Di WebKit, menaikkan ke
+    > 3/5/8/12 juga tidak menutup seam (9,03 → 8,25) tapi MEMPERDALAMnya
+    > (15,8 → 18,4), sedangkan menurunkannya ke 0 jelas lebih buruk
+    > (10,26 garis, kedalaman 24,6). Sebabnya: tumpang-tindih menukar celah
+    > dengan salah-jajar — di daerah tindihan, dua bilah menggambar isi yang
+    > sama pada SUDUT berbeda. Makin lebar tindihannya, makin lebar pita
+    > salah-jajarnya. 1,5 adalah titik terbaiknya. **Membuang bayangan per
+    > bilah tidak menolong sama sekali** (9,00 vs 9,03) — jadi seam-nya
+    > geometri, bukan gradasi.
+
+  - **`SIMPANG` dibangkitkan, jangan dikembalikan jadi array angka tetap.**
+    Dulu ia sepuluh angka yang diketik tangan, dan itu MENGUNCI `N_BILAH`
+    di sepuluh tanpa ada yang menyatakannya di mana pun. Menaikkan
+    `N_BILAH` membuat `SIMPANG[10..]` jadi `undefined` → sudutnya `NaN` →
+    seluruh string `transform` tidak sah → **lembarnya hilang dari layar**,
+    tanpa satu pun error di console. Sekarang dibangkitkan sepanjang
+    `N_BILAH` dari deret sin-fract yang tetap deterministik (simpangan yang
+    diundi ulang tiap frame membuat tepi lembarnya bergetar). Dijaga
+    `test_simpang_dibangkitkan_sepanjang_jumlah_bilah`.
+
+  - **MEKANIK BERPINDAH HALAMAN SEKARANG "partikel"** (16 Agu 2026).
+    Halaman **memudar di tempat** sambil melepas **debu berpendar yang
+    naik**, berwarna mengikuti halamannya. Tidak ada lembar yang dibalik.
+    Permintaan pemilik situs, menggantikan mekanik balik lembar sepenuhnya.
+
+    > **Jalur "bilah" dan "rotasi" TETAP UTUH** dan bisa dihidupkan dengan
+    > mengganti satu kata `GAYA` di `valentine.js`. Ini permintaan eksplisit
+    > pemilik situs — keputusan animasi template ini sudah berbalik **tiga
+    > kali**. Yang tidak dipakai tidak berjalan sama sekali.
+    >
+    > **Warna debu dicuplik dari PELAT halamannya**, kisi 12×17, disimpan
+    > per halaman. Tiga hal yang pernah salah dan sudah dijaga tesnya:
+    >
+    > 1. **Warna diangkat jadi berpendar, jangan dipakai mentah.** Debu yang
+    >    berpendar selalu lebih terang daripada permukaan asalnya. Dipakai
+    >    mentah, halaman merah tua melepas debu merah tua yang lenyap di
+    >    atas halamannya sendiri; halaman gelap melepas bintik kelabu yang
+    >    terbaca sebagai KOTORAN di atas halaman terang berikutnya. Diangkat
+    >    55% + lantai kecerahan 205 (`pendar()`).
+    > 2. **Sampul dan penutup TIDAK menyisakan apa pun untuk dicuplik** —
+    >    terukur 0 piksel opak dari 204 cuplikan, karena seluruh pelatnya
+    >    lubang foto. `cadanganWarna()` mengambil `--kertas-bg` lalu
+    >    menyebarnya jadi beberapa nuansa.
+    > 3. **Posisi butir diundi RATA, terpisah dari sumber warnanya.** Versi
+    >    pertama menaruh tiap butir di titik cuplikannya, dan di halaman
+    >    yang didominasi lubang foto seluruh debu menggerombol di bingkai
+    >    tepi.
+    >
+    > **Foto pembeli tidak pernah dicuplik** — bisa dari R2 yang beda asal,
+    > dan itu mencemari kanvas sehingga `getImageData` dilarang.
+    >
+    > **Warna dipanaskan di muka** (di `pasang()`, untuk halaman `.dekat`).
+    > Men-decode pelat lalu `getImageData` terukur menahan **157 ms** tepat
+    > di frame pertama gerakan. Sesudah dipanaskan: jeda terlama 18,7 ms,
+    > 60 fps dan 98–100% pengisian frame sampai CPU dicekik 6×.
+    >
+    > **Satu kanvas, bukan elemen DOM per butir.** 260 elemen yang digeser
+    > tiap frame memaksa hitung ulang tata letak enam puluh kali sedetik.
+    >
+    > **Peralihan yang DISUSUL harus dibereskan, bukan cuma dihentikan.**
+    > Tiga cacat sekaligus muncul dari sini waktu penerima menekan lanjut
+    > lebih cepat daripada peralihannya (dilaporkan pemilik situs 16 Agu):
+    >
+    > 1. `opacity` inline yang sudah terlanjur dipasang ditinggalkan
+    >    menempel. Gaya inline **tidak bisa** ditimpa aturan CSS
+    >    `.lembar{opacity:0}`, jadi tiap tekanan menambah satu halaman
+    >    setengah transparan sampai layarnya jadi bubur berlapis.
+    >    `bersihkanSisa()` menyapu SEMUA lembar, bukan cuma dua yang
+    >    terlibat.
+    > 2. Nomor peralihan dulu dinaikkan SETELAH warna selesai diambil.
+    >    Pengambilan warna menunggu gambar ter-decode, jadi dua peralihan
+    >    beruntun bisa selesai dengan urutan terbalik dan yang LAMA mengira
+    >    dirinya terbaru. Sekarang dinaikkan sinkron di awal `larutkan()`.
+    > 3. Halaman tujuan dulu dipaksa mulai dari nol tiap peralihan. Pada
+    >    tekanan beruntun ia tidak pernah sempat muncul dan layar justru
+    >    **kosong** — terukur 66% frame di bawah 0,35 opasitas.
+    >
+    > **Yang dianimasikan HANYA halaman lama.** Halaman tujuan diam di
+    > bawahnya pada opasitas penuh dan tersingkap seiring yang di atas
+    > larut. Itu yang membuatnya terbaca sebagai halaman menghilang, bukan
+    > dua gambar saling silang — dan sebagai bonus, skip beruntun jadi tegas.
+    >
+    > Halaman yang larut WAJIB diberi kelas `.keluar`: tanpa itu ia bukan
+    > `.active` dan bukan `.masuk`, jadi tersembunyi, dan `opacity` inline
+    > pada elemen tersembunyi tidak berpengaruh apa pun — halaman lama
+    > LENYAP SEKETIKA alih-alih memudar. `.keluar` juga memberinya
+    > `z-index: 25`; tanpa itu arah MUNDUR tidak simetris karena urutan
+    > tumpukan menaruhnya di bawah halaman tujuan.
+    >
+    > Penjaganya `tools/cek_valentine_debu.js` (14 uji). `cek_valentine_balik.js`
+    > **melewati dirinya sendiri** kalau GAYA bukan mekanik balik lembar,
+    > dan sebaliknya — jadi keduanya bisa dijalankan berurutan tanpa merah
+    > palsu. Keduanya membaca `#buku[data-gaya]`, bukan menebak dari DOM.
+
+  - **UJI DI WEBKIT, BUKAN CUMA CHROME.** Ini pelajaran terbesar dari 14
+    Agu 2026, dan berlaku untuk seluruh template ini. Tiga cacat berturut-turut
+    lolos SEMUA pemeriksa `tools/cek_valentine_*.js` karena semuanya jalan di
+    Chrome, lalu langsung terlihat begitu kartunya dibuka di Safari.
+
+    > Pasang sekali: `npm i playwright && npx playwright install webkit`.
+    > WebKit-nya mesin yang sama dengan Safari, tidak perlu izin otomasi,
+    > dan mereproduksi ketiga cacat itu persis. Otomasi Safari sungguhan
+    > lewat AppleScript/`screencapture` **nge-hang** di Mac ini (dialog izin);
+    > jangan buang waktu di situ.
+    >
+    > **Metrik gambar WAJIB dua sisi.** Dua "perbaikan" sempat dinyatakan
+    > berhasil padahal mengosongkan halamannya: metriknya menghitung
+    > *hilangnya artefak* dan tidak bisa membedakannya dari *hilangnya isi*.
+    > Selalu ukur juga ragam warna wilayahnya — halaman berisi punya ribuan
+    > warna, halaman kosong belasan. Dan selalu ukur **kontrol halaman
+    > diam**: di WebKit kontrolnya 0,00–0,15 garis/baris, jadi apa pun di
+    > atas itu memang artefak, bukan tekstur foto.
+
+  - **Muka lembar yang membelakangi pembaca diurus KELAS, bukan
+    `backface-visibility`.** WebKit tidak mematuhi `backface-visibility` di
+    sini: lembar yang sudah dibalik ke kiri menampilkan isi halamannya
+    TERCERMIN ("Contents" terbaca terbalik). `valentine.js` memasang kelas
+    `.terbalik` di `taruh()` begitu lembarnya lewat setengah putaran —
+    tepat saat lembarnya tegak lurus layar, jadi pertukarannya tak
+    kasatmata.
+
+    > **Lembar yang sudah pindah ke kiri menampilkan ISI halamannya,
+    > terbaca normal** (permintaan pemilik situs: "yg disebelah kiri itu
+    > jadi halaman sebelumnya yg dibagian kanan, tidak mirror"). Caranya
+    > muka depannya tetap ditampilkan lalu **dicerminkan balik**
+    > `scaleX(-1)` — dilihat dari belakang ia sudah tercermin sekali, jadi
+    > cerminan kedua mengembalikannya terbaca.
+    >
+    > **JANGAN menyalin isi halaman ke punggung lembar.** Itu melipatgandakan
+    > pelat 1241x1755 yang ter-decode, dan itulah yang dulu membuat tab
+    > tertutup paksa di HP kelas bawah. Cara scaleX ini nol tambahan memori.
+    >
+    > **Jalan buntu, jangan diulang:** memberi `.muka.depan` transform 3D
+    > sendiri (`translateZ(0.01px)`) MEMANG membuat WebKit mematuhi
+    > backface-visibility — dan sekaligus mengosongkan halamannya. Terukur:
+    > isi halaman tinggal **17 warna, dari 8.819**. Sempat lolos karena
+    > metriknya cuma menghitung tinta yang bocor, dan halaman kosong tentu
+    > saja nol. Dijaga `test_lembar_terbalik_menampilkan_isinya_tidak_tercermin`.
+
+  - **`#rig` disembunyikan dengan `display`, JANGAN `visibility`.**
+    Ini cacat pertama yang lolos seluruh pemeriksa. `#rig` ber-`preserve-3d`
+    dan bilah di dalamnya punya transform 3D sendiri; Safari merender
+    anak-anak itu ke ruang 3D bersama dan **tidak mewarisi**
+    `visibility: hidden` induknya. Akibatnya setelah tiap putaran selesai,
+    keenam belas bilah tetap tergambar pada sudut terakhirnya (~180°, yaitu
+    terlempar ke KIRI halaman) sebagai pita tegak berisi potongan isi
+    halaman yang ter-smear — persis seperti yang dilaporkan pemilik situs.
+
+    > **Chrome menyembunyikannya dengan benar**, jadi cacat ini tidak
+    > muncul di satu pun `tools/cek_valentine_*.js` — semuanya jalan di
+    > Chrome. Penjaganya karena itu ditaruh di
+    > `test_rig_disembunyikan_dengan_display_bukan_visibility`, bukan di
+    > pemeriksa puppeteer. **Pelajarannya lebih besar dari satu properti
+    > CSS: untuk template ini, lolos pemeriksa Chrome BUKAN bukti tampilan
+    > benar.** Apa pun yang menyentuh preserve-3d, backface, atau
+    > visibility wajib dilihat langsung di Safari sebelum dianggap beres.
+    >
+    > `display:none` aman dipasang-lepas tiap putaran: `pakaiRig()` tidak
+    > pernah MENGUKUR apa pun dari rig. Diukur setelah perubahan: lama
+    > putaran 1434 ms, lompatan antar frame 0,0319, 87 frame — identik
+    > dengan sebelum perubahan, dan beban tetap 60 fps @ cekik 6×.
+    >
+    > Efek sampingnya di pemeriksa: elemen `display:none` mengembalikan
+    > `transform: none` dari getComputedStyle, jadi perekam yang membaca
+    > `.pias` membabi buta melihat t terjun dari ~1 ke 0 dan melaporkan
+    > "patah" yang tidak ada di layar. Kedua perekam sekarang membaca rig
+    > **hanya kalau ia ber-kelas `.jalan`**, selain itu membaca `.lembar`.
+
+  - **Ambang `cek_valentine_beban.js` sekarang DISKALAKAN ke fps menganggur**,
+    menyusul `cek_valentine_balik.js` yang sudah lebih dulu. Ambang tetap
+    (45/28 fps) melaporkan "cukup/TERSENDAT" untuk animasi yang sebenarnya
+    mengisi 95–96% frame yang tersedia, semata karena mesin penguji sedang
+    tercekik — pernah terukur 31 fps menganggur di **halaman kosong**.
+    Skripnya sekarang mengukur itu lebih dulu dan menilai persentase
+    pengisian, bukan angka fps mutlak. Kalau ia melapor tersendat, **lihat
+    baris `fps menganggur` dulu** sebelum menyalahkan animasinya.
+
+  - **Pemeriksa harus membaca elemen yang BENAR-BENAR bergerak.**
+    `cek_valentine_balik.js` dan `cek_valentine_beban.js` dulu sama-sama
+    membaca `#hal1`. Itu sah untuk gaya "rotasi", tapi di gaya "bilah"
+    `.lembar` DIAM dan digantikan rig — yang berputar `.pias`. Akibatnya
+    `lamaMs` dan `frame` keluar **nol**, dan tiga uji lolos palsu sekaligus
+    (lompatan terbesar 0 lolos ambang apa pun; "cukup banyak frame" jadi
+    `0 >= 70% dari 0`); di pemeriksa beban ia melaporkan "fps 96 saat CPU
+    dicekik 6×" — angka mustahil yang terbaca sebagai lulus. Keduanya
+    sekarang memilih elemen menurut gayanya. Jangan hardcode `#hal1` lagi,
+    dan jangan hardcode jumlah bilah di mana pun.
+  - Ketuk tepi kiri/kanan, sudut kertas terangkat saat kursor mendekat,
+    tumpukan lembar di kedua tepi, dan suara kertas (tombol ♪ untuk
+    membisukan, pilihannya disimpan localStorage).
+
+    > **SELURUH SUARA MEMBALIK HALAMAN DICABUT** (19 Agu 2026, permintaan
+    > pemilik situs). Satu-satunya suara di kartu ini sekarang lagu YouTube
+    > pilihan pembeli lewat `_bgm.html`; efek gesekan kertasnya bertumpuk di
+    > atas lagu itu.
+    >
+    > Yang hilang sekaligus: atribut `data-suara`, tombol ♪, aturan `#bisu`,
+    > dan seluruh blok Web Audio di `valentine.js` — klip berkas MAUPUN
+    > `suaraSintetis()`. **Aturan lama "jangan hapus sintesisnya, itu jalur
+    > cadangannya" DIBATALKAN**: ia menjaga cadangan bagi suara yang memang
+    > tidak dikehendaki lagi. Kalau suatu hari diminta kembali, ambil dari
+    > riwayat git — jangan tulis ulang dari nol.
+    >
+    > Jangan memasang kembali sebagiannya saja: tombol tanpa jalur suara
+    > memberi pembeli sakelar yang tidak melakukan apa-apa, jalur suara tanpa
+    > tombol berbunyi tanpa bisa dimatikan. Dijaga
+    > `test_tidak_ada_suara_membalik_halaman`.
+    >
+    > `static/audio/SUMBER.md` sengaja DIBIARKAN: di situ tercatat kandidat
+    > klip yang lisensinya sudah diperiksa satu per satu, plus keputusan
+    > menolak audio dari YouTube Shorts (melanggar ToS, hak ciptanya tidak
+    > jelas, sedangkan kartu ini dijual). Berguna kalau keputusannya berbalik.
+    > Tag `{% static_ada %}` di `card_extras.py` sekarang tidak dipakai
+    > siapa pun.
+    Zona ketuk SENGAJA tidak ada saat menyunting: ia menutupi 22% lebar
+    halaman di tiap sisi dan akan menelan klik pada teks serta bingkai foto
+    yang dekat tepi. Tumpukan lembar duduk di LUAR tepi halaman, jadi ia
+    hanya terlihat di layar yang lebih lebar daripada halamannya — di dalam
+    berarti menutupi karya Canva.
+  - **Catatan jalur "bilah": halamannya MELENGKUNG, tidak diputar.** Satu bidang datar yang diputar (`rotateY` pada `.lembar`) selalu
+    terbaca sebagai kaca: siluetnya tetap segi empat bertepi lurus, betapa
+    pun pelan dan berbayangnya. Memperlambat, memberi pita cahaya, dan
+    memberi skew sudah dicoba dan semuanya gagal — hiasan di atas geometri
+    yang salah.
+
+    Sekarang halaman dipecah **sepuluh bilah tegak** (`#rig`), dan posisi
+    tiap bilah DIAKUMULASI dari bilah sebelumnya, jadi siluetnya kurva
+    sungguhan. Tiga angka di `valentine.js` saling terikat dan jangan
+    diubah sendiri-sendiri:
+      * `BATAS` pakai `(k/N)^0.5` — kelengkungan sebanding u kuadrat, jadi
+        pangkat itu yang membuat SUDUT tiap bilah kira-kira sama, bukan
+        lebarnya;
+      * `tinggal` dikali 0,85 — batas kelengkungan yang masih bisa digambar
+        sepuluh bidang datar tanpa terlihat berkisi;
+      * lompatan sudut antar bilah harus tetap **di bawah 8 derajat**; di
+        atas itu faceting-nya terlihat sebagai kisi-kisi jendela.
+    Semua dijaga `tools/cek_valentine_balik.js`.
+
+    > **JANGAN tambahkan lapisan kilau putih per bilah.** Pernah ada dan
+    > dicabut: tepinya jatuh persis di batas potongan tiap bilah, dan sisa
+    > antialias putih di situ menumpuk di atas isi bilah tetangganya —
+    > sepuluh batas jadi sepuluh garis terang tegak yang terbaca sebagai
+    > "retakan kaca". Terukur dengan Laplacian pada halaman abu rata:
+    > dengan kilau 4,11; tanpa kilau 0,49; halaman diam sendiri 0,80.
+    > Mengurangi tumpang-tindih, melandaikan pangkat kilaunya, dan menambah
+    > titik gradien semuanya sudah dicoba dan TIDAK menolong. Sisi terang
+    > sekarang datang dari gradasi gelap yang menghilang di bagian yang
+    > menghadap cahaya.
+    >
+    > Catatan cara mengukurnya: metrik pertama saya membandingkan tiap kolom
+    > dengan tetangga 4 px — dan itu ikut menangkap huruf serta gradien
+    > tirai, jadi halaman DIAM pun terukur 17. Empat percobaan perbaikan
+    > terbuang karena metrik itu. Pakai Laplacian pada pita halaman yang
+    > bebas teks, dan selalu ukur halaman diam sebagai kontrol.
+
+    Isinya diklon dari `.kertas`, dan atribut `id`/`data-edit`/`data-frame`
+    WAJIB dibuang dari klon — kalau tidak, card-frame.js melihat elemen
+    kembar dan sorotan editor mendarat di klon.
+
+    Sisi belakang bilah memakai warna kertas tetap, BUKAN `--kertas-bg`
+    halamannya: sampul yang fotonya gelap membuat separuh lembar terlihat
+    seperti lubang hitam begitu lipatannya lewat 90 derajat.
+
+  - **Satu pegas untuk seret DAN lepas.** Saat diseret, sasaran pegas adalah
+    posisi jari — lembarnya mengejar, tidak menempel mati, dan dari situlah
+    hambatan serta kelambanannya. Saat dilepas, kecepatan jari jadi
+    kecepatan awal pegas. Satu rumus untuk dua keadaan = tidak ada patahan
+    di detik jari diangkat. Konsekuensinya lamanya TIDAK persis tetap
+    (±1,4 detik, tergantung jarak dan lemparan) — itu memang sifat benda
+    fisik, bukan bug.
+
+  - Semua ditulis LANGSUNG ke `style.transform`/`style.opacity`, bukan lewat
+    custom property. Custom property diwariskan, jadi mengubahnya di
+    `.lembar` tiap frame memaksa browser memeriksa ulang gaya seluruh isi
+    halaman enam puluh kali sedetik. Terukur 60 fps bahkan dengan CPU
+    dicekik 6x (`tools/cek_valentine_beban.js`).
+  - **Tombol menyatakan maksud, bukan nomor halaman** (`geser(±1)`). Dengan
+    putaran 1,4 detik, penerima menekan dua kali beruntun; kalau nomornya
+    dihitung sebelum putaran berjalan selesai, tekanan kedua tidak
+    melakukan apa-apa.
+  - **Hati di kalender halaman 5 bisa dipindah** dengan mengklik angkanya
+    saat menyunting. Angkanya tetap menyatu dengan pelat (huruf Canva asli);
+    yang dicabut cuma hatinya. Pilihannya disimpan di teks `hari`, lewat
+    pesan `settext` — jalur baru dari dalam kartu ke editor
+    (`window.simpanTeks` di card-frame.js).
+  - **Kotak crop mengikuti bentuk bingkai** lewat `"rasio"` di config tiap
+    bingkai, dan bingkai bertanda `"asli"` (sampul) disimpan sampai 2400 px
+    dengan batas berkas `MAX_PHOTO_BYTES_BESAR` (8 MB). Sebelumnya kanvas
+    crop selalu 640x640, dan itu — bukan pengecilan di server — yang
+    membuat foto sampul terlihat pecah.
+  - Pemeriksa tambahan: `cek_valentine_kalender.js`, `cek_valentine_crop.js`,
+    `cek_valentine_ukuran.js`. `cek_valentine_balik.js` sekarang juga
+    mengukur lamanya putaran dan lompatan antar frame — itu ukuran
+    "kaku/patah" yang objektif.
+
+    > **Ambang kemulusannya DISKALAKAN ke kecepatan frame browsernya.**
+    > Chrome headless di mesin ini hanya memberi ~32 fps saat MENGANGGUR,
+    > tanpa animasi apa pun. Putaran 0,6 detik karena itu cuma bisa berisi
+    > ~19 frame, dan ambang lama yang dipatok ke 60 fps (lompatan < 0,08,
+    > frame > 25) melaporkan "patah" untuk animasi yang di layar sungguhan
+    > mulus. Pemeriksa sekarang mengukur `fpsMenganggur` lebih dulu. Kalau
+    > kedua penjaga itu gagal lagi, ukur fps-nya dulu sebelum menyalahkan
+    > animasinya.
+  - **Garis putih di pinggir foto: sebabnya kotak bingkai, bukan crop-nya**
+    (19 Agu 2026). Dilaporkan pemilik situs sebagai "foto yang sudah dicrop
+    ada garis putih di pinggirnya".
+
+    > Tersangka pertama salah, dan bagus dicek dulu: kanvas crop di
+    > `alpine-editor.js` memang dicat `#eee` sebelum fotonya digambar. Tapi
+    > kedelapan puluh delapan foto yang sudah diunggah diperiksa satu per
+    > satu — **nol** yang punya baris piksel se-`#eee` di tepinya. Bukan dari
+    > sana.
+    >
+    > Sebabnya `komponen()` di `tools/buat_pelat_valentine.py`: ia mencari
+    > kotak lubang pada mask yang diperkecil 4x lalu mengembalikannya pada
+    > kisi 4 px. Kotaknya karena itu JATUH DI DALAM lubang pelat yang
+    > sebenarnya — terukur di kesebelas pelat, tepi kanan dan bawah
+    > konsisten kurang 1-3 px pelat (0,94 px desain). Selebar itu lubangnya
+    > menganga dan yang mengintip dari baliknya latar `.muka` (#fffaf1).
+    > Di halaman berkertas krem — 4, 6, 7, 9 — itulah garis putihnya.
+    >
+    > Ditutup dengan `--tembus` di `.gbr`: fotonya digambar 1,5 px desain
+    > lebih besar ke segala arah. Aman justru karena foto ada DI BELAKANG
+    > pelat — kelebihannya tertutup pelat sendiri, dan yang sehalaman penuh
+    > dipotong `.muka` yang sudah `overflow:hidden`. Lubang terdekat
+    > berjarak 24 px pelat, jadi tidak ada foto yang bisa bocor ke tetangga.
+    > Dibuktikan A/B di perender sungguhan: garis krem itu muncul pada
+    > `--tembus:0` dan hilang pada 1,5px, pada foto yang sama persis.
+    >
+    > Yang diperbaiki GEJALANYA. Sebabnya di `komponen()`; membetulkannya
+    > berarti menghitung ulang kelima belas koordinat di valentine.html.
+    > Kalau itu suatu hari dikerjakan, `--tembus` boleh dinolkan — tapi
+    > jangan sebelum itu. Dijaga `test_foto_melewati_tepi_lubang_pelat`.
+
+  - **Halaman 11 — "My wish for you"** (19 Agu 2026). Dulu foto pembeli
+    sehalaman penuh (`f_akhir`); sekarang kolase kiriman pemilik situs
+    dengan dua teks di atasnya, dan **tidak punya bingkai foto sama sekali**.
+
+    > **Satu-satunya pelat yang BUKAN dari LOVESTORY-2.pdf.** Di PDF itu
+    > halaman 11 krem polos. Kolasenya dikirim terpisah sebagai JPG dan
+    > diolah `tools/buat_pelat_hal11.py` — bukan `buat_pelat_valentine.py`.
+    > Halaman 11 karena itu TETAP terdaftar di `TANPA_PELAT` pada skrip yang
+    > satu lagi; kalau dicabut dari sana, skrip itu akan menimpa hasilnya
+    > dengan halaman krem kosong dari PDF-nya.
+    >
+    > **Rasio dibetulkan dengan MEMBUANG PITA TENGAH, bukan meregang atau
+    > memotong tepi.** Kolasenya 675x1200 (0,5625), halamannya A4 (0,707).
+    > Di tengahnya ada 518 px merah rata sempurna (y 325..842, terukur);
+    > 245 px dibuang dari dalam pita itu dan tidak satu pun hiasan tersentuh.
+    >
+    > **Huruf potongan koran "HAPPY BIRTHDAY" dihapus** supaya bisa diganti
+    > teks HTML. Tiga kali gagal sebelum benar, ketiganya cacat DIAM:
+    >
+    > 1. Mengecat hanya piksel yang "cukup beda dari merah" meninggalkan
+    >    halo lembut tiap ubin — sisanya persis berbentuk hurufnya. Latarnya
+    >    (68,4,2) rata sempurna di SELURUH gambar, jadi cat tanpa syarat
+    >    aman dan tidak menyisakan apa pun.
+    > 2. Mencari tepi sequin dengan deret 25 piksel merah gagal di baris
+    >    yang melewati bibir: celah merahnya cuma 19 px, jadi pencarian lolos
+    >    sampai ke kanan huruf dan baris itu tidak dicat — sisanya garis
+    >    mendatar tipis. Deretnya diturunkan ke 10.
+    > 3. Jendela pencarian 300 px gagal di baris teratas (tepi sequin di
+    >    x~512): batas dilaporkan 0, pengecatan mulai dari x=228, dan
+    >    **memakan takik persegi dari tekstur sequin**. Jendelanya 600.
+    >
+    > Karena tiga-tiganya lolos tanpa error, skripnya sekarang **memeriksa
+    > hasilnya sendiri**: `periksa_bersih` (tidak ada sisa huruf) dan
+    > `periksa_batas` (tepi sequin tidak pernah 0 dan kurvanya menurun).
+    > Dua arah, karena masing-masing meloloskan kegagalan yang satunya.
+    >
+    > Kedua teksnya memakai **Caveat**, font yang sama dengan template
+    > Scrapbook, atas permintaan pemilik situs. `--c-caveat: 0.33` beda
+    > asalnya dari keempat konstanta lain: yang empat dicocokkan ke garis
+    > alas desain Canva, halaman ini tidak punya desain untuk dicocoki, jadi
+    > 0,33 itu metrik fontnya sendiri.
+
+  - Penjaganya di `cards/tests/test_valentine.py`.
+
+  > **Perubahan desain 11 Agu 2026** (`LOVESTORY-2.pdf`), hasil banding
+  > piksel demi piksel dengan ekspor lama. Hal 1, 2, 5, 7, 9 **identik**
+  > (0 piksel beda). Yang berubah: hal 3 daftar isi ("Table Of Contents" →
+  > "Contents", baris LOVE COUPONS dicabut, nomor disesuaikan); hal 4 warna
+  > bingkai coretan (merah terang → merah tua); hal 6 latar (bulatan hitam →
+  > tekstur rajut krem); hal 10 halaman baru; hal 11 penutup krem.
+  >
+  > **Gema putih di teks hal 6 ikut dicabut.** Dulu `.t-t6a/.t-t6b` punya
+  > `text-shadow: 0 .17em 0 #fff` (efek "lift" Canva), dan itu memang perlu
+  > selama latarnya bulatan hitam. Di ekspor baru pemilik situs mematikan
+  > efeknya — terbukti dari PDF-nya: dulu tiap baris tertulis TIGA kali
+  > (satu salinan putih digeser 4,8pt), sekarang sekali. Jangan pasang lagi
+  > tanpa memeriksa Canva-nya dulu.
+
+  > **Salah ketik desain: SUDAH SELESAI KEDUANYA.** "4ND" → "4TH" diubah di
+  > `seed_templates` (11 Agu 2026). "OUR LOVE LANGUANGE" dulu terkunci di
+  > dalam gambar dan menunggu PDF perbaikan; penantian itu **selesai dengan
+  > sendirinya 19 Agu 2026** begitu daftar isinya jadi teks HTML — sekarang
+  > tertulis "OUR LOVE LANGUAGE" sebagai bawaan `isi2`. Tidak ada lagi PDF
+  > yang perlu ditunggu.
+  >
+  > Catatan: `LOVESTORY-3.pdf` (16 Agu 2026) yang ada di ~/Downloads BUKAN
+  > perbaikan — kesebelas halamannya identik piksel demi piksel dengan
+  > `LOVESTORY-2.pdf`. `SRC` di skripnya boleh tetap menunjuk yang -2.
+  > **Satu-satunya yang ditambahkan** ke desainnya: bayangan lipatan
+  > punggung buku di tepi kiri dan efek cahaya saat lembar dibalik.
 
 ### Sedang berjalan
 

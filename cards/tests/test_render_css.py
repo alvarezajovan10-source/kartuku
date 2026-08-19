@@ -28,6 +28,7 @@ CSS_KARTU = [
     ("css/render/scrapbook.css", 390),
     ("css/kanvas.css", 390),
     ("css/render/game8bit.css", 960),
+    ("css/render/valentine.css", 390),
 ]
 
 
@@ -90,6 +91,14 @@ class InvarianCssKartuTests(TestCase):
         self.assertRegex(js, r"\bW0\s*=\s*390")
         self.assertRegex(js, r"\bW0_LEBAR\s*=\s*960")
         self.assertRegex(js, r"\bH0_LEBAR\s*=\s*540")
+        # Kartu buku: tingginya ikut dikunci, karena halaman A4 yang
+        # perbandingannya meleset akan menggeser SELURUH teks dari
+        # pelat gambarnya sekaligus.
+        self.assertRegex(js, r"\bW0_BUKU\s*=\s*390")
+        self.assertRegex(js, r"\bH0_BUKU\s*=\s*551\.6")
+        self.assertRegex(
+            baca("css/render/valentine.css").replace(" ", ""), r"--h0:551\.6px"
+        )
         for nama, lebar in CSS_KARTU:
             with self.subTest(css=nama):
                 self.assertRegex(baca(nama).replace(" ", ""), rf"--w0:{lebar}px")
@@ -145,6 +154,7 @@ class StrukturKanvasTests(TestCase):
         ("scrapbook", "flow"),
         ("kanvas", "flow"),
         ("game8bit", "lebar"),
+        ("valentine", "buku"),
     ]
 
     def setUp(self):

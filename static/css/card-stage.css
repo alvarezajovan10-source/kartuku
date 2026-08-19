@@ -56,6 +56,32 @@
   transform-origin: center center;
 }
 
+/* Mode "buku": halaman A4 tegak yang dibalik (Valentine Story).
+   Aturannya sama dengan "lebar" — harus muat utuh, dipusatkan vertikal,
+   transform-origin di tengah — hanya perbandingannya yang beda. Lembar yang
+   sedang dibalik berayun KELUAR ke kiri melewati tepi stage, jadi stage-nya
+   tidak boleh memotong; yang memotong cuma #card-viewport di tepi layar,
+   dan itu memang yang diinginkan: halaman menghilang ke arah punggung buku. */
+/* padding-bottom WAJIB sama dengan SISA_NAV di card-stage.js. JS memotong
+   tinggi layar sebanyak itu sebelum menghitung skala, tapi halamannya lalu
+   dipusatkan — tanpa padding ini jatah tadi terbagi rata atas dan bawah,
+   dan sisa di bawah tinggal separuhnya: bilah navigasi menimpa tepi bawah
+   halaman. Hanya terlihat di layar yang tingginya jadi penentu skala
+   (laptop dan HP mendatar), jadi mudah lolos dari pengujian di HP tegak. */
+[data-stage="buku"] #card-viewport {
+  position: fixed;
+  inset: 0;
+  align-items: center;
+  padding-bottom: 54px;
+  box-sizing: border-box;
+}
+[data-stage="buku"] #card-stage {
+  height: var(--h0, 551.6px);
+  align-self: center;
+  transform-origin: center center;
+  overflow: visible;
+}
+
 /* Mode "flow": halaman yang di-scroll (Scrapbook, Kanvas).
    Tinggi pembungkus disetel JS, karena transform tidak memengaruhi tinggi
    layout — tanpa itu halaman akan punya ruang kosong atau terpotong. */

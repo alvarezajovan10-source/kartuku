@@ -836,6 +836,14 @@ img { max-width: 100%; display: block; }
 .ed-stage.is-lebar iframe {
   width: 960px; aspect-ratio: 960 / 540;
 }
+/* Kartu BUKU (Valentine Story): halaman A4 tegak. Tingginya diberi sedikit
+   ruang lebih dari proporsi A4 murni — di situlah tombol balik halaman
+   duduk, dan halaman itu sendiri ikut menyisakan pita untuk lembar yang
+   sedang berayun. */
+.ed-stage.is-buku { align-items: center; }
+.ed-stage.is-buku iframe {
+  width: 390px; aspect-ratio: 390 / 640;
+}
 
 @media (max-width: 900px) {
   .ed { grid-template-columns: 1fr; height: auto; }
@@ -1044,8 +1052,12 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   box-shadow: var(--shadow-lg); padding: 18px; width: 380px; max-width: 100%;
 }
 .crop-title { margin: 0 0 12px; font-weight: 600; font-size: .92rem; }
+/* Kanvas TIDAK dipaksa bujur sangkar: bentuknya mengikuti bingkai tujuan,
+   dan itu datang dari atribut width/height yang disetel JS. Dibatasi tinggi
+   supaya bingkai yang tinggi (sampul buku) tetap muat di layar. */
 .crop-box canvas {
-  width: 100%; aspect-ratio: 1; display: block; border-radius: 10px;
+  display: block; margin: 0 auto; border-radius: 10px;
+  max-width: 100%; max-height: 58vh; width: auto; height: auto;
   background: var(--cream); cursor: grab; touch-action: none;
 }
 .crop-box canvas:active { cursor: grabbing; }

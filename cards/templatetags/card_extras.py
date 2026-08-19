@@ -97,6 +97,31 @@ def static_v(path):
     return url
 
 
+@register.simple_tag
+def static_ada(*paths):
+    """URL static ber-versi untuk berkas yang BENAR-BENAR ada, dipisah "|".
+
+    Bedanya dengan static_v: berkas yang tidak ditemukan tidak menghasilkan
+    URL sama sekali, bukan URL yang nanti 404.
+
+    Dipakai untuk aset pelengkap yang boleh belum dipasang — sekarang klip
+    suara membalik halaman di kartu Valentine. Kalau URL-nya tetap
+    diterbitkan, tiap pengunjung melihat baris 404 merah di console untuk
+    berkas yang kita sendiri tahu belum ada, dan itu menutupi kesalahan
+    sungguhan waktu sedang mencari masalah lain.
+
+    Mengembalikan string kosong kalau tidak satu pun berkas ada; sisi JS
+    membuang bagian kosong, jadi hasilnya "tidak ada suara berkas" dan
+    kartunya jatuh ke suara sintetis.
+    """
+    ada = []
+    for path in paths:
+        found = _finders.find(path)
+        if found:
+            ada.append(f"{_static(path)}?v={int(os.path.getmtime(found))}")
+    return "|".join(ada)
+
+
 @register.filter
 def split(value, sep=","):
     return str(value).split(sep)

@@ -158,6 +158,12 @@ QR_TTL_MINUTES = 15
 # foto dengan sekali bayar Rp15.000.
 MAX_PHOTOS_PER_CARD = 30
 MAX_PHOTO_BYTES = 3 * 1024 * 1024
+# Bingkai yang ditandai "asli" di config template (sejauh ini: sampul
+# Valentine Story, yang fotonya memenuhi satu halaman penuh). Dibedakan
+# karena batas 3MB memaksa foto sampul turun resolusi sampai terlihat pecah.
+# Jangan dinaikkan tanpa memikirkan dua hal: kuota disk hosting, dan lama
+# kartu terbuka di HP penerima — foto ini yang pertama dimuat.
+MAX_PHOTO_BYTES_BESAR = 8 * 1024 * 1024
 
 # API key YouTube Data v3 — dipakai memeriksa apakah lagu yang ditempel user
 # boleh diputar di situs lain. Kosong = pemeriksaan dilewati (kartu tetap bisa

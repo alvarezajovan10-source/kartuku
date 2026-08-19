@@ -255,12 +255,25 @@ def preview(request, template_slug):
         candidates.append(f"cards/render/{renderer}.html")
     candidates.append("cards/public.html")
 
+    # Bingkai foto ikut diisi contoh. Tanpa ini halaman contoh memajang
+    # kotak-kotak abu kosong, dan calon pembeli menilai templatenya dari
+    # situ — paling parah di template yang fotonya memenuhi satu halaman
+    # penuh, yang jadinya terbaca "rusak", bukan "belum diisi".
+    contoh = _sample_photos()
+    frames = (template.config or {}).get("frames", [])
+    frame_photos = (
+        {f["key"]: contoh[i % len(contoh)] for i, f in enumerate(frames) if f.get("key")}
+        if contoh
+        else {}
+    )
+
     return render(
         request,
         candidates,
         {
             "card": card,
-            "photos": _sample_photos(),
+            "photos": contoh,
+            "frame_photos": frame_photos,
             "affirmations": card.affirmation_list(),
             "preview": True,
             "template": template,
@@ -387,6 +400,14 @@ def editor(request, template_slug):
                 # template dan MENYESATKAN di template lain, jadi tiap bingkai
                 # boleh menuliskan penjelasnya sendiri.
                 "capNote": spec.get("cap_note", ""),
+                # Bentuk bingkainya (lebar/tinggi). Kotak crop mengikuti angka
+                # ini — tanpa itu pembeli memilih bagian foto di kotak bujur
+                # sangkar padahal yang tampil nanti persegi panjang, dan
+                # potongannya tidak pernah sesuai dugaannya.
+                "rasio": spec.get("rasio"),
+                # Bingkai yang fotonya disimpan besar-besar (sampul yang
+                # memenuhi satu halaman penuh). Lihat MAX_PHOTO_BYTES_BESAR.
+                "asli": bool(spec.get("asli")),
                 "photo": _photo_payload(by_slot[spec["key"]])
                 if spec["key"] in by_slot
                 else None,

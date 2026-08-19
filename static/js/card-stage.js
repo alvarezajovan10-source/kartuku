@@ -20,6 +20,16 @@
   var W0_LEBAR = 960;
   var H0_LEBAR = 540;
 
+  // Kartu "buku": halaman A4 tegak yang dibalik satu per satu. Sama seperti
+  // kartu mendatar, ia harus muat UTUH — halaman majalah yang terpotong
+  // bawahnya bukan sekadar kurang enak dilihat, isinya benar-benar hilang.
+  // Bedanya, tinggi layar yang dipakai dikurangi dulu sebesar tempat tombol
+  // navigasinya, supaya tombol itu tidak duduk di atas halaman.
+  var W0_BUKU = 390;
+  var H0_BUKU = 551.6;   // 390 x (842,25/595,5) — perbandingan A4
+  var K_MAX_BUKU = 1.6;  // di atas ini pelat halamannya mulai terlihat lunak
+  var SISA_NAV = 54;
+
   var root = document.documentElement;
 
   function fit() {
@@ -34,6 +44,13 @@
       // tengah dan penerima harus memperbesar sendiri.
       var h = root.clientHeight || window.innerHeight || H0_LEBAR;
       root.style.setProperty("--k", Math.min(w / W0_LEBAR, h / H0_LEBAR));
+      return;
+    }
+    if (root.dataset.stage === "buku") {
+      var hb = (root.clientHeight || window.innerHeight || H0_BUKU) - SISA_NAV;
+      root.style.setProperty(
+        "--k", Math.min(w / W0_BUKU, hb / H0_BUKU, K_MAX_BUKU)
+      );
       return;
     }
     root.style.setProperty("--k", Math.min(w / W0, K_MAX));

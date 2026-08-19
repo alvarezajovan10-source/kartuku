@@ -52,6 +52,14 @@
     return scene ? scene.id : "";
   }
 
+  /* Dipakai kontrol di dalam kartu yang MENGATUR teks lewat klik, bukan
+     lewat mengetik — sejauh ini: memilih tanggal yang dilingkari di kalender
+     Valentine Story. Renderer memperbarui tampilannya sendiri supaya klik
+     terasa langsung; ini yang membuat pilihannya ikut tersimpan. */
+  window.simpanTeks = function (key, value) {
+    send({ type: "settext", key: String(key), value: String(value) });
+  };
+
   document.addEventListener("click", function (event) {
     // Elemen terdalam menang: klik nama penerima memilih namanya, bukan
     // seluruh baris ucapan yang membungkusnya.

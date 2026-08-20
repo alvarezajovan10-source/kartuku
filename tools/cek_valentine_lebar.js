@@ -32,6 +32,9 @@ const SASARAN = {
   't-eternal': 195.1,   // eternal love.
   't-pasang': 261.2,    // rocky & riana
   't-tutup': 423.9,     // From strangers to memories, from memories to
+  // Halaman 11 desain baru (21 Agu 2026). .t-pesan sengaja TIDAK di sini:
+  // catatan merahnya kosong di desainnya, jadi tidak ada baris untuk ditiru.
+  't-wish': 394.3,      // Letter For You
 };
 
 (async () => {

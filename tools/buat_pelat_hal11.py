@@ -1,231 +1,163 @@
-"""Bikin pelat halaman 11 (penutup) dari kolase kiriman pemilik situs.
+"""Bikin pelat halaman 11 (surat penutup) dari PDF kiriman pemilik situs.
 
-BEDA SUMBER dari sepuluh halaman lain. Yang lain lahir dari LOVESTORY-2.pdf
-lewat tools/buat_pelat_valentine.py; halaman 11 desainnya tidak ada di PDF itu
-— di sana halamannya krem polos. Kolase ini dikirim terpisah sebagai JPG
-(18 Agu 2026), dan skrip inilah yang mengubahnya jadi pelat.
-
-Karena itu halaman 11 TETAP terdaftar di TANPA_PELAT pada skrip yang satu
-lagi: kalau dicabut dari sana, skrip itu akan menimpa hasil kerja skrip ini
-dengan halaman krem kosong dari PDF-nya.
+SUMBER KEEMPAT template ini. Halaman 1-10 lahir dari LOVESTORY-2.pdf lewat
+tools/buat_pelat_valentine.py, halaman 12 dari sebuah PDF lewat
+tools/buat_pelat_hal12.py, dan halaman 11 dari PDF ini.
 
     /tmp/pdfenv/bin/python tools/buat_pelat_hal11.py
 
-Tiga hal yang dikerjakannya, semuanya dari angka yang DIUKUR di gambarnya:
+Karena itu halaman 11 TETAP terdaftar di TANPA_PELAT pada skrip yang pertama:
+kalau dicabut dari sana, skrip itu akan menimpa hasil kerja skrip ini dengan
+halaman krem kosong dari PDF-nya.
 
-1. Huruf potongan koran "HAPPY BIRTHDAY" dihapus. Di kartu ini tulisannya
-   jadi teks HTML yang bisa disunting pembeli ("My wish for you"), jadi huruf
-   bawaannya harus hilang dari gambarnya.
+> Ganti desain, 21 Agu 2026. Sebelumnya halaman ini sebuah kolase JPG —
+> merah tua bersequin dengan bibir, bintang perak, dan sobekan koran "love".
+> Diganti atas permintaan pemilik situs oleh LOVESTORY-4.pdf: kertas krem
+> bergaris tepi putus-putus, anggrek merah di pojok kiri atas, dan satu
+> catatan merah tua berselotip tempat suratnya ditulis. Versi kolasenya
+> tidak dipakai lagi di mana pun.
 
-2. Gambarnya 675x1200 (rasio 0,5625) sedangkan halaman kartu ini A4 (0,707).
-   TIDAK diregangkan dan TIDAK dipotong dari tepi — dua-duanya merusak
-   hiasannya. Yang dibuang satu pita mendatar dari tengah, yang di situ
-   warnanya merah tua rata sempurna sepanjang 518 px (y 325..842, terukur).
-   Membuang 245 px dari dalam pita itu tidak menyentuh satu pun hiasan.
+Yang dikerjakan skrip ini:
 
-3. Diperbesar ke 1241x1755, ukuran yang sama dengan sepuluh pelat lain.
+1. Judul "Letter For You" DIHAPUS dari gambarnya. Di kartu ini judul itu
+   jadi teks HTML yang bisa disunting pembeli (.t-wish), jadi huruf
+   bawaannya tidak boleh ikut tergambar. Dihapus dengan redaksi PyMuPDF yang
+   hanya menyentuh objek TEKS — gambar dan vektor di bawahnya dibiarkan
+   utuh, dan itu penting: kotak judulnya bertumpang tindih dengan gambar
+   anggrek di pojok kiri atas (terukur: judul x 141,6..535,9 pt, anggrek
+   x 10,0..203,6 pt). Mengecat ulang kotaknya akan memakan kelopak.
+
+2. Dirender 150 dpi. Halaman PDF-nya 595,5 x 842,25 pt, jadi hasilnya persis
+   1241 x 1755 — ukuran yang sama dengan sebelas pelat lain, tanpa perlu
+   dipotong maupun diregangkan sedikit pun. Rasionya 0,7070, sama dengan A4
+   kanonis template ini (390/551,6). Kebetulan yang menyenangkan, tapi tetap
+   DIPERIKSA di bawah, bukan diandaikan.
+
+3. Mengukur ulang angka yang dibutuhkan valentine.css dan mencetaknya:
+   warna kertas (--kertas-bg) dan kotak merah bersih terbesar di dalam
+   catatan (tempat .t-pesan boleh duduk). Salin angkanya ke CSS kalau
+   PDF-nya berganti lagi.
 """
 import os
 
+import numpy as np
+import pymupdf
 from PIL import Image
 
-SUMBER = "/Users/jepa/Downloads/ -18.jpg"
+SUMBER = "/Users/jepa/Downloads/LOVESTORY-4.pdf"
 KELUARAN = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                         "static", "img", "valentine", "hal11.webp")
 
-# Warna dasar kolase. DIUKUR, dan hasilnya mengejutkan enak: merahnya persis
-# (68,4,2) di SETIAP piksel latar yang diperiksa — nol ragam, nol derau JPEG,
-# nol gradasi. Itu yang membuat penghapusan huruf di bawah bisa sesederhana
-# ini: mengecat ulang dengan warna ini tidak meninggalkan tambalan.
-MERAH = (68, 4, 2)
-TOLERANSI = 6           # hanya untuk MENCARI batas sequin, bukan untuk mengecat
+LEBAR, TINGGI = 1241, 1755        # sama dengan sebelas pelat lain (A4 @150dpi)
+PT_LEBAR, PT_TINGGI = 595.5, 842.25   # ukuran halaman PDF-nya, dalam poin
+DPI = 150
+RASIO_A4 = 390 / 551.6
 
-# Batas penghapusan huruf. Angkanya dari peta piksel, bukan kira-kira:
-#
-#   * Huruf paling kiri ada di x=232 (baris "Birthday").
-#   * Bintang perak mulai di y=224, dan di seluruh pita y 224..255 ia tidak
-#     pernah lewat x=238.
-#   * Bibir merah berhenti di x=215.
-#
-# Jadi di ATAS bintang boleh menyapu dari x=228, dan sejajar bintang harus
-# mundur ke x=240. Tanpa pemisahan itu, ujung bintangnya ikut terhapus.
-# Mulai dari y=40, jauh di atas huruf paling atas (y~90). Bukan kelonggaran
-# asal: ubin potongan korannya punya bayangan jatuh yang menjulur ke atas
-# hurufnya, dan pita yang mulai tepat di tepi huruf MEMOTONG bayangan itu —
-# yang tersisa satu garis gelap mendatar tipis di tepi atas pita. Naik ke
-# y=40 aman karena tiap baris tetap mulai mengecat dari tepi sequin-nya
-# sendiri; di baris setinggi itu tepinya ada di x~460-510, jadi yang dicat
-# cuma merah di atas merah.
-ATAS_Y = (40, 223)
-ATAS_X = 228
-SAMPING_Y = (224, 255)
-SAMPING_X = 240
-KANAN_X = 660
-
-# Tekstur sequin menjorok ke kanan di baris-baris teratas (di y=85 batas
-# merahnya masih di x=286). Menyapu dengan x tetap akan mengecat sequin itu
-# jadi merah dan merusak lengkung batasnya. Karena itu tiap baris mencari
-# sendiri di mana merahnya mulai, lalu menyapu dari situ + jarak aman.
-JARAK_AMAN = 8
-RUN_MERAH = 10          # sepanjang ini harus merah semua sebelum disebut batas
-# Pencarian batas sequin berhenti di sini. Dua angka ini (RUN_MERAH dan
-# BATAS_MAKS) saling menjepit, dan salah satu terlalu ketat = cacat DIAM.
-#
-# Tepi sequin cuma menjorok lewat x=228 pada baris paling atas (terukur:
-# x=286 di y=85, x=265 di y=100, x=244 di y=115, dan sudah di kiri 228 sejak
-# y=130). Tapi bibir merah di x 135..215 memecah bidang merah pada baris
-# y 162..226, dan di baris itu celah merah antara sequin dan bibir cuma 19 px
-# — lebih pendek daripada RUN_MERAH. Pencarian tanpa batas karena itu lolos
-# melewati bibirnya, lolos melewati hurufnya, dan baru menemukan deret merah
-# di KANAN huruf; baris itu lalu tidak dicat sama sekali.
-#
-# Gejalanya bukan area yang jelas gagal, melainkan beberapa baris tipis sisa
-# huruf yang setelah diperkecil terbaca sebagai garis-garis mendatar samar.
-# Karena itu RUN_MERAH 10, bukan 25.
-#
-# Ke arah sebaliknya, jendela yang terlalu SEMPIT sama buruknya: di baris
-# teratas tepi sequin ada di x~512, jadi jendela 300 tidak pernah menemukan
-# apa pun, batasnya dilaporkan 0, dan pengecatan mulai dari x=228 — memakan
-# takik persegi dari tekstur sequin-nya. Karena itu jendelanya 600.
-#
-# Diuji: pada run 6, 10, dan 14 batas yang terdeteksi sama persis di
-# kelima belas baris contoh, jadi 10 tidak duduk di tepi jurang.
-BATAS_MAKS = 600
-
-# Pita merah rata yang dibuang untuk membawa rasionya ke A4.
-PITA = (500, 745)       # dibuang y 500..744 = 245 baris
-LEBAR, TINGGI = 1241, 1755
+# Warna merah catatan, DIUKUR: median (91,13,27) di seluruh badannya. Jangan
+# dikira-kira dari tampilan — garis tepi putus-putus halamannya merah LAIN
+# (118,10,10) dan ambang yang longgar akan menganggap keduanya satu benda,
+# lalu melaporkan "kotak catatan" selebar halaman.
+MERAH_CATATAN = (91, 13, 27)
+TOLERANSI = 55                    # jumlah |selisih| per kanal; menampung gradasi halus
 
 
-def merah_di(p):
-    return (abs(p[0] - MERAH[0]) + abs(p[1] - MERAH[1]) + abs(p[2] - MERAH[2])) <= TOLERANSI
+def render_tanpa_judul():
+    """Halaman PDF tanpa objek teks apa pun, sebagai gambar RGB."""
+    dok = pymupdf.open(SUMBER)
+    if dok.page_count != 1:
+        raise SystemExit(f"PDF ini {dok.page_count} halaman, harusnya 1")
+    hal = dok[0]
+
+    teks = [s for b in hal.get_text("dict")["blocks"]
+            for l in b.get("lines", []) for s in l["spans"]]
+    if not teks:
+        raise SystemExit("tidak ada objek teks — apakah judulnya sudah jadi gambar?")
+    for s in teks:
+        # fill=False: kotaknya TIDAK dicat ulang. Yang dibuang cuma gliflnya;
+        # kertas dan anggrek di bawahnya tetap seperti aslinya.
+        hal.add_redact_annot(pymupdf.Rect(s["bbox"]), fill=False)
+    hal.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE,
+                         graphics=pymupdf.PDF_REDACT_LINE_ART_NONE,
+                         text=pymupdf.PDF_REDACT_TEXT_REMOVE)
+    if hal.get_text().strip():
+        raise SystemExit("masih ada teks tersisa sesudah redaksi")
+
+    pm = hal.get_pixmap(dpi=DPI)
+    if (pm.width, pm.height) != (LEBAR, TINGGI):
+        raise SystemExit(f"render {pm.width}x{pm.height}, harusnya {LEBAR}x{TINGGI}")
+    rasio = pm.width / pm.height
+    if abs(rasio - RASIO_A4) > 0.002:
+        raise SystemExit(f"rasio {rasio:.4f} jauh dari A4 kartu ({RASIO_A4:.4f})")
+    return Image.frombytes("RGB", (pm.width, pm.height), pm.samples), teks
 
 
-def batas_merah(px, y, W):
-    """x pertama di baris ini yang benar-benar sudah masuk bidang merah.
+def kotak_bersih(a):
+    """Persegi panjang TERBESAR yang seluruhnya merah catatan.
 
-    Bukan sekadar piksel merah PERTAMA: sequin punya keping gelap yang
-    kebetulan sewarna merah tua, dan satu keping saja sudah cukup untuk
-    melaporkan batas yang jauh terlalu ke kiri — lalu separuh tekstur sequin
-    ikut dicat merah. Karena itu yang dicari deretan RUN_MERAH piksel merah
-    berturut-turut.
+    Dipakai untuk menaruh .t-pesan. Bukan sekadar kotak pembatas catatannya:
+    catatan itu digambar sedikit miring dan sudutnya ditimpa selotip serta
+    goresan hias, jadi kotak pembatasnya memuat piksel yang bukan merah.
+    Yang dicari di sini kotak yang dijamin polos, supaya suratnya tidak
+    pernah jatuh di atas selotip.
+
+    Algoritmanya "persegi terbesar di dalam histogram", dijalankan sekali per
+    baris: untuk tiap kolom disimpan berapa piksel merah beruntun ke atas,
+    lalu dicari persegi terluas di bawah profil itu.
     """
-    for x in range(min(BATAS_MAKS, W - RUN_MERAH)):
-        if all(merah_di(px[x + i, y]) for i in range(RUN_MERAH)):
-            return x
-    # Tidak ketemu di dalam jendela = tepi sequin sudah jauh di kiri xkiri
-    # pada baris ini, jadi tidak ada yang perlu dihindari.
-    return 0
-
-
-def periksa_batas(mulai, px, W):
-    """Penjaga tepi sequin — kegagalan ke arah SEBALIKNYA dari periksa_bersih.
-
-    periksa_bersih cuma bertanya "hurufnya sudah hilang?". Ia meloloskan
-    pengecatan yang terlalu rakus, dan itu pernah terjadi: jendela pencarian
-    yang terlalu sempit membuat batas dilaporkan 0 di baris teratas, lalu
-    pengecatan mulai dari x=228 dan MEMAKAN TAKIK PERSEGI dari tekstur
-    sequin. Hurufnya memang bersih, dan hasilnya tetap rusak.
-
-    Dua invarian yang dijaga di sini:
-
-      1. Batasnya tidak boleh pernah 0. Nol berarti pencarian tidak menemukan
-         apa pun, bukan berarti tepinya di kolom nol.
-      2. Tepi sequin itu kurva yang turun ke kiri seiring y. Jitter kecil
-         wajar — tepinya mosaik keping, bukan garis — tapi lompatan besar ke
-         KANAN berarti deteksinya baru saja runtuh di baris itu.
-    """
-    b = {y: batas_merah(px, y, W) for y in mulai}
-    nol = [y for y, v in b.items() if v == 0]
-    if nol:
-        raise SystemExit(
-            f"batas sequin gagal terdeteksi di {len(nol)} baris ({nol[:5]}) — "
-            "BATAS_MAKS terlalu sempit; pengecatan akan memakan sequin-nya"
-        )
-    urut = sorted(b)
-    lompat = [(y, b[y] - b[y - 1]) for y in urut[1:] if b[y] - b[y - 1] > 24]
-    if lompat:
-        raise SystemExit(
-            f"batas sequin melompat ke kanan di {lompat[:5]} — kurvanya "
-            "seharusnya turun ke kiri; deteksinya runtuh di baris itu"
-        )
-    print(f"periksa: batas sequin utuh & menurun di {len(b)} baris "
-          f"(x {b[urut[0]]} di atas -> {b[urut[-1]]} di bawah)")
-
-
-def rencana(px, W):
-    """Dari kolom mana tiap baris boleh dicat. Satu sumber kebenaran.
-
-    Dipakai OLEH pengecatan DAN oleh pemeriksanya. Versi pertama pemeriksanya
-    memakai batas tetap x=320 dan langsung melaporkan "sisa huruf" di baris
-    teratas — padahal di situ x=320 memang masih sequin, dan yang salah
-    pemeriksanya.
-    """
-    hasil = {}
-    for y0, y1, xkiri in ((*ATAS_Y, ATAS_X), (*SAMPING_Y, SAMPING_X)):
-        for y in range(y0, y1 + 1):
-            hasil[y] = max(xkiri, batas_merah(px, y, W) + JARAK_AMAN)
-    return hasil
-
-
-def hapus_huruf(im):
-    px = im.load()
-    W, _ = im.size
-    mulai = rencana(px, W)
-    periksa_batas(mulai, px, W)
-    n = 0
-    for y, x0 in mulai.items():
-        for x in range(x0, KANAN_X + 1):
-            # Dicat TANPA syarat. Versi pertama cuma mengecat piksel yang
-            # "cukup beda dari merah", dan itu meninggalkan bayangan tiap
-            # ubin huruf: halo lembut di sekeliling potongan korannya jatuh
-            # DI DALAM toleransi, jadi ia lolos, dan yang tersisa persis
-            # berbentuk hurufnya. Terlihat jelas di kartu jadi. Karena
-            # latarnya (68,4,2) rata sempurna, mengecat semuanya tidak
-            # berisiko apa pun dan tidak menyisakan apa pun.
-            if px[x, y] != MERAH:
-                n += 1
-            px[x, y] = MERAH
-    print(f"huruf dihapus: {n} piksel dicat ulang")
-
-    periksa_bersih(px, mulai)
-    return im
-
-
-def periksa_bersih(px, mulai):
-    """Pastikan tidak ada sisa huruf. Alat ini pernah gagal DIAM-DIAM.
-
-    Versi sebelumnya melewatkan sebagian baris (lihat BATAS_MAKS) dan yang
-    tersisa cuma garis tipis — tidak kelihatan di gambar pelat sebesar layar,
-    tapi jelas di kartunya. Karena itu hasilnya diperiksa di sini, bukan
-    dipercaya begitu saja.
-    """
-    sisa = [(x, y) for y, x0 in mulai.items()
-            for x in range(x0, KANAN_X + 1) if px[x, y] != MERAH]
-    if sisa:
-        raise SystemExit(
-            f"masih ada {len(sisa)} piksel bersisa, contoh {sisa[:5]} — "
-            "periksa BATAS_MAKS / ATAS_X / SAMPING_X sebelum memakai hasilnya"
-        )
-    print(f"periksa: {len(mulai)} baris bekas huruf bersih seluruhnya")
+    beda = np.abs(a - np.array(MERAH_CATATAN)).sum(2)
+    merah = beda < TOLERANSI
+    H, W = merah.shape
+    terbaik = (0, None)
+    tinggi = np.zeros(W, dtype=int)
+    for y in range(H):
+        tinggi = np.where(merah[y], tinggi + 1, 0)
+        tumpuk = []
+        h = np.append(tinggi, 0)
+        i = 0
+        while i < len(h):
+            if not tumpuk or h[i] >= h[tumpuk[-1]]:
+                tumpuk.append(i)
+                i += 1
+            else:
+                t = tumpuk.pop()
+                lebar = i if not tumpuk else i - tumpuk[-1] - 1
+                if h[t] * lebar > terbaik[0]:
+                    kanan = i - 1
+                    terbaik = (h[t] * lebar,
+                               (kanan - lebar + 1, y - h[t] + 1, kanan, y))
+    x0, y0, x1, y1 = terbaik[1]
+    if not merah[y0:y1 + 1, x0:x1 + 1].all():
+        raise SystemExit("kotak yang ditemukan ternyata tidak polos")
+    return x0, y0, x1, y1
 
 
 def main():
-    im = Image.open(SUMBER).convert("RGB")
-    print(f"sumber {im.size}  rasio {im.size[0] / im.size[1]:.4f}")
-    im = hapus_huruf(im)
+    im, teks = render_tanpa_judul()
+    a = np.asarray(im).astype(int)
+    H, W, _ = a.shape
 
-    atas = im.crop((0, 0, im.width, PITA[0]))
-    bawah = im.crop((0, PITA[1], im.width, im.height))
-    gabung = Image.new("RGB", (im.width, atas.height + bawah.height))
-    gabung.paste(atas, (0, 0))
-    gabung.paste(bawah, (0, atas.height))
-    print(f"pita {PITA[1] - PITA[0]} px dibuang -> {gabung.size}  "
-          f"rasio {gabung.size[0] / gabung.size[1]:.4f}  (A4 = {595.5 / 842.25:.4f})")
+    im.save(KELUARAN, "WEBP", quality=88, method=6)
+    print(f"tulis {KELUARAN}  ({W}x{TINGGI}, {os.path.getsize(KELUARAN)//1024} KB)")
 
-    pelat = gabung.resize((LEBAR, TINGGI), Image.LANCZOS)
-    pelat.save(KELUARAN, "WEBP", quality=86, method=6)
-    print(f"{KELUARAN}  {os.path.getsize(KELUARAN) // 1024}KB")
+    print("\n── angka untuk valentine.css ──")
+    # Kertas: median pita 40 px di keempat tepi, jauh dari catatan & anggrek.
+    tepi = np.concatenate([a[6:46, 60:W - 60].reshape(-1, 3),
+                           a[H - 46:H - 6, 60:W - 60].reshape(-1, 3)])
+    kertas = np.median(tepi, axis=0).astype(int)
+    print("  #hal11 --kertas-bg : #%02x%02x%02x" % tuple(kertas))
+
+    x0, y0, x1, y1 = kotak_bersih(a)
+    print("  kotak merah polos  : left %.3f%%  top %.3f%%  width %.3f%%  height %.3f%%"
+          % (100 * x0 / W, 100 * y0 / H, 100 * (x1 - x0 + 1) / W, 100 * (y1 - y0 + 1) / H))
+
+    for s in teks:
+        bb, o = s["bbox"], s["origin"]
+        print(f"  judul {s['text']!r}: font {s['font']} {s['size']:.2f}pt "
+              f"warna #{s['color']:06x}")
+        print("    kotak  left %.3f%%  width %.3f%%   garis alas top %.3f%%"
+              % (100 * bb[0] / PT_LEBAR, 100 * (bb[2] - bb[0]) / PT_LEBAR,
+                 100 * o[1] / PT_TINGGI))
+        print("    ukuran di kanvas kanonis 390px: %.2fpx" % (s["size"] * 390 / 595.5))
 
 
 if __name__ == "__main__":

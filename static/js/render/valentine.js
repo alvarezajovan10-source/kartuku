@@ -1446,6 +1446,25 @@
     e.stopPropagation();
   }, true);
 
+  /* Bendera di atas hanya boleh berlaku untuk klik yang lahir dari sapuan
+     yang BARU saja selesai — dan di layar sentuh klik itu sering tidak
+     pernah lahir sama sekali, karena browser menahannya begitu jarinya
+     bergeser jauh. Dulu bendera yang tidak terpakai itu menginap, lalu
+     menelan KETUKAN BERIKUTNYA yang sah.
+
+     Terukur di emulasi sentuh 400x800: sapu satu halaman, lalu ketuk tombol
+     "›" — halamannya diam. Baru ketukan kedua bekerja. Persis rasa
+     "nyangkut" yang dilaporkan, dan paling sering terasa di editor, tempat
+     ketukan itu dipakai untuk memilih teks yang mau diubah.
+
+     Dihapus di awal tiap gerakan baru, bukan lewat batas waktu: klik milik
+     gerakan sebelumnya sudah pasti lewat pada titik ini, karena urutan
+     kejadiannya selalu pointerdown -> pointerup -> click. Fase tangkap
+     supaya berjalan sebelum penangan pointerdown di atas. */
+  document.addEventListener("pointerdown", function () {
+    abaikanKlik = false;
+  }, true);
+
   /* Di halaman contoh (dan saat pemilik situs mengintip kartu yang belum
      dibayar) ada bilah tetap di dasar layar. Tombol balik halaman duduk di
      tempat yang sama, dan yang tertutup adalah tombol "Pakai template ini" —

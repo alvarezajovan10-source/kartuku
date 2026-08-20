@@ -334,32 +334,44 @@
     <div class="muka belakang"><span class="redup"></span></div>
   </section>
 
-  <!-- ═══════════ 11. PENUTUP — MY WISH FOR YOU ═══════════ -->
+  <!-- ═══════════ 11. PENUTUP — LETTER FOR YOU ═══════════ -->
   {% comment %}
-    Satu-satunya halaman yang pelatnya BUKAN dari LOVESTORY-2.pdf. Di PDF itu
-    halaman 11 krem polos; kolase ini dikirim pemilik situs sebagai JPG
-    terpisah (18 Agu 2026) dan diolah tools/buat_pelat_hal11.py — bukan
+    Pelatnya BUKAN dari LOVESTORY-2.pdf. Di PDF itu halaman 11 krem polos;
+    desain ini datang sebagai PDF satu halaman tersendiri (LOVESTORY-4.pdf,
+    21 Agu 2026) dan diolah tools/buat_pelat_hal11.py — bukan
     tools/buat_pelat_valentine.py. Jangan sunting hal11.webp langsung.
 
-    Halaman ini TIDAK lagi punya bingkai foto. Sampai 18 Agu 2026 isinya satu
-    foto pembeli sehalaman penuh (kunci "f_akhir"); sekarang kolasenya yang
-    mengisi halaman, dan ruang merah tua di tengahnya memang disediakan untuk
-    tulisan. Jumlah bingkai foto template ini karena itu 15, bukan 16.
+    > Sampai 21 Agu 2026 halaman ini sebuah kolase merah bersequin dengan
+    > bibir, bintang perak, dan sobekan koran "love". Diganti atas permintaan
+    > pemilik situs. Kalau ada angka lama yang masih menyebut bintang atau
+    > sobekan koran, itu sisa yang terlewat — di pelat sekarang tidak ada.
 
-    Huruf potongan koran "HAPPY BIRTHDAY" sudah dihapus dari pelatnya dan
-    diganti .t-wish di bawah, supaya pembeli bisa menulis sendiri. Dua teks
-    di halaman ini memakai Caveat — font yang sama dengan template Scrapbook,
-    atas permintaan pemilik situs.
+    Halaman ini TIDAK punya bingkai foto. Sampai 18 Agu 2026 isinya satu foto
+    pembeli sehalaman penuh (kunci "f_akhir"); sesudah itu tidak pernah ada
+    lagi, dan desain 21 Agu 2026 juga tidak mengembalikannya — catatan
+    merahnya untuk tulisan, bukan untuk foto. Enam belas bingkai template ini
+    semuanya datang dari halaman lain; lihat hitungannya di seed_templates.py.
 
-    Kedua teks menghindari hiasan yang tetap ada di pelat: bibir merah
-    (x 20-32%), bintang besar (x 25-41%, y 23-32%), dua bintang kecil di
-    kanan bawah, dan sobekan koran di tepi kanan serta dasar halaman.
+    Judul "Letter For You" DIHAPUS dari pelatnya dan diganti .t-wish di bawah,
+    supaya pembeli bisa menulis judulnya sendiri — sama seperti perlakuan
+    "HAPPY BIRTHDAY" pada desain lama. Fontnya Kaushan Script, padanan bebas
+    lisensi untuk MadelynFill yang dipakai Canva (lihat tabel padanan di
+    kepala berkas ini).
+
+    Isi suratnya memakai Caveat, DIPERTAHANKAN dari desain lama atas
+    permintaan pemilik situs (21 Agu 2026) — bukan warisan yang terlewat.
+
+    .t-pesan dikurung di dalam kotak merah polos terbesar yang bisa diukur di
+    pelatnya (tools/buat_pelat_hal11.py mencetak angkanya). Catatan merahnya
+    digambar sedikit miring, sudut kanan atas dan kiri bawahnya ditimpa
+    selotip, dan ada goresan hias di dua sudut yang lain — jadi kotak
+    pembatasnya TIDAK bisa dipakai apa adanya.
   {% endcomment %}
   <section class="scene lembar" id="hal11">
     <div class="muka depan"><div class="kertas">
       <div class="pelat" style="--pelat:url('{% static_v 'img/valentine/hal11.webp' %}')"></div>
-      <p class="tx t-wish caveat" data-baris="2"{% el card editing "wish" %}>{% t card "wish" %}</p>
-      <p class="tx t-pesan caveat" data-maks="34"{% el card editing "pesan11" %}>{% t card "pesan11" %}</p>
+      <p class="tx t-wish kaushan" data-baris="2"{% el card editing "wish" %}>{% t card "wish" %}</p>
+      <p class="tx t-pesan caveat" data-maks="52"{% el card editing "pesan11" %}>{% t card "pesan11" %}</p>
     </div><span class="jatuh"></span><span class="redup"></span></div>
     <div class="muka belakang"><span class="redup"></span></div>
   </section>

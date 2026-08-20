@@ -264,12 +264,15 @@ SEEDS = [
                  "default": "your hugs after a long day"},
                 {"key": "love4", "label": "Hal yang disukai 4",
                  "default": "that you make me feel safe"},
-                # Halaman 11. Judulnya menggantikan huruf potongan koran
-                # "HAPPY BIRTHDAY" yang sudah dihapus dari pelatnya —
-                # permintaan pemilik situs, sekalian karena kartu ini kartu
-                # Love Story, bukan kartu ulang tahun.
+                # Halaman 11. Judulnya menggantikan tulisan "Letter For
+                # You" yang sudah dihapus dari pelatnya, jadi bawaannya
+                # sengaja kata yang sama persis: pembeli yang tidak menyentuh
+                # apa pun harus mendapat desainnya utuh seperti di Canva.
+                # (Sampai 21 Agu 2026 desainnya lain dan bawaannya "My wish
+                # for you" — menggantikan huruf potongan koran "HAPPY
+                # BIRTHDAY".)
                 {"key": "wish", "label": "Judul halaman penutup",
-                 "default": "My wish for you"},
+                 "default": "Letter For You"},
                 {"key": "pesan11", "label": "Pesan penutup",
                  "default": "i want you to know how loved you are, not just "
                             "because of today but because every single day "

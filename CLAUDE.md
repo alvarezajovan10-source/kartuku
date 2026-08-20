@@ -440,9 +440,15 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   sebelum menyentuhnya:
 
   - **Halamannya bukan CSS, melainkan gambar.** Tiap halaman satu pelat WebP
-    di `static/img/valentine/`, hasil ekspor Canva milik pemilik situs
-    (`~/Downloads/LOVESTORY-2.pdf`) — dibuat `tools/buat_pelat_valentine.py`.
-    Jangan sunting WebP-nya langsung; jalankan ulang skripnya.
+    di `static/img/valentine/`, hasil ekspor Canva milik pemilik situs.
+    Jangan sunting WebP-nya langsung; jalankan ulang skripnya. **Sumbernya
+    tiga, dan tiap skrip cuma tahu miliknya sendiri:**
+
+    | halaman | sumber | skrip |
+    |---------|--------|-------|
+    | 1-10 | `~/Downloads/LOVESTORY-2.pdf` | `tools/buat_pelat_valentine.py` |
+    | 11 | `~/Downloads/LOVESTORY-4.pdf` | `tools/buat_pelat_hal11.py` |
+    | 12 | PDF hati renda | `tools/buat_pelat_hal12.py` |
 
     > **Nomor `xref` gambar BERUBAH tiap ekspor ulang Canva.** Versi pertama
     > skrip itu menghafal `PENGISI = {1: [289], 4: [323], ...}`. Saat ekspor
@@ -526,11 +532,17 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
     Teks baru WAJIB diberi `data-baris` — ada tesnya.
   - **Angka `--cf` di valentine.css hasil UKUR, bukan hitung.** Setelah
     mengubah font, ukuran teks, atau pelatnya, jalankan ulang
-    `tools/cek_valentine.js` dan salin lagi angkanya. Empat pemeriksa lain:
+    `tools/cek_valentine.js` dan salin lagi angkanya. Enam pemeriksa lain:
     `cek_valentine_lebar.js` (lebar baris), `cek_valentine_balik.js` (balik
-    lembar), `cek_valentine_editor.js` (klik teks & foto),
-    `cek_valentine_ukuran.js` (muat di semua layar). Semuanya perlu
-    `NODE_PATH` ke node_modules berisi puppeteer-core.
+    lembar), `cek_valentine_debu.js` (peralihan debu), `cek_valentine_editor.js`
+    (klik teks & foto), `cek_valentine_ukuran.js` (muat di semua layar),
+    `cek_valentine_hal11.js` (surat halaman 11 tidak keluar dari catatannya).
+    Semuanya perlu `NODE_PATH` ke node_modules berisi puppeteer-core.
+
+    > `cek_valentine_debu.js` punya `LARUT` di kepalanya yang **harus sama
+    > dengan `LAMA_LARUT` di valentine.js**. Pernah basi diam-diam sekali
+    > (1100 -> 2500 ms tanpa berkas itu ikut disetel), dan akibatnya dua
+    > kegagalan palsu yang menetap.
   - **DUA gaya membalik, dipilih lewat satu kata `GAYA` di valentine.js.**
     `"bilah"` (**dipakai sekarang, sejak 14 Agu 2026**) = enam belas bilah
     melengkung (dijelaskan di bawah). `"rotasi"` = satu bidang diputar
@@ -965,51 +977,73 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
     > Kalau itu suatu hari dikerjakan, `--tembus` boleh dinolkan — tapi
     > jangan sebelum itu. Dijaga `test_foto_melewati_tepi_lubang_pelat`.
 
-  - **Halaman 11 — "My wish for you"** (19 Agu 2026). Dulu foto pembeli
-    sehalaman penuh (`f_akhir`); sekarang kolase kiriman pemilik situs
-    dengan dua teks di atasnya, dan **tidak punya bingkai foto sama sekali**.
-    Penutup berfoto kembali ada di halaman 12 (19 Agu 2026), tapi bukan
-    bingkai yang sama: bentuknya hati dan tidak sehalaman penuh, jadi
-    TIDAK bertanda `"asli"`.
+  - **Halaman 11 — "Letter For You"** (desain baru 21 Agu 2026). Kertas krem
+    bergaris tepi putus-putus, anggrek merah di pojok kiri atas, dan satu
+    catatan merah tua berselotip tempat suratnya ditulis. **Tidak punya
+    bingkai foto sama sekali** — dulu foto pembeli sehalaman penuh
+    (`f_akhir`), dicabut 18 Agu 2026 dan tidak pernah kembali. Penutup
+    berfoto ada di halaman 12, tapi bukan bingkai yang sama: bentuknya hati
+    dan tidak sehalaman penuh, jadi TIDAK bertanda `"asli"`.
 
-    > **Pelat pertama yang BUKAN dari LOVESTORY-2.pdf** (yang kedua halaman
-    > 12, sumbernya lain lagi). Di PDF itu
-    > halaman 11 krem polos. Kolasenya dikirim terpisah sebagai JPG dan
-    > diolah `tools/buat_pelat_hal11.py` — bukan `buat_pelat_valentine.py`.
-    > Halaman 11 karena itu TETAP terdaftar di `TANPA_PELAT` pada skrip yang
-    > satu lagi; kalau dicabut dari sana, skrip itu akan menimpa hasilnya
-    > dengan halaman krem kosong dari PDF-nya.
+    > **Riwayat desainnya sudah tiga kali.** Foto sehalaman penuh (sampai 18
+    > Agu) -> kolase merah bersequin dengan bibir, bintang perak, dan sobekan
+    > koran "love" bertajuk "My wish for you" (18-21 Agu) -> surat ini.
+    > Kolasenya tidak dipakai lagi di mana pun, dan `buat_pelat_hal11.py`
+    > sudah ditulis ulang untuk sumber yang baru — jadi seluruh catatan lama
+    > soal menghapus huruf potongan koran, mencari tepi sequin, dan membuang
+    > pita merah di tengah gambar **sudah tidak berlaku**. Kalau butuh, ia
+    > ada di riwayat git, bukan di sini.
+
+    > **Pelatnya BUKAN dari `LOVESTORY-2.pdf`.** Di PDF itu halaman 11 krem
+    > polos. Desain ini datang sebagai PDF satu halaman tersendiri
+    > (`LOVESTORY-4.pdf`) dan diolah `tools/buat_pelat_hal11.py`. Halaman 11
+    > karena itu TETAP terdaftar di `TANPA_PELAT` pada `buat_pelat_valentine.py`;
+    > kalau dicabut dari sana, skrip itu akan menimpa hasilnya dengan halaman
+    > krem kosong dari PDF-nya.
     >
-    > **Rasio dibetulkan dengan MEMBUANG PITA TENGAH, bukan meregang atau
-    > memotong tepi.** Kolasenya 675x1200 (0,5625), halamannya A4 (0,707).
-    > Di tengahnya ada 518 px merah rata sempurna (y 325..842, terukur);
-    > 245 px dibuang dari dalam pita itu dan tidak satu pun hiasan tersentuh.
+    > **Rasionya kebetulan sudah benar.** Halaman PDF-nya 595,5 x 842,25 pt
+    > (0,7070), sama dengan A4 kanonis template ini (390/551,6). Dirender 150
+    > dpi hasilnya persis 1241x1755 — ukuran yang sama dengan sebelas pelat
+    > lain, tanpa dipotong maupun diregangkan sedikit pun. Skripnya tetap
+    > MEMERIKSA ini, tidak mengandaikannya.
     >
-    > **Huruf potongan koran "HAPPY BIRTHDAY" dihapus** supaya bisa diganti
-    > teks HTML. Tiga kali gagal sebelum benar, ketiganya cacat DIAM:
+    > **Judul "Letter For You" dihapus dari pelatnya** supaya bisa diganti
+    > teks HTML (`.t-wish`, kunci `wish`) — perlakuan yang sama dengan
+    > "HAPPY BIRTHDAY" pada desain sebelumnya, dan bawaannya sengaja kata
+    > yang sama persis supaya pembeli yang tidak menyentuh apa pun tetap
+    > mendapat desainnya utuh. Dihapus dengan **redaksi PyMuPDF yang hanya
+    > menyentuh objek teks** (`PDF_REDACT_IMAGE_NONE`, `fill=False`), bukan
+    > dengan mengecat ulang kotaknya: kotak judul (x 141,6..535,9 pt)
+    > bertumpang tindih dengan gambar anggrek (x 10,0..203,6 pt), dan cat
+    > akan memakan kelopaknya.
     >
-    > 1. Mengecat hanya piksel yang "cukup beda dari merah" meninggalkan
-    >    halo lembut tiap ubin — sisanya persis berbentuk hurufnya. Latarnya
-    >    (68,4,2) rata sempurna di SELURUH gambar, jadi cat tanpa syarat
-    >    aman dan tidak menyisakan apa pun.
-    > 2. Mencari tepi sequin dengan deret 25 piksel merah gagal di baris
-    >    yang melewati bibir: celah merahnya cuma 19 px, jadi pencarian lolos
-    >    sampai ke kanan huruf dan baris itu tidak dicat — sisanya garis
-    >    mendatar tipis. Deretnya diturunkan ke 10.
-    > 3. Jendela pencarian 300 px gagal di baris teratas (tepi sequin di
-    >    x~512): batas dilaporkan 0, pengecatan mulai dari x=228, dan
-    >    **memakan takik persegi dari tekstur sequin**. Jendelanya 600.
+    > **Fontnya dua, dan keduanya keputusan sadar.** Judul memakai **Kaushan
+    > Script**, padanan MadelynFill seperti di seluruh template ini. Isi
+    > suratnya memakai **Caveat** — DIPERTAHANKAN dari desain kolase atas
+    > permintaan pemilik situs, bukan warisan yang terlewat.
     >
-    > Karena tiga-tiganya lolos tanpa error, skripnya sekarang **memeriksa
-    > hasilnya sendiri**: `periksa_bersih` (tidak ada sisa huruf) dan
-    > `periksa_batas` (tepi sequin tidak pernah 0 dan kurvanya menurun).
-    > Dua arah, karena masing-masing meloloskan kegagalan yang satunya.
+    > **Yang disamakan LEBAR BARIS judulnya, bukan ukuran hurufnya.** Aturan
+    > yang sama dengan `.t-judul6` ("Our Love", 186,93pt Madelyn -> 83,20px
+    > Kaushan). Di sini: 99,58pt Madelyn -> 45,40px Kaushan, terbukti rasio
+    > 1,000 di `cek_valentine_lebar.js`. Kotaknya sengaja **2,283% lebih
+    > lebar** daripada barisnya, dengan kiri digeser setengahnya supaya titik
+    > tengahnya tidak berubah — pada ukuran yang persis pas, pembulatan
+    > sub-piksel Chrome sesekali memecahnya jadi "Letter For / You".
     >
-    > Kedua teksnya memakai **Caveat**, font yang sama dengan template
-    > Scrapbook, atas permintaan pemilik situs. `--c-caveat: 0.33` beda
-    > asalnya dari keempat konstanta lain: yang empat dicocokkan ke garis
-    > alas desain Canva, halaman ini tidak punya desain untuk dicocoki, jadi
-    > 0,33 itu metrik fontnya sendiri.
+    > **`.t-pesan` dikurung di kotak merah POLOS, bukan kotak pembatas
+    > catatannya.** Catatan merahnya digambar sedikit miring, sudut kanan
+    > atas dan kiri bawahnya ditimpa selotip, dan dua sudut sisanya punya
+    > goresan hias. `buat_pelat_hal11.py` mencari persegi panjang TERBESAR
+    > yang seluruhnya merah catatan (algoritma "persegi terbesar di dalam
+    > histogram") dan mencetak angkanya; teks yang dipasang pada kotak
+    > pembatas akan jatuh di atas selotip. Diuji sampai surat 464 huruf:
+    > `--muat` turun ke 0,924 dan tepi bawahnya masih 50 px di dalam kotak.
+    >
+    > **`--kertas-bg` berubah dari merah tua ke krem (`#ede9e1`).** Ia warna
+    > kertas halamannya dan gunanya menahan kedipan sebelum pelatnya
+    > ter-decode. Membawa angka merah lama ke desain baru akan membuat
+    > halaman berkedip GELAP dulu di sambungan peralihan — persis di halaman
+    > yang seharusnya terasa paling tenang.
 
   - **Halaman 12 — penutup hati renda** (19 Agu 2026, permintaan pemilik
     situs). Kertas kraft merah dengan bingkai renda putih berbentuk hati;
@@ -1017,9 +1051,9 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
     sama sekali** di halaman ini — desainnya memang tidak punya, dan tidak
     ada yang ditambahkan.
 
-    > **SUMBER KETIGA template ini**, sesudah `LOVESTORY-2.pdf` (hal 1-10)
-    > dan kolase JPG (hal 11): sebuah PDF satu halaman kiriman pemilik situs,
-    > diolah `tools/buat_pelat_hal12.py`. Tidak seperti halaman 11, halaman
+    > **Sumber terpisah lagi**, sesudah `LOVESTORY-2.pdf` (hal 1-10) dan
+    > `LOVESTORY-4.pdf` (hal 11): sebuah PDF satu halaman kiriman pemilik
+    > situs, diolah `tools/buat_pelat_hal12.py`. Tidak seperti halaman 11, halaman
     > ini TIDAK perlu didaftarkan di `TANPA_PELAT` — `LOVESTORY-2.pdf` cuma
     > 11 halaman, jadi tidak ada apa pun di sana yang bisa menimpanya.
     >

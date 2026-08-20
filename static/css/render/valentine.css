@@ -86,6 +86,34 @@ body {
   touch-action: none;
 }
 
+/* Di dalam editor, dua aturan di atas DIBALIK — dan ini bukan penyetelan
+   selera, melainkan perbaikan halaman yang tidak bisa digulir.
+
+   Di kartu asli, kartunya memenuhi layar dan tidak ada apa pun untuk
+   digulir, jadi "jari milik JS sepenuhnya" itu benar. Di editor tidak:
+   kartu duduk di dalam iframe setinggi 70% layar di ATAS, dan seluruh
+   kontrolnya — kolom teks, daftar font, tombol Generate Link — ada DI
+   BAWAHNYA di halaman induk. Terukur di layar 400x800: kartu menutup
+   78% tinggi layar, dan halaman editornya masih menyisakan 588 px yang
+   harus digulir. Dengan touch-action:none, seluruh 78% itu menolak
+   sapuan jari — halaman baru mau bergerak kalau jempolnya kebetulan
+   mendarat di pita sempit di bawah kartu. Persis yang terasa sebagai
+   "nyangkut".
+
+   pan-y, bukan auto: gulir TEGAK dikembalikan ke browser (dan diteruskan
+   ke halaman editor di luar iframe), sedangkan sapuan MENDATAR tetap
+   tidak direbut browser sehingga balik halaman di pratinjau tetap hidup.
+
+   overscroll-behavior wajib ikut dilepas. Nilai none di <body> merambat
+   ke viewport iframe-nya, dan justru perambatan itu yang memutus rantai
+   gulir ke halaman induk — touch-action saja tidak cukup, karena dokumen
+   di dalam iframe ini memang tidak punya apa pun untuk digulir sendiri. */
+body.is-editing,
+body.is-editing #buku {
+  touch-action: pan-y;
+  overscroll-behavior: auto;
+}
+
 img { -webkit-user-drag: none; user-drag: none; }
 
 .lembar {
@@ -538,20 +566,22 @@ img { -webkit-user-drag: none; user-drag: none; }
 .t-love3 { --kr: 11.101%; --tg: 77.493%; --lbr: 33.882%; }
 .t-love4 { --kr: 52.074%; --tg: 90.370%; --lbr: 35.739%; }
 
-/* — halaman 11: penutup "My wish for you" —
-   Pelatnya kolase kiriman pemilik situs, bukan halaman PDF; dibuat
-   tools/buat_pelat_hal11.py. --kertas-bg disamakan dengan merah tua kolase
-   itu supaya tidak ada kedipan krem sebelum pelatnya ter-decode.
+/* — halaman 11: penutup "Letter For You" (desain baru, 21 Agu 2026) —
+   Pelatnya PDF satu halaman tersendiri, bukan halaman LOVESTORY-2.pdf;
+   dibuat tools/buat_pelat_hal11.py, yang juga MENCETAK semua angka di bawah.
+   Kalau PDF-nya berganti lagi, jalankan skrip itu dan salin angkanya —
+   jangan dicocok-cocokkan dari layar.
 
-   Halaman ini TIDAK punya bingkai foto lagi (dulu "f_akhir", sehalaman
-   penuh). Aturan #hal11 .gbr yang dulu ada di sini ikut dicabut bersamanya.
+   --kertas-bg sekarang KREM, bukan merah tua. Ia warna kertas halamannya
+   (#ede9e1, median pita 40 px di tepi atas dan bawah), dan gunanya menahan
+   kedipan sebelum pelatnya ter-decode. Desain lama merah tua sepenuh
+   halaman, jadi dulu angkanya merah — mengikutkannya ke desain baru akan
+   membuat halaman berkedip GELAP dulu di sambungan peralihan, persis di
+   halaman yang seharusnya terasa paling tenang.
 
-   Kedua kotak teks menghindari hiasan yang tetap ada di pelat: bibir merah
-   berhenti di x 32%, bintang besar mengisi x 25-41% pada y 23-32%, dua
-   bintang kecil duduk di x 70-95% pada y 57-68%, dan sobekan koran masuk
-   dari tepi kanan bawah. Itu sebabnya judulnya digeser ke kanan dan
-   pesannya berhenti jauh sebelum tepi kanan. */
-#hal11 { --kertas-bg: #440402; }
+   Halaman ini TIDAK punya bingkai foto (dulu "f_akhir", sehalaman penuh).
+   Aturan #hal11 .gbr yang dulu ada di sini ikut dicabut bersamanya. */
+#hal11 { --kertas-bg: #ede9e1; }
 
 /* Halaman 12 — penutup hati renda (19 Agu 2026).
    Kertas kraft merahnya DIUKUR, bukan dicocok-cocokkan: median empat sudut
@@ -561,27 +591,67 @@ img { -webkit-user-drag: none; user-drag: none; }
    ternyata tidak menyisakan piksel opak untuk dicuplik. */
 #hal12 { --kertas-bg: #99443c; }
 
-/* Judul, di tempat huruf potongan koran "HAPPY BIRTHDAY" dulu berada.
-   Dijatah dua baris: "My wish for you" muat satu baris, tapi pembeli yang
-   menulis lebih panjang harus punya baris kedua sebelum --muat mulai
-   mengecilkan hurufnya. */
+/* Judul, di tempat "Letter For You" tergambar di desainnya.
+
+   left/width/top adalah kotak dan GARIS ALAS span aslinya di PDF, dibaca
+   langsung dari berkasnya: x 23,779%, lebar 66,217%, garis alas 18,014%.
+   Warnanya pun warna span itu (#8d111d), bukan merah lain yang mirip.
+
+   Ukuran hurufnya TIDAK 65,21px — itu angka Madelyn, dan yang dipakai di
+   sini Kaushan Script. Yang disamakan LEBAR BARISNYA, bukan ukuran
+   hurufnya: itu aturan yang sama dengan .t-judul6 ("Our Love", 186,93pt
+   Madelyn -> 83,20px Kaushan), dan itulah yang menjaga tata letak halaman
+   tetap seperti desainnya walau hurufnya bukan huruf aslinya.
+
+   Diukur di Chrome: "Letter For You" dalam Kaushan selebar 568,7px pada
+   ukuran 100px, dan barisnya di PDF 394,3pt dari halaman selebar 595,5pt.
+   Ukuran yang menyamakan keduanya 45,40px — dan itu yang dipakai, dibuktikan
+   tools/cek_valentine_lebar.js (rasio 1,000).
+
+   TAPI kotaknya TIDAK selebar barisnya. Pada ukuran yang persis pas, baris
+   dan kotak sama panjang sampai ke desimal terakhir, dan pembulatan
+   sub-piksel Chrome sesekali memutuskan barisnya kelebihan setengah piksel
+   lalu memecahnya jadi "Letter For / You". Karena itu kotaknya dilebarkan
+   2,283% dan kirinya digeser SETENGAH dari itu (1,1415%): titik tengahnya
+   tetap 56,888%, sama persis dengan kotak desainnya, jadi teks yang
+   dipusatkan tetap mendarat di 23,779% seperti di PDF — cuma sekarang punya
+   ~9px kelonggaran sebelum melipat.
+
+   Dipusatkan, bukan dirapatkan ke kiri: pada teks bawaan hasilnya sama
+   persis dengan desainnya (barisnya memang selebar kotak desain), dan judul
+   pembeli yang lebih pendek tetap seimbang terhadap anggrek di pojok kiri
+   atas alih-alih menggantung di tengah halaman.
+
+   Dijatah dua baris: judul bawaan muat satu baris, tapi pembeli yang menulis
+   lebih panjang harus punya baris kedua sebelum --muat mengecilkan huruf. */
 .t-wish {
-  left: 34.500%;
-  top: 15.500%;
-  width: 61.000%;
-  font-size: calc(38.00px * var(--fs, 1) * var(--muat, 1));
+  left: 22.638%;
+  top: 18.014%;
+  width: 68.500%;
+  font-size: calc(45.40px * var(--fs, 1) * var(--muat, 1));
   --jb0: 1.02;
-  font-weight: var(--fw, 700);
-  color: var(--c, #fff);
+  color: var(--c, #8d111d);
   text-align: var(--al, center);
 }
-/* Pesan penutup. Mengalir bebas seperti surat halaman 4, jadi dijatah
-   dengan data-maks (persen tinggi halaman), bukan jumlah baris. */
+/* Isi surat, di dalam catatan merah. Mengalir bebas seperti surat halaman 4,
+   jadi dijatah dengan data-maks (persen tinggi halaman), bukan jumlah baris.
+
+   Kotaknya duduk di dalam persegi merah POLOS terbesar yang terukur di
+   pelat — left 12,732%, top 28,775%, lebar 66,479%, tinggi 59,886% — bukan
+   di dalam kotak pembatas catatannya. Bedanya bukan main-main: catatan itu
+   digambar miring, sudut kanan atas dan kiri bawahnya ditimpa selotip, dan
+   dua sudut sisanya punya goresan hias. Teks yang dipasang pada kotak
+   pembatas akan jatuh di atas selotip.
+
+   Angka di bawah kotak polos itu ditarik masuk lagi supaya suratnya punya
+   pias: kiri 15,5% (dari 12,732%) dan lebar 61% (dari 66,479%) — titik
+   tengahnya tetap 46,0%, sama dengan titik tengah kotak polosnya, jadi
+   suratnya tidak melenceng ke satu sisi. */
 .t-pesan {
-  left: 9.000%;
-  top: 38.000%;
-  width: 72.000%;
-  font-size: calc(16.40px * var(--fs, 1) * var(--muat, 1));
+  left: 15.500%;
+  top: 34.900%;
+  width: 61.000%;
+  font-size: calc(17.00px * var(--fs, 1) * var(--muat, 1));
   --jb0: 1.52;
   color: var(--c, #fff);
 }
@@ -615,6 +685,8 @@ img { -webkit-user-drag: none; user-drag: none; }
 .tx.t-eternal { --cf: 0.2223; }
 .tx.t-pasang { --cf: 0.2104; }
 .tx.t-tutup { --cf: 0.2955; }
+.tx.t-wish { --cf: 0.3491; }
+.tx.t-pesan { --cf: 0.2990; }
 
 /* Bayangan sampul. Foto di desain aslinya gelap, jadi tulisan putih di
    atasnya terbaca tanpa bantuan apa pun — tapi pembeli bisa memasang foto

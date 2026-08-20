@@ -3,18 +3,21 @@
   Kisi kartu template. Dipakai TIGA halaman — beranda, /template/, dan galeri
   per-tema — supaya rupanya tidak pernah berbeda di antara ketiganya.
 
-  Butuh `entries`: daftar {template, thumb, accent, label}. `label` cuma
+  Butuh `entries`: daftar {template, thumb, accent, label, lebar}. `label` cuma
   dipakai kalau `tampil_tema` diisi; di galeri per-tema ia mubazir karena
   seluruh isinya sudah satu tema.
 
-  Belum ada satu pun gambar contoh (static/img/thumb/ tidak ada), jadi yang
-  tampil sekarang .tpl-fallback: nama templatenya di atas warna aksennya
-  sendiri. Begitu berkas img/thumb/<slug>.jpg ada, kartunya otomatis memakai
+  Template tanpa img/thumb/<slug>.jpg jatuh ke .tpl-fallback: namanya di atas
+  warna aksennya sendiri. Begitu berkasnya ada, kartunya otomatis memakai
   gambar itu tanpa perlu menyentuh berkas ini.
+
+  `entry.lebar` menandai kartu MENDATAR 16:9 (Game 8-Bit). Slotnya dua kolom
+  dan rasionya ikut kartunya, jadi sampulnya utuh — dipaksa masuk slot 3:4
+  seperti yang lain, judulnya terpotong di kedua sisi.
 {% endcomment %}
 <div class="tpl-grid">
   {% for entry in entries %}
-    <article class="tpl-card">
+    <article class="tpl-card{% if entry.lebar %} tpl-card--lebar{% endif %}">
       <a class="tpl-art" href="{% url 'cards:preview' entry.template.slug %}"
          style="--accent: {{ entry.accent }}">
         {% if entry.thumb %}

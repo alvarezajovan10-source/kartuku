@@ -133,6 +133,17 @@ def _category_cards():
     return categories
 
 
+# Renderer yang kartunya MENDATAR 16:9 (data-stage="lebar"). Kisi template
+# memberi mereka slot selebar dua kolom; dijejalkan ke slot 3:4 seperti yang
+# lain, sampulnya terpotong kiri-kanan dan judulnya hilang separuh.
+#
+# Diturunkan dari nama renderer, BUKAN dari kolom `config` baris Template.
+# Sengaja: `config` cuma berubah kalau `seed_templates` dijalankan, dan
+# perintah itu tidak ikut dalam deploy — jadi menaruhnya di sana berarti
+# bentuk kartunya salah di server sampai seseorang ingat menjalankannya.
+RENDERER_MENDATAR = {"game8bit"}
+
+
 def _template_cards():
     """SEMUA template aktif, rata tanpa lapisan tema — satu sumber untuk
     beranda dan halaman /template/.
@@ -157,6 +168,7 @@ def _template_cards():
             "thumb": _static_if_exists(f"img/thumb/{template.slug}.jpg"),
             "accent": (template.config or {}).get("accent", "#c9736e"),
             "label": dict(CardType.choices).get(template.category, ""),
+            "lebar": (template.config or {}).get("renderer", "") in RENDERER_MENDATAR,
         }
         for template in Template.objects.filter(is_active=True)
     ]

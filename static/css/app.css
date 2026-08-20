@@ -440,6 +440,18 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
 }
 .tpl-art img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Kartu MENDATAR 16:9 (Game 8-Bit) — slot dua kolom, rasio ikut kartunya.
+   Dipaksa masuk slot 3:4 seperti template lain, object-fit:cover memotong
+   kiri-kanan sampai judulnya terbaca "PPY BIRTHDA".
+
+   Rentangnya baru berlaku dari 640px ke atas. Di bawah itu kisinya sudah
+   satu kolom, dan `span 2` di kisi satu kolom justru MEMBUAT kolom kedua
+   secara implisit — halamannya jadi bisa digulir menyamping di HP. */
+@media (min-width: 640px) {
+  .tpl-card--lebar { grid-column: span 2; }
+  .tpl-card--lebar .tpl-art { aspect-ratio: 16 / 9; }
+}
 .tpl-fallback {
   position: absolute;
   inset: 0;

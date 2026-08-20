@@ -29,7 +29,20 @@ const BASE = process.argv[2] || 'http://127.0.0.1:8009';
 const OUT = process.argv[3] || '/tmp/thumb';
 
 const TEMPLATES = [
-  { slug: 'game-8bit',        lebar: 1600, tinggi: 900,  cara: 'elemen'   },
+  // Kartunya mendatar 16:9, tapi thumbnailnya tetap 3:4 seperti yang lain —
+  // kisi yang seragam lebih penting daripada rasio asli kartunya.
+  //
+  // WAJIB dipotret di viewport MENDATAR. Kartu ini punya gerbang orientasi:
+  // dibuka dalam bentuk tegak, yang tampil cuma layar merah muda bertuliskan
+  // "MIRINGKAN HP-MU", bukan kartunya.
+  //
+  // Jadi potret 16:9-nya disusun ke kanvas 3:4 (lihat `susun`) — kartunya
+  // utuh dan dipusatkan, sisanya latar plum bingkai kartunya sendiri.
+  // Menyerahkan gambar 16:9 langsung ke slot 3:4 memaksa memilih antara
+  // terpotong kiri-kanan (judulnya jadi "PPY BIRTHDA") atau slot dua kolom
+  // yang menyisakan bidang kosong besar di bawah tombolnya.
+  { slug: 'game-8bit', lebar: 1600, tinggi: 900, cara: 'elemen',
+    susun: { lebar: 900, tinggi: 1200, latar: '#3b2233' } },
   { slug: 'valentine-story',  lebar: 900,  tinggi: 1200, cara: 'elemen'   },
   // Stage "flow": lebar kanonis kartu 390px. Viewport dibuat sedikit lebih
   // lebar saja — dilebarkan sampai 900px, kartunya tetap 390px dan sisanya
@@ -44,6 +57,40 @@ const BUANG = [
 ].join(',');
 
 const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* Taruh gambar yang sudah jadi di tengah kanvas berukuran lain, lalu tulis
+   ulang ke berkas yang sama. Dipakai kartu mendatar supaya thumbnailnya
+   berbentuk 3:4 seperti template lain tanpa memotong kartunya.
+
+   Disusun di Chrome yang sudah terbuka, bukan lewat pustaka gambar: skrip
+   ini sengaja tidak menambah dependensi di luar puppeteer-core. */
+async function susunKeKanvas(browser, berkas, { lebar, tinggi, latar }) {
+  const b64 = fs.readFileSync(berkas).toString('base64');
+  const page = await browser.newPage();
+  await page.setViewport({ width: lebar, height: tinggi, deviceScaleFactor: 3 });
+  await page.setContent(
+    `<style>
+       html,body{margin:0;height:100%}
+       body{background:${latar};display:grid;place-items:center;overflow:hidden}
+       /* Latar = gambar yang sama, diperbesar dan diburamkan. Pita warna rata
+          membuat kartunya terlihat seperti gambar yang kurang tinggi; langit
+          kartunya sendiri yang meluber ke tepi membuat bidangnya terbaca
+          sebagai satu gambar utuh. */
+       .latar{
+         position:fixed; inset:-10%;
+         background:url(data:image/png;base64,${b64}) center/cover no-repeat;
+         filter:blur(28px) saturate(1.1) brightness(.82);
+       }
+       img{position:relative; width:100%; display:block;
+           box-shadow:0 24px 60px rgba(0,0,0,.45)}
+     </style>
+     <div class="latar"></div>
+     <img src="data:image/png;base64,${b64}">`,
+    { waitUntil: 'load' },
+  );
+  await page.screenshot({ path: berkas, type: 'png' });
+  await page.close();
+}
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -88,8 +135,10 @@ const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
     }
 
     const info = await page.evaluate(() => document.documentElement.dataset.stage || '?');
-    console.log(`${t.slug}  stage=${info}  cara=${t.cara}  → ${berkas}`);
     await page.close();
+
+    if (t.susun) await susunKeKanvas(browser, berkas, t.susun);
+    console.log(`${t.slug}  stage=${info}  cara=${t.cara}${t.susun ? '+susun' : ''}  → ${berkas}`);
   }
 
   await browser.close();

@@ -3,7 +3,7 @@
   Kisi kartu template. Dipakai TIGA halaman — beranda, /template/, dan galeri
   per-tema — supaya rupanya tidak pernah berbeda di antara ketiganya.
 
-  Butuh `entries`: daftar {template, thumb, accent, label, lebar}. `label` cuma
+  Butuh `entries`: daftar {template, thumb, accent, label}. `label` cuma
   dipakai kalau `tampil_tema` diisi; di galeri per-tema ia mubazir karena
   seluruh isinya sudah satu tema.
 
@@ -11,13 +11,15 @@
   warna aksennya sendiri. Begitu berkasnya ada, kartunya otomatis memakai
   gambar itu tanpa perlu menyentuh berkas ini.
 
-  `entry.lebar` menandai kartu MENDATAR 16:9 (Game 8-Bit). Slotnya dua kolom
-  dan rasionya ikut kartunya, jadi sampulnya utuh — dipaksa masuk slot 3:4
-  seperti yang lain, judulnya terpotong di kedua sisi.
+  Semua slot 3:4, termasuk kartu yang bentuk aslinya mendatar. Yang menyesuaikan
+  adalah gambarnya, bukan kisinya: tools/buat_thumb.js menyusun potret 16:9 ke
+  kanvas 3:4. Memberi kartu mendatar slot dua kolom sempat dicoba dan dibatalkan
+  — kartunya jadi pendek tapi tetap merentang setinggi baris, menyisakan bidang
+  putih kosong besar di bawah tombolnya.
 {% endcomment %}
 <div class="tpl-grid">
   {% for entry in entries %}
-    <article class="tpl-card{% if entry.lebar %} tpl-card--lebar{% endif %}">
+    <article class="tpl-card">
       <a class="tpl-art" href="{% url 'cards:preview' entry.template.slug %}"
          style="--accent: {{ entry.accent }}">
         {% if entry.thumb %}

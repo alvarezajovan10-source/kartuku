@@ -25,6 +25,17 @@ const puppeteer = require('puppeteer-core');
 const URL = process.argv[2] || 'http://localhost:8000/uji-valentine/';
 const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* Lama satu peralihan, HARUS sama dengan LAMA_LARUT di valentine.js.
+ *
+ * Ditulis sebagai satu nama, dan jeda di bawah dihitung DARI nama ini, karena
+ * angka mentah di sini sudah pernah basi diam-diam: peralihannya dinaikkan
+ * 1100 -> 2500 ms (19 Agu 2026) tanpa berkas ini ikut disetel, dan sesudah itu
+ * pemeriksanya mengambil cuplikan "sesudah peralihan selesai" pada 1480 ms —
+ * yaitu di TENGAH peralihan. Hasilnya dua kegagalan palsu yang menetap
+ * ("kanvas bersih lagi", "tidak ada opacity sisa"), plus satu yang berkedip
+ * (jumlah debu di 280 ms, karena sepertiga butirnya belum berangkat). */
+const LARUT = 2500;
+
 (async () => {
   const browser = await puppeteer.launch({
     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -71,11 +82,15 @@ const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // 1. Tombol maju
   await page.click('#next');
-  await tidur(280);
+  // Seperempat perjalanan: cukup jauh supaya sebagian besar butir sudah
+  // berangkat (tunda diundi sampai 0,45), cukup awal supaya belum ada yang
+  // habis. Pecahannya yang ditetapkan, bukan miliseknya.
+  await tidur(LARUT * 0.26);
   const tengah = await bacaKanvas();
   hasil.piksekDebu = tengah.ada;
   hasil.terangDebu = +tengah.terang.toFixed(1);
-  await tidur(1200);
+  // Lewat garis akhir, plus kelonggaran satu-dua frame untuk bersih-bersih.
+  await tidur(LARUT * 0.74 + 350);
   hasil.setelahMaju = await aktif();
   hasil.kanvasBersih = (await bacaKanvas()).ada;
 

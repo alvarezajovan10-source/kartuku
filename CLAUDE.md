@@ -185,7 +185,11 @@ Frontend polling ini; begitu `paid`, redirect ke `/g/<uuid>`.
 - **URL publik pakai UUID**, bukan ID increment — supaya tidak bisa ditebak/di-enumerate.
 - **Rate limit** endpoint create-charge & upload untuk cegah abuse.
 - **Webhook**: CSRF-exempt tapi signature-verified. Jangan pernah lewatkan verifikasi.
-- Draft yang tidak dibayar > 24 jam → boleh dibersihkan (management command / cron).
+- Draft yang tidak dibayar > **30 hari** → boleh dibersihkan (`purge_drafts`,
+  dijadwalkan harian di PythonAnywhere). Naik dari 24 jam pada 21 Agu 2026:
+  media seluruh situs cuma 11 MB dari 512 MB, jadi ambang galak itu membuang
+  kerja orang demi menghemat ruang yang tidak sedang sempit. Kartu lunas
+  tidak pernah disentuh.
 
 ---
 

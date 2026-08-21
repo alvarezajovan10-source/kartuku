@@ -512,7 +512,7 @@ class PurgeDraftsTests(TestCase):
         call_command("purge_drafts", stdout=StringIO(), **kwargs)
 
     def test_draft_basi_dihapus(self):
-        card = self._kartu(GiftCard.Status.DRAFT, 48)
+        card = self._kartu(GiftCard.Status.DRAFT, 31 * 24)
         self._purge()
         self.assertFalse(GiftCard.objects.filter(pk=card.pk).exists())
 
@@ -523,15 +523,25 @@ class PurgeDraftsTests(TestCase):
 
     def test_pending_basi_dihapus(self):
         """Dulu PENDING tidak pernah tersapu dan menumpuk selamanya."""
-        card = self._kartu(GiftCard.Status.PENDING, 100)
+        card = self._kartu(GiftCard.Status.PENDING, 31 * 24)
         self._purge()
         self.assertFalse(GiftCard.objects.filter(pk=card.pk).exists())
 
-    def test_pending_diberi_tenggang_lebih_panjang(self):
-        """Pembeli yang baru transfer besok tidak boleh kehilangan kartunya."""
-        card = self._kartu(GiftCard.Status.PENDING, 48)   # > 24 jam, < 72 jam
-        self._purge()
-        self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
+    def test_belum_sebulan_tidak_disentuh(self):
+        """Tenggangnya 30 hari, dan yang dijaga di sini TEPI ATASNYA.
+
+        Dulu tes ini bernama test_pending_diberi_tenggang_lebih_panjang dan
+        memakai 48 jam, waktu draft dijatah 24 jam dan menunggu-bayar 72 jam.
+        Sejak 21 Agu 2026 kedua ambang sama-sama 30 hari, jadi yang layak
+        dijaga bukan lagi selisih antara keduanya melainkan janji ke pembeli:
+        kartu yang ditinggalkan 29 hari MASIH ADA. Diuji pada dua status
+        sekaligus supaya tidak ada satu pun yang diam-diam lebih galak.
+        """
+        for status in (GiftCard.Status.DRAFT, GiftCard.Status.PENDING):
+            with self.subTest(status=status):
+                card = self._kartu(status, 29 * 24)
+                self._purge()
+                self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
 
     def test_kartu_lunas_tidak_pernah_disentuh(self):
         card = self._kartu(GiftCard.Status.PAID, 24 * 365)
@@ -539,12 +549,12 @@ class PurgeDraftsTests(TestCase):
         self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
 
     def test_dry_run_tidak_menghapus(self):
-        card = self._kartu(GiftCard.Status.DRAFT, 48)
+        card = self._kartu(GiftCard.Status.DRAFT, 31 * 24)
         self._purge(dry_run=True)
         self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
 
     def test_purge_menghapus_berkas_fotonya(self):
-        card = self._kartu(GiftCard.Status.DRAFT, 48)
+        card = self._kartu(GiftCard.Status.DRAFT, 31 * 24)
         photo = GiftPhoto.objects.create(card=card, image=make_image())
         storage, path = photo.image.storage, photo.image.name
         self._purge()

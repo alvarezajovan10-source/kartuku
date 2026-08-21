@@ -791,7 +791,8 @@ class PurgeDraftsTests(TestCase):
         self.assertTrue(GiftCard.objects.filter(pk=card.pk).exists())
 
     def test_abandoned_draft_is_removed(self):
-        card = self.make(GiftCard.Status.DRAFT, created_days=3, updated_hours=48)
+        # 31 hari, bukan 48 jam: tenggangnya 30 hari sejak 21 Agu 2026.
+        card = self.make(GiftCard.Status.DRAFT, created_days=40, updated_hours=31 * 24)
         self.purge()
         self.assertFalse(GiftCard.objects.filter(pk=card.pk).exists())
 

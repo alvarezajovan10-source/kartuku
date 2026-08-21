@@ -157,11 +157,15 @@ Tab **Tasks** → **Create a scheduled task**, jalankan harian:
 /home/kartuku/.virtualenvs/kartuku/bin/python /home/kartuku/giftcard/manage.py purge_drafts
 ```
 
-Menghapus kartu yang tidak jadi dibeli beserta fotonya: draft & kedaluwarsa
-lebih dari 24 jam, dan yang menunggu pembayaran lebih dari 72 jam (tenggangnya
-lebih panjang karena pembeli bisa saja baru menyelesaikan transfernya besok).
-**Kartu lunas tidak pernah disentuh** — itu produk yang sudah dibayar dan
-dijanjikan bisa dibuka selamanya.
+Menghapus kartu yang tidak jadi dibeli beserta fotonya: apa pun yang belum
+lunas dan tidak disentuh **lebih dari 30 hari** — draft, kedaluwarsa, maupun
+yang menunggu pembayaran. **Kartu lunas tidak pernah disentuh** — itu produk
+yang sudah dibayar dan dijanjikan bisa dibuka selamanya.
+
+> Tenggangnya 30 hari, dinaikkan dari 24 jam (21 Agu 2026). Patokannya
+> `updated_at`, jadi kartu yang masih digarap tidak pernah kena walau dibuat
+> sebulan lalu. Ambangnya bisa ditimpa untuk sekali jalan:
+> `purge_drafts --hours 48`.
 
 Tanpa langkah ini, kartu yang ditinggalkan orang menumpuk selamanya dan disk
 512 MB akan penuh oleh sampah, bukan oleh penjualan. Cek dulu dengan

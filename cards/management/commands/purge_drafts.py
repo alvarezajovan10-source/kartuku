@@ -12,18 +12,37 @@ class Command(BaseCommand):
         "Kartu lunas TIDAK PERNAH disentuh."
     )
 
+    # 30 hari, dinaikkan dari 24 jam (draft) dan 72 jam (menunggu bayar) atas
+    # keputusan pemilik situs, 21 Agu 2026.
+    #
+    # Angka lama dipilih waktu belum ada datanya. Sesudah tiga minggu tayang,
+    # datanya bilang begini: 57 draft menganggur, 8 di antaranya baru
+    # ditinggalkan hari itu dan 36 berumur 7-30 hari — dan seluruh media situs
+    # cuma 11 MB dari jatah 512 MB. Jadi ambang 24 jam membuang kerja orang
+    # yang mungkin masih mau kembali, demi menghemat ruang yang tidak sedang
+    # sempit. Pembeli yang menyusun kartu ulang tahun tiga minggu sebelum
+    # harinya adalah pembeli yang wajar, bukan sampah.
+    #
+    # Kedua ambang kini SAMA. Dulu "menunggu bayar" sengaja lebih longgar
+    # daripada draft karena 24 jam terlalu galak untuk orang yang transfernya
+    # baru selesai besok — alasan yang habis dengan sendirinya begitu
+    # keduanya jadi 30 hari. Tidak ada yang menyelesaikan transfer sebulan
+    # kemudian lalu berharap drafnya masih ada.
+    #
+    # Yang TIDAK berubah: kartu lunas tidak pernah disentuh, dan patokannya
+    # tetap updated_at.
+    TENGGANG_JAM = 30 * 24
+
     def add_arguments(self, parser):
         parser.add_argument(
-            "--hours", type=int, default=24, help="Ambang draft & kedaluwarsa."
+            "--hours", type=int, default=self.TENGGANG_JAM,
+            help="Ambang draft & kedaluwarsa, dalam jam. Bawaan 30 hari.",
         )
         parser.add_argument(
             "--pending-hours",
             type=int,
-            default=72,
-            help=(
-                "Ambang kartu yang menunggu pembayaran. Sengaja lebih longgar: "
-                "pembeli bisa saja baru menyelesaikan transfernya besok."
-            ),
+            default=self.TENGGANG_JAM,
+            help="Ambang kartu yang menunggu pembayaran, dalam jam. Bawaan 30 hari.",
         )
         parser.add_argument("--dry-run", action="store_true")
 

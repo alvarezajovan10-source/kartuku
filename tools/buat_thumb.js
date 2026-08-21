@@ -43,7 +43,20 @@ const TEMPLATES = [
   // yang menyisakan bidang kosong besar di bawah tombolnya.
   { slug: 'game-8bit', lebar: 1600, tinggi: 900, cara: 'elemen',
     susun: { lebar: 900, tinggi: 1200, latar: '#3b2233' } },
-  { slug: 'valentine-story',  lebar: 900,  tinggi: 1200, cara: 'elemen'   },
+  // TIDAK dipotret — thumbnailnya buatan tangan, dari tools/buat_thumb_valentine.py.
+  //
+  // Bukan selera: yang dipotret skrip ini adalah kartu KOSONG, dan sampul
+  // Valentine Story hampir seluruhnya lubang foto. Yang tertangkap cuma
+  // gradasi pengisi dengan tulisan di atasnya — sebagai gambar etalase itu
+  // menjual kartu yang salah. Pemilik situs mengirim sampul yang sama dengan
+  // fotonya terisi (LOVESTORY-5.pdf, 21 Agu 2026), dan itu yang dipakai.
+  //
+  // Dibiarkan di daftar ini, bukan dihapus, supaya yang membaca berikutnya
+  // tahu halaman ini SENGAJA dilewati — bukan lupa didaftarkan. Kalau
+  // sampulnya suatu hari tidak lagi berlubang foto, cabut `manual` dan
+  // angka di bawah langsung berlaku lagi.
+  { slug: 'valentine-story',  lebar: 900,  tinggi: 1200, cara: 'elemen',
+    manual: 'tools/buat_thumb_valentine.py' },
   // Stage "flow": lebar kanonis kartu 390px. Viewport dibuat sedikit lebih
   // lebar saja — dilebarkan sampai 900px, kartunya tetap 390px dan sisanya
   // jadi latar kosong.
@@ -100,6 +113,10 @@ async function susunKeKanvas(browser, berkas, { lebar, tinggi, latar }) {
   });
 
   for (const t of TEMPLATES) {
+    if (t.manual) {
+      console.log(`${t.slug}  DILEWATI — thumbnailnya dibuat ${t.manual}`);
+      continue;
+    }
     const page = await browser.newPage();
     await page.setViewport({ width: t.lebar, height: t.tinggi, deviceScaleFactor: 3 });
     await page.goto(`${BASE}/preview/${t.slug}/`, { waitUntil: 'networkidle0', timeout: 60000 });

@@ -281,6 +281,15 @@
               @pointerdown="cropDown($event)"
               @pointermove="cropDrag($event)"
               @pointerup="cropUp($event)" @pointercancel="cropUp($event)"></canvas>
+      {% comment %}
+        Hanya muncul untuk bingkai yang bentuknya bukan persegi panjang (hati
+        liontin halaman 7, hati renda halaman 12). Area gelap di kanvas sudah
+        menjelaskan dirinya sendiri untuk sebagian orang, tapi tidak untuk
+        semua — dan yang salah paham baru tahu setelah fotonya terpasang.
+      {% endcomment %}
+      <p class="hint" x-show="crop.topeng" x-cloak>
+        Bagian yang gelap tidak akan tampil di kartu.
+      </p>
       <label class="ed-slider">Perbesar
         <input type="range" min="1" max="4" step="0.02"
               :value="crop.zoom" @input="cropZoom(parseFloat($event.target.value))">

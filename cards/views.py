@@ -1,4 +1,5 @@
 import logging
+import os
 import secrets
 from functools import lru_cache
 from uuid import UUID
@@ -83,6 +84,21 @@ CATEGORY_CARDS = [
         "tint": "proposal",
     },
 ]
+
+
+def _static_versi(path):
+    """URL static ber-versi (?v=mtime), atau None kalau berkasnya tidak ada.
+
+    Pasangan _static_if_exists untuk nilai yang dibaca JAVASCRIPT, bukan
+    template: di dalam editor_init tag {% static_v %} tidak bisa dipanggil,
+    sementara penanda versinya tetap wajib — storage static situs ini tidak
+    memakai manifest hash, jadi tanpa ?v= browser menyimpan berkas lama
+    selamanya (lihat catatan di STORAGES pada settings.py).
+    """
+    found = finders.find(path)
+    if not found:
+        return None
+    return f"{static(path)}?v={int(os.path.getmtime(found))}"
 
 
 def _static_if_exists(path):
@@ -424,6 +440,9 @@ def editor(request, template_slug):
 
     by_slot = card.photo_by_slot() if card else {}
 
+    # Nama renderer dipakai mencari topeng bentuk bingkai di bawah.
+    renderer = (template.config or {}).get("renderer", "")
+
     # Satu daftar elemen untuk editor. Urutannya = urutan panel kalau perlu.
     element_specs = []
     for key, label, kind in FIELD_ELEMENTS:
@@ -448,6 +467,18 @@ def editor(request, template_slug):
                 # sangkar padahal yang tampil nanti persegi panjang, dan
                 # potongannya tidak pernah sesuai dugaannya.
                 "rasio": spec.get("rasio"),
+                # Topeng BENTUK bingkai, kalau bingkainya bukan persegi
+                # panjang. `rasio` saja tidak cukup untuk bingkai hati:
+                # lubangnya cuma mengisi ~67% kotak pembatasnya, jadi
+                # sepertiga dari yang dilihat pembeli saat memotong adalah
+                # bagian yang tidak akan pernah muncul di kartu. Berkasnya
+                # keluaran tools/buat_topeng_bingkai.py, diambil dari lubang
+                # alfa di pelat — sumber yang sama dengan yang memotong foto
+                # di kartu sungguhan. Bernilai None untuk bingkai kotak, dan
+                # editor melewatinya begitu saja.
+                "topeng": _static_versi(
+                    f"img/{renderer}/topeng/{spec['key']}.png"
+                ) if renderer else None,
                 # Bingkai yang fotonya disimpan besar-besar (sampul yang
                 # memenuhi satu halaman penuh). Lihat MAX_PHOTO_BYTES_BESAR.
                 "asli": bool(spec.get("asli")),

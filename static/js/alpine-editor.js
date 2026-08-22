@@ -533,10 +533,23 @@ window.cardEditor = function () {
           img: img, slot: item.slot, zoom: 1, base: base, asli: !!spec.asli,
           dx: (canvas.width - img.naturalWidth * base) / 2,
           dy: (canvas.height - img.naturalHeight * base) / 2,
-          drag: null,
+          drag: null, topeng: null,
         };
         self.cropOpen = true;
         self.$nextTick(function () { self.drawCrop(); });
+
+        /* Topeng bentuk bingkai, kalau ada. Dimuat SESUDAH kanvas tampil,
+           bukan ditunggu: kotak crop harus langsung bisa dipakai, dan
+           peredupnya menyusul beberapa milidetik kemudian. Kalau gagal
+           dimuat, tidak terjadi apa-apa — kotaknya cuma kembali polos
+           seperti sebelum fitur ini ada. */
+        if (spec.topeng) {
+          var topeng = new Image();
+          topeng.onload = function () {
+            if (self.crop.slot === item.slot) { self.crop.topeng = topeng; self.drawCrop(); }
+          };
+          topeng.src = spec.topeng;
+        }
       };
       img.onerror = function () { self.error = "Foto tidak bisa dibaca."; self.nextCrop(); };
       img.src = URL.createObjectURL(item.file);
@@ -552,6 +565,30 @@ window.cardEditor = function () {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(this.crop.img, this.crop.dx, this.crop.dy,
         this.crop.img.naturalWidth * s, this.crop.img.naturalHeight * s);
+
+      /* Bingkai yang bukan persegi panjang (hati liontin halaman 7, hati
+         renda halaman 12) diredupkan di luar bentuknya, supaya pembeli
+         memotong di bentuk yang SAMA dengan yang nanti tampil. Tanpa ini ia
+         menyusun wajah di sudut kotak, lalu sudut itu terpotong hati.
+
+         Digambar di kanvas terpisah lalu ditempel, bukan langsung: composite
+         "destination-out" akan ikut melubangi FOTONYA kalau dijalankan di
+         konteks yang sama.
+
+         Yang diredupkan cuma TAMPILAN. Berkas yang diunggah dibuat ulang
+         dari nol di confirmCrop() — lihat catatan di sana soal kenapa itu
+         bukan sekadar kehati-hatian. */
+      var topeng = this.crop.topeng;
+      if (!topeng) return;
+      var lapis = document.createElement("canvas");
+      lapis.width = canvas.width;
+      lapis.height = canvas.height;
+      var lctx = lapis.getContext("2d");
+      lctx.fillStyle = "rgba(38, 26, 30, .62)";
+      lctx.fillRect(0, 0, lapis.width, lapis.height);
+      lctx.globalCompositeOperation = "destination-out";
+      lctx.drawImage(topeng, 0, 0, lapis.width, lapis.height);
+      ctx.drawImage(lapis, 0, 0);
     },
 
     clampCrop: function () {
@@ -600,8 +637,32 @@ window.cardEditor = function () {
       var self = this;
       var canvas = this.$refs.cropCanvas;
       this.busy = true;
-      // Hasil potongan = persis isi canvas. Itu yang diunggah.
-      canvas.toBlob(function (blob) {
+
+      /* Digambar ULANG di kanvas baru, bukan diekspor dari kanvas yang
+         terlihat. Sejak kanvas itu memakai peredup bentuk bingkai, isinya
+         BUKAN lagi foto murni — mengekspornya berarti mengunggah foto yang
+         sepertiga bagiannya sudah digelapkan permanen, dan gelapnya tidak
+         bisa dibatalkan lagi oleh siapa pun.
+
+         Bisa saja peredupnya dihapus dulu lalu digambar ulang di kanvas yang
+         sama, dan itu akan bekerja hari ini. Tapi urutannya jadi syarat yang
+         harus diingat orang, dan yang membayar kalau suatu hari terlupa
+         adalah pembeli — fotonya sudah terlanjur tersimpan gelap. Kanvas
+         terpisah membuat kesalahan itu tidak mungkin terjadi.
+
+         Potongannya tetap persegi panjang. Yang memotong jadi bentuk hati
+         adalah lubang di pelat, sama seperti sebelum fitur ini ada. */
+      var bersih = document.createElement("canvas");
+      bersih.width = canvas.width;
+      bersih.height = canvas.height;
+      var bctx = bersih.getContext("2d");
+      var skala = this.crop.base * this.crop.zoom;
+      bctx.fillStyle = "#eee";
+      bctx.fillRect(0, 0, bersih.width, bersih.height);
+      bctx.drawImage(this.crop.img, this.crop.dx, this.crop.dy,
+        this.crop.img.naturalWidth * skala, this.crop.img.naturalHeight * skala);
+
+      bersih.toBlob(function (blob) {
         var file = new File([blob], "foto.jpg", { type: "image/jpeg" });
         var slot = self.crop.slot;
         self.sendPhoto(file, slot)

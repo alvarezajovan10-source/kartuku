@@ -493,7 +493,30 @@ img { -webkit-user-drag: none; user-drag: none; }
 
 /* — halaman 5: kalender (angkanya menyatu dengan pelat) — */
 #hal5 { --kertas-bg: #750909; }
-.t-bulan { left: 24.987%; top: 32.638%; font-size: calc(83.99px * var(--fs, 1) * var(--muat, 1)); }
+/* Nama bulan DIPUSATKAN, dan sebelum 22 Agu 2026 ia tidak.
+
+   Dulu tertulis `left: 24.987%` tanpa lebar sama sekali. Angka itu benar —
+   tepi kiri "J u l y" di PDF-nya memang di situ — tapi ia mengunci tepi KIRI
+   teks, bukan titik tengahnya. Akibatnya dua hal yang dilaporkan pemilik
+   situs sekaligus: bulan yang lebih panjang ("September") tumbuh ke kanan
+   dan melenceng dari tengah kalender, dan tombol rata kiri/tengah/kanan di
+   editor tidak melakukan apa-apa — text-align tidak punya ruang untuk
+   bekerja pada kotak yang menyusut mengikuti isinya.
+
+   Angka penggantinya bukan kira-kira. Diukur di LOVESTORY-2.pdf halaman 5:
+   "J u l y" membentang 24,981%..75,011%, titik tengahnya 49,996%; kisi
+   tanggalnya membentang 7,349%..92,650%, titik tengahnya 49,999%. Jadi
+   desainnya memang memusatkan keduanya pada sumbu halaman. Kotak di bawah
+   dibuat selebar kisi tanggal itu, dan titik tengahnya jatuh di 49,9995% —
+   teks bawaan mendarat persis di tempat yang sama seperti sebelumnya,
+   sekarang karena dipusatkan, bukan karena kebetulan tepi kirinya cocok. */
+.t-bulan {
+  left: 7.349%;
+  top: 32.638%;
+  width: 85.301%;
+  text-align: var(--al, center);
+  font-size: calc(83.99px * var(--fs, 1) * var(--muat, 1));
+}
 
 /* — halaman 6: our love — */
 #hal6 { --kertas-bg: #fefbf3; }

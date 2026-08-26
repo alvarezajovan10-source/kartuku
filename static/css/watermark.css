@@ -1,0 +1,95 @@
+/* Cap "VORTEIZ" di atas kartu CONTOH.
+
+   Dipasang di satu tempat dan dipakai tiga jalur sekaligus: kartu contoh yang
+   hidup di situs, potret galeri (tools/buat_galeri_template.js), dan potret
+   thumbnail (tools/buat_thumb.js). Ketiganya menyuntikkan berkas ini, jadi
+   capnya dijamin sama bentuk dan sudutnya di mana pun ia muncul.
+
+   TIDAK PERNAH menempel pada kartu yang sudah dibayar. Yang membeli membayar
+   untuk kartu bersih; cap ini cuma menjaga barang PAJANGAN. Penjaganya ada di
+   _preview_bar.html — lihat catatan di sana.
+
+   Opasitas 12%: cukup terbaca untuk mengklaim asal dan cukup mengganggu untuk
+   membuat gambar curian tidak layak pakai, tapi masih tembus pandang sehingga
+   desainnya sendiri tetap terbaca calon pembeli. Naik ke 20% dan galerinya
+   berhenti menjual; turun ke 6% dan capnya hilang begitu gambar diperkecil. */
+.cap-vorteiz {
+  /* fixed, bukan absolute: berkas ini disisipkan di ujung <body>, jauh di
+     luar #card-stage, jadi `absolute` akan mengukur diri terhadap seluruh
+     dokumen dan capnya melayang entah di mana pada kartu yang bergulir. */
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;   /* jangan pernah menghalangi jari di kartunya */
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* Lapisan ini jadi wadah kueri untuk dirinya sendiri, supaya cqw di bawah
+     mengukur LEBAR KARTU. Tanpa ini cap yang pas di potret galeri 900px akan
+     jadi sebesar kuku di thumbnail 250px. */
+  container-type: inline-size;
+}
+.cap-vorteiz span {
+  transform: rotate(-28deg);
+  font-family: "Inter", ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Ukurannya mengikuti LEBAR KARTU lewat cqw, bukan piksel tetap: cap yang
+     sama harus terbaca di thumbnail 250px maupun di potret galeri 900px.
+
+     3,1cqw — naik dari 2,1. Lima tanda per baris, bukan delapan: pada
+     delapan, tiap tanda tinggal 8px di kartu selebar 390px dan sudah tidak
+     terbaca sebagai kata. Yang menandai tetap rapatnya kisi, tapi tanda yang
+     tidak terbaca tidak menandai apa pun. */
+  font-size: 3.1cqw;
+  /* 500, turun dari 800. Huruf tebal berbayang buram terbaca seperti stempel
+     tanda terima, bukan tanda milik — dan itu justru MENURUNKAN kesan barang
+     yang ditandainya. Bobot sedang dengan tracking lebar terbaca sebagai
+     tanda yang disengaja. */
+  font-weight: 500;
+  letter-spacing: .34em;
+  white-space: nowrap;
+  /* Putih dengan bayangan gelap di baliknya, BUKAN mix-blend-mode.
+     Kartu-kartunya berlatar sangat berbeda — sampul Valentine hampir hitam,
+     Scrapbook krem terang — dan blend mode apa pun akan hilang di salah
+     satunya. Putih terbaca di latar gelap, bayangannya yang membuatnya tetap
+     terbaca di latar terang. */
+  color: #fff;
+  /* TIDAK memakai `opacity` sama sekali — dan itu perbaikan, bukan selera.
+
+     Dulu seluruh elemen diberi opacity 10%. Masalahnya `opacity` memudarkan
+     SEMUANYA sekaligus, termasuk bayangan gelap yang seharusnya jadi penahan
+     di latar terang. Akibatnya cap terbaca di kartu gelap dan lenyap di
+     kartu terang — persis keluhan pemilik situs.
+
+     Sekarang isi dan bayangannya punya alfa SENDIRI-SENDIRI. Di kartu gelap
+     putihnya yang bekerja; di kartu terang bayangan gelapnya yang bekerja.
+     Selalu ada satu yang kontras, apa pun latarnya. */
+  color: rgba(255, 255, 255, .5);
+  /* Garis tepi TIPIS, bukan bayangan buram.
+
+     Bayangan buram di belakang huruf putih menghasilkan efek timbul yang
+     terbaca murah — itu keluhan pemilik situs, dan ia benar. Garis tepi
+     setebal setengah piksel memberi ketegasan yang sama di latar terang
+     tanpa kesan timbul sama sekali: hurufnya terbaca seperti terukir, bukan
+     ditempel.
+
+     Tetap dua nilai alfa terpisah, bukan satu `opacity` untuk seluruh
+     elemen: putihnya bekerja di kartu gelap, garis tepinya di kartu terang. */
+  -webkit-text-stroke: .5px rgba(38, 28, 26, .30);
+  paint-order: stroke fill;
+}
+
+/* Kisi RATA — baris ganjil tidak lagi digeser.
+
+   Sebelumnya tiap baris ganjil digeser seperempat sel, meniru susunan bata.
+   Di atas kertas itu masuk akal; di layar hasilnya terbaca ACAK, karena
+   pergeserannya bertumpuk dengan kemiringan 28 derajat dan mata kehilangan
+   satu pun garis lurus untuk dijadikan patokan. Tanda yang terlihat asal
+   ditaruh membaca seperti tambalan, bukan seperti merek.
+
+   Tanpa geseran, kemiringannya sendiri yang membentuk deret diagonal rapi —
+   dan itu yang membuat polanya terbaca disengaja. */
+.cap-vorteiz .baris {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}

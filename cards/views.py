@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import secrets
 from functools import lru_cache
 from uuid import UUID
@@ -9,6 +10,7 @@ from django.contrib.staticfiles import finders
 from django.db import IntegrityError, transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import get_template
 from django.urls import reverse
 from django.templatetags.static import static
 from django.utils.text import slugify
@@ -118,7 +120,6 @@ def landing(request):
         {
             "entries": _template_cards(),
             "price": settings.CARD_PRICE,
-            "hero_photo": _static_if_exists("img/hero.jpg"),
         },
     )
 
@@ -218,6 +219,177 @@ def page_faq(request):
     )
 
 
+# Sebutan untuk satu potong isi kartu, per bentuk panggungnya. Kartu buku
+# dibalik per HALAMAN, kartu bergulir dibaca per BAGIAN, kartu berbabak
+# ditonton per BABAK — dan menyebutnya salah di halaman jualan membuat
+# pembeli mengira ia membeli barang yang lain.
+SEBUTAN_HALAMAN = {
+    "buku": "halaman",
+    "majalah": "hamparan",
+    "flow": "bagian",
+    "lebar": "babak",
+    "frame": "babak",
+}
+
+
+def search(request):
+    """Cari template dari kolom di header.
+
+    Katalognya masih lima, jadi mesin pencarinya sengaja sesederhana mungkin:
+    cocokkan potongan kata pada NAMA dan pada label kategorinya. Tidak ada
+    peringkat, tidak ada koreksi ejaan — pada lima baris data, keduanya cuma
+    lapisan yang tidak pernah terbukti benar.
+
+    Kenapa ada sama sekali: kolom cari itu benda paling dominan di header, dan
+    header inilah yang membuat halaman terbaca sebagai toko. Tapi kotak cari
+    yang tidak mencari apa pun adalah kebohongan yang ketahuan pada percobaan
+    pertama — dan yang mencobanya calon pembeli. Jadi kolomnya nyata.
+    """
+    q = (request.GET.get("q") or "").strip()
+    templates = Template.objects.filter(is_active=True)
+    if q:
+        cocok = [
+            t for t in templates
+            if q.lower() in t.name.lower()
+            or q.lower() in dict(CardType.choices).get(t.category, "").lower()
+        ]
+    else:
+        cocok = list(templates)
+
+    def kartu(daftar):
+        return [
+            {
+                "template": t,
+                "thumb": _static_if_exists(f"img/thumb/{t.slug}.jpg"),
+                "accent": (t.config or {}).get("accent", "#c9736e"),
+                "label": dict(CardType.choices).get(t.category, ""),
+            }
+            for t in daftar
+        ]
+
+    return render(
+        request,
+        "cards/pages/search.html",
+        {
+            "q": q,
+            "entries": kartu(cocok),
+            # Cadangan untuk hasil kosong: seluruh katalog, supaya yang tidak
+            # menemukan apa-apa tidak berakhir di halaman putih.
+            "semua": kartu(templates),
+            "price": settings.CARD_PRICE,
+        },
+    )
+
+
+# Lencana per template, ditetapkan pemilik situs (23 Agu 2026). Ditulis di
+# sini, bukan di config template: config cuma berubah kalau seed_templates
+# dijalankan, dan perintah itu tidak ikut deploy — lencana yang salah akan
+# menempel berminggu-minggu tanpa ada yang bisa mencabutnya lewat deploy biasa.
+LENCANA = {
+    "valentine-story": ("bestseller", "Bestseller"),
+    "scrapbook-cerita": ("star", "Star Seller"),
+}
+
+
+def _galeri(slug, batas=30):
+    """Foto tiap halaman kartu, keluaran tools/buat_galeri_template.js.
+
+    Diprobe berurutan 01, 02, 03 … sampai ketemu yang tidak ada. Sengaja tidak
+    membaca isi folder: di produksi berkas static dilayani dari staticfiles
+    hasil collectstatic, dan menyusuri direktori di sana mengikat halaman ini
+    pada tata letak penyimpanan yang bisa berubah.
+    """
+    keluar = []
+    for i in range(1, batas + 1):
+        url = _static_versi(f"img/galeri/{slug}/{i:02d}.jpg")
+        if not url:
+            break
+        keluar.append(url)
+    return keluar
+
+
+def template_detail(request, template_slug):
+    """Halaman jualan satu template: kartunya hidup, isinya, lalu tombol pakai.
+
+    Sebelum ini tidak ada halaman seperti ini sama sekali. Dari kisi template,
+    tombol "Preview" melempar orang ke kartu contoh SELAYAR PENUH — tanpa
+    harga, tanpa keterangan isi, dan tanpa jalan kembali selain tombol Back.
+    Calon pembeli yang sedang menimbang justru kehilangan semua yang ia
+    butuhkan untuk menimbang, tepat di detik ia paling tertarik.
+
+    Kartunya disematkan HIDUP, bukan sebagai gambar. Itu satu-satunya hal yang
+    tidak bisa ditiru penjual berkas template: mereka cuma bisa memajang foto
+    mockup, sedangkan di sini orang bisa membalik halamannya sendiri sebelum
+    membayar.
+    """
+    template = get_object_or_404(Template, slug=template_slug, is_active=True)
+    config = template.config or {}
+    halaman, panggung = _isi_renderer(config.get("renderer", ""))
+
+    isi = []
+    if halaman:
+        isi.append((str(halaman), SEBUTAN_HALAMAN.get(panggung, "halaman")))
+    if config.get("frames"):
+        isi.append((str(len(config["frames"])), "foto bisa diganti"))
+    if config.get("texts"):
+        isi.append((str(len(config["texts"])), "tulisan bisa diubah"))
+    isi.append(("1", "lagu YouTube jadi musik latar"))
+
+    lain = [
+        {
+            "template": t,
+            "thumb": _static_if_exists(f"img/thumb/{t.slug}.jpg"),
+            "accent": (t.config or {}).get("accent", "#c9736e"),
+            "label": dict(CardType.choices).get(t.category, ""),
+        }
+        for t in Template.objects.filter(is_active=True).exclude(pk=template.pk)
+    ]
+
+    normal = settings.CARD_LIST_PRICE
+    potongan = (
+        round(100 * (1 - settings.CARD_PRICE / normal))
+        if normal and normal > settings.CARD_PRICE
+        else 0
+    )
+    lencana_kode, lencana_teks = LENCANA.get(template.slug, ("", ""))
+
+    return render(
+        request,
+        "cards/pages/template_detail.html",
+        {
+            "template": template,
+            "kategori": dict(CardType.choices).get(template.category, ""),
+            "panggung": panggung,
+            "isi": isi,
+            "thumb": _static_if_exists(f"img/thumb/{template.slug}.jpg"),
+            "accent": config.get("accent", "#c9736e"),
+            "price": settings.CARD_PRICE,
+            "harga_normal": normal if potongan else 0,
+            "potongan": potongan,
+            "galeri": _galeri(template.slug),
+            "lencana_kode": lencana_kode,
+            "lencana_teks": lencana_teks,
+            "lain": lain,
+        },
+    )
+
+
+def template_or_gallery(request, slug):
+    """Satu alamat, dua isi: /template/<kategori>/ atau /template/<template>/.
+
+    Dipisahkan di sini, bukan lewat dua awalan URL yang berbeda, supaya alamat
+    halaman produknya tetap pendek dan enak dibagikan — dan itu penting, karena
+    alamat inilah yang nanti ditempel pemilik situs di TikTok dan Lynk.
+
+    Aman dari salah tebak: slug kategori memakai GARIS BAWAH (`love_story`)
+    sedangkan slug template memakai TANDA HUBUNG (`valentine-story`), jadi
+    keduanya tidak mungkin bertabrakan. Dijaga test_template_detail.py.
+    """
+    if slug in dict(CardType.choices):
+        return template_gallery(request, slug)
+    return template_detail(request, slug)
+
+
 def template_gallery(request, category):
     """Semua template aktif untuk satu kategori, siap di-preview atau dipakai."""
     label = dict(CardType.choices).get(category)
@@ -303,8 +475,52 @@ def _sample_photos():
     return photos
 
 
+@lru_cache(maxsize=32)
+def _isi_renderer(renderer):
+    """(jumlah halaman, data-stage) satu renderer, dibaca dari berkas templatenya.
+
+    Angka halaman TIDAK disimpan di config template, dan itu disengaja: config
+    cuma berubah kalau seed_templates dijalankan, sedangkan perintah itu tidak
+    ikut dalam deploy. Angka yang disimpan di sana akan diam-diam basi begitu
+    ada halaman ditambah — dan yang membacanya calon pembeli, di halaman
+    jualan. Dihitung dari sumbernya, ia tidak bisa berbohong.
+    """
+    if not renderer:
+        return (0, "")
+    try:
+        berkas = get_template(f"cards/render/{renderer}.html").origin.name
+    except Exception:
+        return (0, "")
+    with open(berkas, encoding="utf-8") as f:
+        sumber = f.read()
+    # Blok {% comment %} dibuang DULU. Kalau tidak, contoh markup yang ditulis
+    # di dalam komentar ikut terhitung — valentine.html punya satu, dan
+    # akibatnya halamannya dilaporkan 13 padahal 12. Salah satu angka yang
+    # tidak akan pernah ada yang curigai sampai ada pembeli menghitungnya.
+    sumber = re.sub(r"\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}", "",
+                    sumber, flags=re.S)
+    halaman = len(re.findall(r'<[a-z]+[^>]*class="[^"]*\b(?:scene|chapter)\b', sumber))
+    panggung = re.search(r'data-stage="([a-z]+)"', sumber)
+    return (halaman, panggung.group(1) if panggung else "")
+
+
+@xframe_options_sameorigin
 def preview(request, template_slug):
-    """Tampilkan template dengan isi contoh. Tidak membuat kartu, tidak menyimpan."""
+    """Tampilkan template dengan isi contoh. Tidak membuat kartu, tidak menyimpan.
+
+    Boleh disematkan SAMEORIGIN karena halaman produk (template_detail) memajang
+    kartunya hidup-hidup di dalam iframe — itu satu-satunya cara memperlihatkan
+    halaman yang benar-benar bisa dibalik, dan gambar diam tidak bisa
+    menggantikannya. Ini TIDAK melonggarkan penjagaan yang ditulis di
+    editor_frame: yang dijaga di sana kartu PEMBELI (/g/<ref>), dan halaman itu
+    tetap X-Frame-Options: DENY. Yang disematkan di sini kartu contoh berisi
+    data palsu milik situs sendiri.
+
+    `?sematan=1` mematikan bilah "Contoh" di dasar layar. Di dalam halaman
+    produk bilah itu mubazir — tombol "Pakai template ini" sudah ada di
+    sebelahnya, jauh lebih besar, dan dua tombol yang sama persis berdampingan
+    membuat orang ragu mana yang benar.
+    """
     template = get_object_or_404(Template, slug=template_slug, is_active=True)
     card = _sample_card(template)
     renderer = (template.config or {}).get("renderer", "")
@@ -334,7 +550,11 @@ def preview(request, template_slug):
             "photos": contoh,
             "frame_photos": frame_photos,
             "affirmations": card.affirmation_list(),
-            "preview": True,
+            "preview": request.GET.get("sematan") != "1",
+            # Cap VORTEIZ menempel di SEMUA kartu contoh, termasuk yang
+            # disematkan di halaman produk — lihat catatan di _preview_bar.html
+            # soal kenapa ini tidak boleh digantung pada `preview`.
+            "watermark": True,
             "template": template,
             "fonts_url": styles.google_fonts_url(card.fonts_used()),
         },

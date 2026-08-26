@@ -153,6 +153,17 @@ if env("USE_R2"):
 LOGIN_URL = "/admin/login/"
 
 CARD_PRICE = 15_000
+
+# Harga normal, dipakai sebagai harga CORET di halaman produk (23 Agu 2026,
+# permintaan pemilik situs). CARD_PRICE di atas adalah harga perkenalan.
+#
+# Angka ini punya konsekuensi hukum, bukan cuma tampilan: harga coret hanya
+# boleh ditampilkan kalau ia harga yang BENAR-BENAR berlaku — sebelum promo,
+# atau sesudah promo berakhir. Harga coret yang tidak pernah dipakai adalah
+# harga palsu, dan UU Perlindungan Konsumen melarangnya. Kalau suatu hari
+# diputuskan Rp15.000 itu harga tetap selamanya, kosongkan nilai ini dan
+# coretannya hilang sendiri dari halaman.
+CARD_LIST_PRICE = env.int("CARD_LIST_PRICE", default=89_000)
 QR_TTL_MINUTES = 15
 # Batas longgar: cukup untuk pemakaian wajar, menahan orang mengunggah ratusan
 # foto dengan sekali bayar Rp15.000.

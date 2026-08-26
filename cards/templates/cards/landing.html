@@ -5,107 +5,96 @@
 
 {% block body %}
 <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
-<section class="hero">
-  {% comment %}
-    Hiasan latar. Ditaruh sebagai elemen sendiri, bukan background-image,
-    supaya tiap kepingnya bisa diletakkan dan diberi gerak masing-masing.
-    aria-hidden: tidak ada satu pun yang membawa makna, dan pembaca layar
-    yang menyebutkannya cuma menunda pembaca sampai ke judulnya.
-  {% endcomment %}
-  <div class="hero-deco" aria-hidden="true">
-    <svg class="deco hati h1" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
-    <svg class="deco hati h2" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
-    <svg class="deco hati h3" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
-    <svg class="deco hati h4" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
-    <svg class="deco hati h5" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7.2A6 6 0 0 1 12 4a6 6 0 0 1 11 3.2C23 14 12 21 12 21z"/></svg>
-    <svg class="deco kilau k1" viewBox="0 0 24 24"><path d="M12 1l2.2 7.8L22 11l-7.8 2.2L12 21l-2.2-7.8L2 11l7.8-2.2z"/></svg>
-    <svg class="deco kilau k2" viewBox="0 0 24 24"><path d="M12 1l2.2 7.8L22 11l-7.8 2.2L12 21l-2.2-7.8L2 11l7.8-2.2z"/></svg>
-    <svg class="deco kilau k3" viewBox="0 0 24 24"><path d="M12 1l2.2 7.8L22 11l-7.8 2.2L12 21l-2.2-7.8L2 11l7.8-2.2z"/></svg>
-    <span class="awan a1"></span>
-    <span class="awan a2"></span>
-  </div>
-  <div class="hero-inner">
-    <div class="hero-copy">
-      <h1 class="display">
-        Ucapan tulus,<br>
-        <span class="script coret">hadiah berkesan<svg class="coret-garis" viewBox="0 0 300 14" aria-hidden="true" preserveAspectRatio="none"><path d="M4 9C60 3 150 2 296 6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span><br>
-        untuk orang teristimewa.
-      </h1>
-      {% comment %}
-        Harga sengaja TIDAK disebut di sini lagi, atas permintaan pemilik
-        situs. Angkanya masih tampil di bagian Harga lebih bawah di halaman
-        yang sama, jadi tidak ada yang hilang — cuma pindah.
-      {% endcomment %}
-      <p class="hero-lede">
-        Buat kartu ucapan digital cantik dengan foto dan pesan, lalu bagikan
-        ke orang tersayang.
-      </p>
+{% comment %}
+  SUSUNAN BERANDA: header -> kisi template -> pita jaminan -> Cari tahu dulu
+  -> ajakan -> footer. Tidak ada hero.
 
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="{% url 'cards:page_templates' %}">
-          <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true"><path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
-          Buat Kartu Sekarang
-        </a>
-        <a class="btn btn-outline" href="{% url 'cards:page_how' %}">
-          <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10 8.5l6 3.5-6 3.5z" fill="currentColor"/></svg>
-          Lihat Cara Kerja
-        </a>
-      </div>
+  23 Agu 2026 kisi template dinaikkan ke atas hero, mengikuti beranda rujukan
+  yang dikirim pemilik situs — di sana tidak ada hero sama sekali, di bawah
+  header langsung barang. Orang yang datang untuk berbelanja tidak butuh
+  dibujuk dulu, ia butuh melihat barangnya.
 
-    </div>
+  24 Agu 2026 hero-nya dibuang sekalian. Dipindah saja tidak cukup: hero itu
+  elemen PEMBUKA halaman, dan duduk di tengah toko ia terbaca sebagai halaman
+  lain yang disisipkan. Yang diselamatkan dari sana cuma pita jaminannya, dan
+  satu kalimat pengantar yang sekarang menempel di kepala kisi.
+{% endcomment %}
+{% comment %}
+  Pita jaminan — dinaikkan ke PALING ATAS 24 Agu 2026, atas permintaan pemilik
+  situs, dan butirnya ditambah dari tiga jadi enam.
 
-    <div class="hero-art">
-      {% if hero_photo %}
-        <img src="{% static hero_photo %}" alt="Kartu ucapan dalam amplop dengan bunga">
-      {% else %}
-        {% include "cards/_hero_illustration.html" %}
-      {% endif %}
-    </div>
-  </div>
+  Sebelumnya ia duduk sesudah kisi, dengan alasan "keberatan baru muncul
+  setelah orang melihat barangnya". Alasan itu berlaku untuk KEBERATAN
+  (aman tidak? privasinya bagaimana?) — tapi separuh butir di sini bukan
+  keberatan melainkan FITUR yang tidak kelihatan dari thumbnail: halamannya
+  bisa dibalik, ada lagunya, linknya permanen. Yang begitu justru harus
+  terbaca sebelum orang menilai kartunya dari gambar diam.
 
-  {% comment %}
-    Kartu jaminan sengaja DI LUAR .hero-inner. Sebelumnya ia anak .hero-copy,
-    yang lebarnya dibatasi 560px — tiga butirnya tidak muat sebaris dan yang
-    ketiga jatuh ke baris kedua, membuat kartunya terlihat separuh jadi.
-  {% endcomment %}
-  <div class="trust-wrap">
-      <ul class="trust">
-        <li>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-          <span><strong>Bayar Aman</strong>{% if payment_ready %}QRIS terverifikasi{% else %}Lewat Lynk.id{% endif %}</span>
-        </li>
-        <li>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <span><strong>Link Unik</strong>Bisa dibagikan</span>
-        </li>
-        <li>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-          <span><strong>Privasi Terjaga</strong>Akses setelah bayar</span>
-        </li>
-      </ul>
-  </div>
+  Enam butir, bukan tiga: dengan tiga, pita ini terbaca sebagai catatan kaki
+  yang kebetulan naik ke atas. Dengan enam ia jadi ringkasan produk.
+{% endcomment %}
+<section class="jaminan">
+  <ul class="trust">
+    <li>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      <span><strong>Bayar Aman</strong>Lewat Lynk.id</span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V12m0-1a1.5 1.5 0 0 1 3 0v4.5a5.5 5.5 0 0 1-5.5 5.5h-1A5.5 5.5 0 0 1 6 15.5V13a1.5 1.5 0 0 1 3 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><strong>Interaktif</strong>Dibalik dengan jari</span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l10-2v13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="16.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      <span><strong>Ada Lagunya</strong>Diputar otomatis</span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span><strong>Link Unik</strong>Bisa dibagikan</span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span><strong>Privasi Terjaga</strong>Setelah bayar</span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="2.5" y="11" width="4" height="6" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="17.5" y="11" width="4" height="6" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      <span><strong>Layanan 24/7</strong>Lewat WhatsApp</span>
+    </li>
+  </ul>
 </section>
 
-<!-- ── Daftar template ─────────────────────────────────────────────────── -->
 <section class="section" id="template">
-  <div class="section-head">
-    <p class="eyebrow">Pilih template</p>
-    <h2 class="display">Tinggal pilih, langsung isi</h2>
-    <div class="flourish" aria-hidden="true">
-      <svg viewBox="0 0 120 14"><path d="M2 7h44M74 7h44" stroke="currentColor" stroke-width="1" fill="none"/><path d="M60 11c-1.4-1.5-3.8-1.2-4.5.7-.6 1.6.8 3.1 2.2 4.2" fill="none" stroke="currentColor" stroke-width="0"/><path d="M60 4.2c-1.2-1.4-3.4-1.1-4 .6-.5 1.5.7 2.9 2 3.9l2 1.6 2-1.6c1.3-1 2.5-2.4 2-3.9-.6-1.7-2.8-2-4-.6z" fill="currentColor"/></svg>
-    </div>
-    <p class="section-lede">
-      Semua template yang siap dipakai. Lihat dulu contohnya, baru isi dengan
-      foto dan pesanmu sendiri.
-    </p>
-  </div>
+  {% comment %}
+    Kepala bagian bergaya kisi toko: judul rata KIRI, tautan "Lihat semua"
+    sebagai pil di kanan, tanpa hiasan pemisah. Pola ini diambil dari beranda
+    Etsy — dan bedanya dengan judul terpusat bukan selera.
 
+    Judul yang dipusatkan beserta ornamennya membaca sebagai HALAMAN
+    PROMOSI: ia meminta dibaca dulu sebelum orang boleh lanjut. Judul rata
+    kiri dengan jalan keluar di kanan membaca sebagai RAK: ia mengumumkan isi
+    raknya lalu menyingkir. Yang kedua yang cocok untuk orang yang datang
+    untuk berbelanja, bukan untuk membaca.
+  {% endcomment %}
+  <div class="section-head is-toko">
+    <div>
+      <p class="eyebrow">Pilih template</p>
+      <h2 class="display">Tinggal pilih, langsung isi</h2>
+      {% comment %}
+        Satu kalimat, bukan paragraf. Sesudah hero dibuang, ini satu-satunya
+        yang memberi tahu pengunjung baru situs ini menjual apa — dan itu
+        risiko yang melekat pada keputusan membuang hero, bukan tambahan.
+      {% endcomment %}
+      <p class="section-lede">Kartu ucapan digital berisi foto, pesan, dan lagu kalian — jadi satu link yang tinggal dibagikan.</p>
+    </div>
+    <a class="pil" href="{% url 'cards:page_templates' %}">Lihat semua</a>
+  </div>
   {% include "cards/_template_grid.html" with tampil_tema=1 %}
 </section>
 
 <!-- ── Jalan pintas ke halaman informasi ─────────────────────────────────
      Isi lengkap tiap bagian sekarang punya halamannya sendiri; di sini
      cukup pengantar sebaris supaya landing tetap ringkas. -->
+
+<!-- ── Daftar template ─────────────────────────────────────────────────── -->
 <section class="section section-alt" id="jelajah">
   <div class="section-head">
     <p class="eyebrow">Sebelum mulai</p>

@@ -1,26 +1,61 @@
 /* ── Token ──────────────────────────────────────────────────────────────── */
+/* PUTIH, BUKAN MERAH MUDA — dan itu keputusan dagang, bukan selera.
+
+   Sampai 23 Agu 2026 seluruh situs berlatar krem-merah muda dengan judul
+   Cormorant Garamond, dan hasilnya manis tapi terbaca sebagai halaman buatan
+   sendiri. Untuk barang yang dibayar di muka lewat transfer ke orang yang
+   belum pernah ditemui, "manis" bukan yang dibutuhkan — yang dibutuhkan
+   kelihatan bisa dipegang janjinya. Kepercayaan datang dari kerapian dan
+   ketegasan, bukan dari hiasan.
+
+   Yang digeser NILAI tokennya, bukan ditambal per halaman: dengan begitu
+   editor, kisi template, halaman produk, dan halaman info ikut berubah
+   serempak, dan tidak ada satu sudut pun yang tertinggal merah muda sendirian.
+
+   Merah muda TIDAK dibuang, cuma turun pangkat: dari latar jadi aksen.
+   Warnanya masih ada di tombol, angka, dan tanda-tanda kecil — itu yang
+   menjaga situsnya tetap terasa hangat dan bukan halaman bank. */
 :root {
-  --cream: #fdf9f5;
-  --cream-deep: #f7ede4;
-  --blush: #f6e3e0;
-  --rose: #c9736e;
+  /* #faf8f5 — DIUKUR dari tangkapan layar beranda Etsy yang dikirim pemilik
+     situs, bukan ditebak. Putih murni sempat dicoba dan ternyata bukan itu
+     yang dimaksud "putih": Etsy sendiri memakai putih HANGAT. Bedanya tipis
+     tapi terasa — putih murni membuat halaman terbaca dingin seperti aplikasi
+     kantor, dan barang yang dijual di sini hadiah untuk orang tersayang. Yang
+     dibuang bukan kehangatannya, melainkan semburat MERAH MUDA-nya
+     (#fffaf9 yang lama). */
+  --cream: #faf8f5;
+  --cream-deep: #f8f7f5;     /* dulu #f7ede4 — pita selang-seling, netral  */
+  --blush: #fbeceb;          /* aksen lembut: lencana, kotak sorot         */
+  --rose: #c0554f;           /* dituakan dari #c9736e supaya kontras cukup */
   --rose-soft: #dd9791;
-  --ink: #3b2f2a;
-  --ink-soft: #6f5f57;
-  --muted: #9a8880;
-  --line: #ebdcd2;
+  --ink: #1c1917;            /* dulu #3b2f2a — hitam hangat, jauh lebih tegas */
+  --ink-soft: #57534e;
+  /* #78716c, bukan #8a8480. Diukur, bukan dikira: yang lama cuma 3,69:1 di
+     atas putih — di bawah ambang WCAG AA 4,5 untuk teks biasa, dan teks
+     abu-abu yang tidak terbaca di HP di bawah matahari itu keterangan harga
+     dan syarat, tepat yang paling perlu terbaca. Yang baru 4,80:1. */
+  --muted: #78716c;
+  --line: #dfdad6;           /* diukur dari garis bawah header Etsy        */
   --white: #fff;
-  /* Merah muda halaman depan. Rancangannya jauh lebih merah muda daripada
-     krem yang lama; nilainya diambil dari gambar rancangan, bukan ditebak. */
+  /* Tiga nilai ini dulu latar hero. Sekarang cuma dipakai untuk gradasi
+     halus dan bidang aksen — dipertahankan supaya tidak ada yang patah. */
   --pink-1: #fdeeeb;
   --pink-2: #fbe0dc;
   --pink-3: #f8d3ce;
   --radius: 14px;
-  --shadow: 0 10px 30px rgba(107, 76, 62, .07);
-  --shadow-lg: 0 18px 44px rgba(107, 76, 62, .12);
-  --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --shadow: 0 6px 24px rgba(28, 25, 23, .05);
+  --shadow-lg: 0 16px 40px rgba(28, 25, 23, .09);
+  /* Playfair Display, bukan Cormorant Garamond. Keduanya serif editorial —
+     bedanya BOBOT. Cormorant paling tebalnya masih ramping dan berkontras
+     tinggi; dari jauh ia menghilang. Playfair pada 700 berdiri tegak dan
+     terbaca yakin, dan kebetulan itu memang huruf majalah — nyambung dengan
+     barang yang dijual di sini. */
+  /* Token ini TIDAK dipakai lagi oleh app.css — seluruh chrome situs sans,
+     mengikuti rujukan. Dipertahankan karena masih ada yang menunjuk ke sini
+     lewat berkas lain, dan menghapusnya cuma memindahkan kerusakan. */
+  --serif: "Playfair Display", Georgia, "Times New Roman", serif;
   --sans: "Inter", ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --script: "Dancing Script", "Cormorant Garamond", cursive;
+  --script: "Dancing Script", "Playfair Display", cursive;
 }
 
 * { box-sizing: border-box; }
@@ -29,10 +64,13 @@ html { scroll-behavior: smooth; scroll-padding-top: 90px; }
 
 body {
   margin: 0;
-  /* Nyaris putih tapi condong merah muda. Krem yang lama memotong keras di
-     bawah hero: awan putih di dasar hero berakhir tepat di garis pertemuan
-     dua warna, dan pertemuannya terbaca sebagai garis lurus. */
-  background: #fffaf9;
+  /* PUTIH BERSIH sejak 23 Agu 2026. Dulu #fffaf9 — nyaris putih tapi condong
+     merah muda, dipilih waktu hero-nya masih gradasi merah muda supaya
+     pertemuan keduanya tidak terbaca sebagai garis lurus. Hero-nya sekarang
+     putih, jadi alasan itu habis, dan yang tersisa cuma semburat merah muda
+     tipis di SELURUH halaman yang membuat putihnya tidak pernah benar-benar
+     putih. */
+  background: var(--cream);
   color: var(--ink);
   font: 16px/1.65 var(--sans);
   -webkit-font-smoothing: antialiased;
@@ -43,16 +81,32 @@ body {
 
 img { max-width: 100%; display: block; }
 
+/* JUDUL SEKARANG SANS, bukan serif (23 Agu 2026, putaran kedua).
+
+   Beranda rujukan yang dikirim pemilik situs tidak punya SATU PUN serif —
+   logo, judul bagian, nama barang, harga, semuanya sans. Dua putaran
+   sebelumnya saya bertahan memakai serif untuk judul besar dengan alasan
+   "itu suara brand", dan pemilik situs menilai hasilnya masih jauh dari
+   rujukannya. Penilaian itu benar: serif berkontras tinggi di atas kisi
+   produk membuat halaman terbaca sebagai majalah yang memajang barang,
+   bukan toko yang menjualnya.
+
+   Ketegasan tidak hilang, cuma pindah sumber: dari bentuk huruf ke BOBOT
+   dan KERAPATAN. Inter 700 pada tracking -0,028em berdiri sama tegasnya,
+   dan tidak menuntut perhatian sebelum barangnya sempat dilihat.
+
+   Token --serif sengaja TIDAK dihapus. Kartu-kartunya masih memakainya, dan
+   di sana serif memang benar — yang dijual justru kesan majalahnya. */
 .display {
-  font-family: var(--serif);
-  font-weight: 600;
-  letter-spacing: -.005em;
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: -.028em;
   line-height: 1.08;
   margin: 0;
 }
 
 .script {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-style: italic;
   font-weight: 400;
   color: var(--rose-soft);
@@ -62,31 +116,118 @@ img { max-width: 100%; display: block; }
 /* Header MELAYANG di atas latar, bukan bilah yang menempel ke tepi atas.
    Yang lengket tetap pembungkusnya, jadi kartunya ikut turun saat digulir —
    membuat kartunya sendiri position:sticky akan menabrak margin atasnya. */
+/* BILAH PENUH, bukan kartu melayang (23 Agu 2026, putaran kedua).
+
+   Sebelumnya header ini kartu putih membulat yang mengambang di atas isi,
+   dengan bayangan dan blur. Di rujukan yang dikirim pemilik situs, header
+   adalah PITA rata selebar layar dengan satu garis tipis di bawahnya — tidak
+   ada radius, tidak ada bayangan, tidak ada jarak dari tepi.
+
+   Bedanya bukan hiasan. Kartu melayang mengumumkan dirinya sendiri sebagai
+   benda; pita rata menghilang dan menyerahkan seluruh perhatian ke barang di
+   bawahnya. Toko memilih yang kedua. */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: transparent;
-  padding: 14px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  padding: 0;
 }
 .header-inner {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 12px 14px 12px 22px;
+  padding: 14px 22px;
   display: flex;
   align-items: center;
-  gap: 24px;
-  background: rgba(255, 255, 255, .92);
-  backdrop-filter: blur(12px);
-  border-radius: 22px;
-  box-shadow: 0 12px 34px -18px rgba(150, 90, 80, .45);
+  gap: 18px;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ── Kolom cari ────────────────────────────────────────────────────────
+   Bentuk pil lebar dengan tombol bundar berwarna di ujung kanan — elemen
+   paling dominan di header rujukan, dan yang paling membuat sebuah halaman
+   terbaca sebagai toko alih-alih halaman promosi.
+
+   Kolomnya SUNGGUHAN, menyaring template betulan. Kotak cari yang tidak
+   mencari apa-apa adalah kebohongan kecil yang langsung ketahuan pada
+   percobaan pertama, dan yang mencobanya calon pembeli. */
+.cari {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 5px 5px 5px 20px;
+}
+.cari input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font: 15px/1.4 var(--sans);
+  color: var(--ink);
+  padding: 8px 0;
+}
+.cari input::placeholder { color: var(--muted); }
+.cari button {
+  flex: none;
+  width: 40px; height: 40px;
+  border: 0; border-radius: 50%;
+  background: var(--rose);
+  color: #fff;
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: background .15s;
+}
+.cari button:hover { background: #a8433e; }
+.cari button svg { width: 19px; height: 19px; }
+
+/* ── Baris kategori ───────────────────────────────────────────────────
+   Pita kedua di bawah header, isinya tautan menjelajah. Di rujukan ia yang
+   memberi tahu pengunjung bahwa ada BANYAK hal untuk dilihat, sebelum ia
+   sempat menilai dari satu layar pertama saja. */
+.kategori-bar {
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.kategori-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 22px 12px;
+  display: flex;
+  gap: 34px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.kategori-inner a {
+  font-size: .92rem;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+}
+.kategori-inner a:hover { border-bottom-color: var(--ink); }
+.kategori-inner a.is-here { border-bottom-color: var(--rose); font-weight: 600; }
+
+@media (max-width: 820px) {
+  .cari { order: 3; flex-basis: 100%; }
+  .header-inner { flex-wrap: wrap; }
+  .kategori-inner { gap: 20px; justify-content: flex-start; overflow-x: auto; }
 }
 
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
 .brand-mark { width: 38px; height: 38px; flex: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
 .brand-text strong {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: .14em;
@@ -136,8 +277,17 @@ img { max-width: 100%; display: block; }
   transition: background .18s, color .18s, border-color .18s, transform .18s;
 }
 .btn-icon { width: 18px; height: 18px; flex: none; }
-.btn-primary { background: var(--rose-soft); color: #fff; }
-.btn-primary:hover { background: var(--rose); transform: translateY(-1px); }
+/* Tombol utama memakai --rose, bukan --rose-soft.
+
+   Ini perbaikan keterbacaan, bukan selera. Teks putih di atas #dd9791 cuma
+   3,0:1 — jauh di bawah ambang WCAG AA 4,5 — dan yang tidak terbaca itu
+   tulisan "Buat Kartu Sekarang" di HP di bawah matahari. Tombol beli yang
+   pudar adalah tombol beli yang tidak ditekan. #c0554f terukur 4,51:1.
+
+   Hover-nya karena itu ikut turun satu tingkat lagi, supaya tetap ada
+   perubahan yang terasa saat kursor mampir. */
+.btn-primary { background: var(--rose); color: #fff; }
+.btn-primary:hover { background: #a8433e; transform: translateY(-1px); }
 .btn-outline { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn-outline:hover { border-color: var(--rose); color: var(--rose); }
 .btn-sm { padding: 11px 22px; font-size: .74rem; }
@@ -160,139 +310,123 @@ img { max-width: 100%; display: block; }
   border: 0;
 }
 
-/* ── Hero ───────────────────────────────────────────────────────────────── */
-.hero {
-  position: relative;
-  background: linear-gradient(165deg, var(--pink-1) 0%, var(--pink-2) 52%, var(--pink-3) 100%);
-  border-bottom: 0;
-  overflow: hidden;
-  /* Header melayang di atas hero, jadi hero harus mulai dari paling atas
-     halaman — kalau tidak, ada pita krem tipis mengintip di belakang kartu
-     headernya. */
-  margin-top: calc(-1 * (68px + 28px));
-  padding-top: calc(68px + 28px);
-}
-.hero-inner { position: relative; z-index: 2; }
-.hero-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 60px 24px 10px;
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: 40px;
-  align-items: center;
-}
-.hero-copy { max-width: 560px; }
-.hero .display { font-size: clamp(2.6rem, 5.4vw, 4.2rem); }
-.hero-lede {
-  margin: 26px 0 32px;
-  color: var(--ink-soft);
-  font-size: 1.02rem;
-  max-width: 480px;
-}
-.hero-lede strong { color: var(--ink); font-weight: 600; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+/* ── Pita jaminan ────────────────────────────────────────────────────────
+   Sisa terakhir dari blok hero, yang dibuang 24 Agu 2026.
 
-/* Kartu putih melayang, bukan daftar telanjang di atas latar. */
-.trust-wrap {
-  position: relative; z-index: 2;
-  max-width: 1240px; margin: 0 auto; padding: 0 24px 54px;
+   Hero itu elemen PEMBUKA halaman — judul raksasa, ilustrasi separuh layar,
+   dua tombol, dan kartu jaminan mengambang. Sejak kisi template naik ke atas
+   (23 Agu), hero jadi duduk di TENGAH toko, dan di sana ia terbaca sebagai
+   halaman lain yang disisipkan, bukan sebagai bagian. Ditambah latarnya
+   sendiri (putih bergradasi) di antara tetangga yang krem, jahitannya terlihat
+   dari jauh.
+
+   Yang dipertahankan cuma tiga butir jaminannya: itu satu-satunya bagian hero
+   yang menjawab keberatan pembeli alih-alih memperkenalkan diri. Bentuknya
+   ikut berubah — dari kartu putih melayang berbayang jadi pita rata yang
+   ritmenya sama dengan bagian lain, karena benda melayang adalah persis yang
+   membuat halaman ini terasa bertumpuk-tumpuk.
+
+   Seluruh aturan .hero*, .hero-deco*, .hero-art, dan .coret-garis dicabut
+   bersamaan — sudah tidak ada satu pun markup yang memakainya (diperiksa,
+   bukan diandaikan). */
+.jaminan {
+  max-width: 1180px;
+  margin: 0 auto;
+  /* Garis di BAWAH, bukan di atas: pita ini sekarang benda pertama sesudah
+     header, jadi yang perlu dipisahkan adalah dirinya dari kisi di bawahnya. */
+  padding: 26px 24px 24px;
+  border-bottom: 1px solid var(--line);
 }
+/* Kisi, bukan flex. Enam butir dengan flex-wrap menyisakan baris terakhir
+   yang isinya melebar sendiri mengisi sisa ruang — dua butir terakhir jadi
+   dua kali lebar yang lain, dan pita ringkasan produk berhenti terbaca
+   sebagai daftar sederajat. Kisi menjaga tiap kolom sama lebar apa pun
+   jumlah butir yang muat. */
 .trust {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
+  display: grid;
+  /* Jumlah kolom DITETAPKAN per lebar layar, bukan diserahkan ke auto-fit.
+     Dengan auto-fit, enam butir di layar 1280px muat lima sebaris dan yang
+     keenam turun sendirian — barisan 5+1 terbaca seperti ada yang tertinggal.
+     Angka tetap menjamin barisnya selalu terbagi rata: 6, lalu 3+3, lalu
+     2+2+2. */
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px 18px;
   list-style: none;
   margin: 0;
-  padding: 18px 8px;
-  background: rgba(255, 255, 255, .9);
-  backdrop-filter: blur(8px);
-  border-radius: 22px;
-  box-shadow: 0 16px 40px -22px rgba(150, 90, 80, .5);
+  padding: 0;
 }
 .trust li {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 6px 24px;
-  border-left: 1px solid var(--line);
-  /* Sama rata bertiga, dan basis 0 supaya panjang tulisan yang berbeda tidak
-     membuat salah satunya melebar sendiri. */
-  flex: 1 1 0;
+  gap: 11px;
+  min-width: 0;
 }
-.trust li:first-child { border-left: 0; }
-/* Ikon duduk di dalam lingkaran merah muda. Ukurannya dijaga lewat padding
-   pada kotak-isi supaya lingkarannya bulat sempurna berapa pun ikonnya. */
 .trust svg {
-  width: 21px; height: 21px; color: var(--rose); flex: none;
-  padding: 11px; box-sizing: content-box;
-  background: var(--pink-2); border-radius: 50%;
+  flex: none; width: 30px; height: 30px; padding: 6px;
+  color: var(--rose);
+  background: var(--blush);
+  border-radius: 50%;
 }
-.trust span { display: flex; flex-direction: column; font-size: .78rem; color: var(--muted); line-height: 1.4; }
-.trust strong { font-size: .86rem; color: var(--ink); font-weight: 600; }
-
-/* ── Hiasan latar hero ──────────────────────────────────────────────────
-   Hati, kilau, dan awan yang membuat latarnya tidak rata. Semuanya di
-   lapisan sendiri di belakang isi (z-index 1 lawan 2), dan pointer-events
-   dimatikan supaya tidak ada satu pun yang bisa menghalangi tombol. */
-.hero-deco {
-  position: absolute; inset: 0; z-index: 1;
-  pointer-events: none; overflow: hidden;
+/* Keterangan boleh dipotong, JUDULNYA tidak. Di enam kolom sempit, keterangan
+   panjang seperti "Halamannya dibalik dengan jari" akan melipat jadi tiga
+   baris dan membuat tinggi tiap butir berbeda-beda. */
+/* min-width:0 supaya keterangan panjang boleh dipotong kolomnya; tanpa itu
+   butir yang teksnya panjang melebarkan kolomnya sendiri dan kisi enamnya
+   berhenti sama rata. Judulnya yang TIDAK boleh dipotong — nama fiturnya
+   harus terbaca utuh. */
+.trust span {
+  display: flex; flex-direction: column; min-width: 0;
+  font-size: .78rem; color: var(--muted); line-height: 1.4;
 }
-.hero-deco .deco { position: absolute; display: block; }
-.hero-deco .hati { fill: var(--rose-soft); }
-.hero-deco .kilau { fill: #fff; opacity: .85; }
-
-.hero-deco .h1 { width: 26px; top: 12%; left: 4%;  opacity: .55; }
-.hero-deco .h2 { width: 44px; top: 20%; left: 55%; opacity: .5; }
-.hero-deco .h3 { width: 18px; top: 46%; left: 42%; opacity: .45; }
-.hero-deco .h4 { width: 30px; top: 68%; left: 8%;  opacity: .4; }
-.hero-deco .h5 { width: 22px; top: 33%; right: 3%; opacity: .5; }
-.hero-deco .k1 { width: 16px; top: 16%; left: 22%; }
-.hero-deco .k2 { width: 12px; top: 58%; left: 63%; }
-.hero-deco .k3 { width: 18px; top: 28%; right: 12%; }
-
-/* Awan di dasar hero. Dua lingkaran lebar yang saling menimpa — bentuknya
-   tidak perlu tepat, yang dibutuhkan cuma tepi lembut supaya hero tidak
-   berakhir dengan garis lurus. */
-.hero-deco .awan {
-  position: absolute; bottom: -70px; display: block;
-  height: 150px; border-radius: 50%;
-  background: rgba(255, 255, 255, .55);
-  filter: blur(2px);
-}
-.hero-deco .a1 { left: -6%; width: 46%; }
-.hero-deco .a2 { right: -8%; width: 52%; bottom: -84px; }
-
-/* Melayang pelan. Dimatikan untuk yang meminta gerak dikurangi — hiasan
-   yang bergerak terus adalah persis jenis gerak yang mengganggu mereka. */
-@keyframes apung { from { transform: translateY(0) } to { transform: translateY(-14px) } }
-.hero-deco .deco { animation: apung 5s ease-in-out infinite alternate; }
-.hero-deco .h2 { animation-duration: 7s; animation-delay: -2s; }
-.hero-deco .h3 { animation-duration: 6s; animation-delay: -1s; }
-.hero-deco .h4 { animation-duration: 8s; animation-delay: -3s; }
-.hero-deco .h5 { animation-duration: 6.5s; animation-delay: -4s; }
-.hero-deco .k2 { animation-duration: 7.5s; animation-delay: -2.5s; }
-@media (prefers-reduced-motion: reduce) {
-  .hero-deco .deco { animation: none; }
-}
-
-/* Garis lengkung di bawah "hadiah berkesan". */
-.script.coret { position: relative; display: inline-block; }
-.coret-garis {
-  position: absolute; left: 4%; right: 2%; bottom: -.06em;
-  width: 94%; height: .22em; color: var(--rose-soft); opacity: .75;
-}
-
-.hero-art { position: relative; z-index: 2; }
-.hero-art img, .hero-svg { width: 100%; height: auto; border-radius: var(--radius); }
+.trust strong { font-size: .86rem; color: var(--ink); font-weight: 600; white-space: nowrap; }
 
 /* ── Kerangka seksi ─────────────────────────────────────────────────────── */
 .section { max-width: 1180px; margin: 0 auto; padding: 84px 24px; }
-.section-alt { max-width: none; background: var(--pink-1); }
+/* SATU warna dasar untuk seluruh isi halaman, dan batas antarbagian ditandai
+   GARIS, bukan pergantian warna (24 Agu 2026).
+
+   Sebelumnya ada empat nilai latar bertumpuk di satu halaman — putih di
+   header, krem di kisi, putih bergradasi di hero, kelabu di dua bagian
+   terakhir. Yang paling terlihat jahitannya di batas kisi dan hero. Dan dua
+   bagian terakhir justru berwarna SAMA dan bersebelahan, jadi selang-selingnya
+   tidak memisahkan apa pun di situ.
+
+   Garis rambut memisahkan tanpa memotong: halaman terbaca sebagai satu
+   permukaan panjang, bukan tumpukan kotak berbeda warna. */
+.section-alt { max-width: none; background: none; border-top: 1px solid var(--line); }
 .section-alt > * { max-width: 1180px; margin-left: auto; margin-right: auto; }
 
 .section-head { text-align: center; margin-bottom: 46px; }
+
+/* Varian kisi toko: judul rata kiri, jalan keluar di kanan. Lihat catatan di
+   landing.html soal kenapa ini bukan sekadar perataan yang berbeda. */
+.section-head.is-toko {
+  text-align: left;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+.section-head.is-toko .eyebrow { margin-bottom: 6px; }
+.section-head.is-toko .display { font-size: clamp(1.5rem, 2.6vw, 2rem); }
+/* Pil bergaris tepi — bentuk tautan "View all" milik Etsy. Dibuat sendiri,
+   bukan memakai .btn: ini bukan ajakan bertindak, cuma jalan keluar. Kalau
+   ia setebal tombol beli, dua-duanya jadi sama penting dan tak satu pun
+   menang. */
+.pil {
+  flex: none;
+  display: inline-block;
+  padding: 11px 22px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.pil:hover { background: var(--ink); color: #fff; }
 .eyebrow {
   font-size: .72rem;
   letter-spacing: .22em;
@@ -422,15 +556,25 @@ img { max-width: 100%; display: block; }
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 26px;
 }
+/* KARTU TANPA KOTAK, mengikuti kisi produk Etsy (23 Agu 2026).
+
+   Sebelumnya tiap template duduk di dalam kotak putih bergaris tepi dan
+   berbayang, dengan DUA tombol di bawahnya. Di beranda Etsy tidak ada satu
+   pun dari itu: kartunya cuma gambar, nama, harga — dan seluruh kartunya
+   sendiri yang jadi tautannya.
+
+   Bedanya bukan gaya-gayaan. Kotak putih di atas latar terang nyaris tidak
+   terlihat, jadi yang tersisa cuma garis tepi yang MEMBINGKAI gambar dan
+   membuatnya mundur selangkah. Dicabut, gambarnya maju ke depan — dan di toko
+   yang menjual barang visual, gambar itulah barangnya. Dua tombol per kartu
+   juga hilang: di kisi berisi lima template, sepuluh tombol menuntut sepuluh
+   keputusan sekaligus. Sekarang satu kartu = satu tujuan. */
 .tpl-card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: transform .2s, box-shadow .2s;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
 }
-.tpl-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 
 .tpl-art {
   position: relative;
@@ -438,7 +582,10 @@ img { max-width: 100%; display: block; }
   aspect-ratio: 3 / 4;
   background: linear-gradient(160deg, var(--accent, #c9736e), #2c1a20);
   overflow: hidden;
+  border-radius: 10px;
+  transition: box-shadow .2s, transform .2s;
 }
+.tpl-card:hover .tpl-art { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
 .tpl-art img { width: 100%; height: 100%; object-fit: cover; }
 .tpl-fallback {
   position: absolute;
@@ -448,7 +595,7 @@ img { max-width: 100%; display: block; }
   padding: 20px;
   text-align: center;
   color: #fff;
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 1.5rem;
   letter-spacing: .04em;
 }
@@ -468,8 +615,16 @@ img { max-width: 100%; display: block; }
 }
 .tpl-art:hover .tpl-peek, .tpl-art:focus-visible .tpl-peek { opacity: 1; }
 
-.tpl-body { padding: 16px 18px 20px; }
-.tpl-body h3 { margin: 0 0 14px; font-size: 1.02rem; font-weight: 600; }
+.tpl-link { display: block; text-decoration: none; color: inherit; }
+.tpl-body { padding: 12px 2px 0; display: flex; flex-direction: column; gap: 2px; }
+.tpl-nama { font-size: .98rem; font-weight: 600; line-height: 1.35; }
+/* Harga di SETIAP kartu, bukan cuma satu kalimat di dasar halaman.
+
+   Ini yang paling membedakan kisi toko dari kisi galeri. Orang yang menimbang
+   membeli selalu mencari harga lebih dulu; kalau tidak ketemu di kartunya, ia
+   harus mengklik untuk tahu — dan sebagian besar tidak mengklik, mereka pergi.
+   Etsy menuliskannya di tiap kartu, dan itu bukan kebetulan. */
+.tpl-harga { margin-top: 4px; font-size: 1.02rem; font-weight: 700; color: var(--ink); }
 
 /* Nama tema di bawah judul template. Muncul di beranda dan /template/, tidak
    di galeri per-tema — di sana seluruh isinya sudah satu tema dan menuliskan
@@ -479,7 +634,7 @@ img { max-width: 100%; display: block; }
    ada lagi yang memberi tahu pembeli bahwa Valentine Story itu kartu Love
    Story dan bukan kartu ulang tahun. */
 .tpl-tema {
-  margin: 2px 0 0;
+  margin: 0;
   font-size: .74rem;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -507,7 +662,7 @@ img { max-width: 100%; display: block; }
   border-radius: 50%;
   background: var(--white);
   border: 1px solid var(--line);
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 1.4rem;
   color: var(--rose);
 }
@@ -525,7 +680,7 @@ img { max-width: 100%; display: block; }
   padding: 40px 32px;
   text-align: center;
 }
-.price-tag { font-family: var(--serif); font-size: 3.4rem; font-weight: 700; margin: 0; line-height: 1; }
+.price-tag { font-family: var(--sans); font-size: 3.4rem; font-weight: 700; margin: 0; line-height: 1; }
 .price-tag .cur { font-size: 1.5rem; vertical-align: super; color: var(--muted); margin-right: 4px; }
 .price-sub { color: var(--muted); font-size: .88rem; margin: 10px 0 26px; }
 .price-list { list-style: none; margin: 0 0 30px; padding: 0; text-align: left; }
@@ -550,7 +705,7 @@ img { max-width: 100%; display: block; }
   margin: 0;
   box-shadow: var(--shadow);
 }
-.quote p { margin: 0 0 16px; font-family: var(--serif); font-size: 1.15rem; line-height: 1.5; }
+.quote p { margin: 0 0 16px; font-family: var(--sans); font-size: 1.15rem; line-height: 1.5; }
 .quote cite { font-style: normal; font-size: .85rem; color: var(--muted); }
 .quote.is-placeholder { border-style: dashed; box-shadow: none; background: transparent; }
 .quote.is-placeholder p { color: var(--muted); }
@@ -580,10 +735,15 @@ img { max-width: 100%; display: block; }
 .faq details p { margin: 0 0 22px; color: var(--ink-soft); font-size: .93rem; }
 
 /* ── CTA band ───────────────────────────────────────────────────────────── */
+/* Pita ajakan terakhir. Dulu gradasi merah muda sepenuh lebar; sekarang
+   bidang netral bergaris tegas di kedua tepinya. Yang membawa warna cuma
+   tombolnya, dan justru karena sekitarnya tenang, tombol itu jadi satu-satunya
+   benda berwarna di layar — mata tidak punya pilihan lain. */
 .cta-band {
-  background: linear-gradient(180deg, #f8e9df, #f3dcd0);
+  background: none;
+  border-top: 1px solid var(--line);
   text-align: center;
-  padding: 72px 24px;
+  padding: 76px 24px;
 }
 .cta-band .display { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin-bottom: 26px; }
 
@@ -598,7 +758,7 @@ img { max-width: 100%; display: block; }
   justify-content: space-between;
   align-items: center;
 }
-.footer-brand { font-family: var(--serif); font-size: 1.3rem; letter-spacing: .14em; }
+.footer-brand { font-family: var(--sans); font-size: 1.3rem; letter-spacing: .14em; }
 .site-footer p { margin: 6px 0 0; font-size: .86rem; color: #b6a49b; max-width: 380px; }
 .footer-note { text-align: right; }
 
@@ -950,7 +1110,6 @@ img { max-width: 100%; display: block; }
 .ed-stage.is-buku iframe {
   width: 390px; aspect-ratio: 390 / 640;
 }
-
 @media (max-width: 900px) {
   .ed { grid-template-columns: 1fr; height: auto; }
   .ed-panel { border-right: 0; border-bottom: 1px solid var(--line); }
@@ -959,8 +1118,8 @@ img { max-width: 100%; display: block; }
 
 /* ── Halaman dalam (bayar, kartu) ───────────────────────────────────────── */
 .wrap { max-width: 720px; margin: 0 auto; padding: 48px 24px 80px; }
-.wrap h1 { font-family: var(--serif); font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 600; margin: 0 0 10px; }
-.wrap h2 { font-family: var(--serif); font-size: 1.5rem; margin: 34px 0 14px; }
+.wrap h1 { font-family: var(--sans); font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 600; margin: 0 0 10px; }
+.wrap h2 { font-family: var(--sans); font-size: 1.5rem; margin: 34px 0 14px; }
 .lede { color: var(--ink-soft); margin: 0 0 30px; }
 .hint, .helptext { color: var(--muted); font-size: .85rem; }
 
@@ -990,7 +1149,7 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 
 .qr { text-align: center; }
 .qr img { width: 260px; height: 260px; max-width: 100%; background: #fff; padding: 10px; border-radius: 12px; }
-.price { font-family: var(--serif); font-size: 2rem; font-weight: 700; }
+.price { font-family: var(--sans); font-size: 2rem; font-weight: 700; }
 .status-line { color: var(--muted); margin-top: 14px; }
 
 .owner-box {
@@ -1014,15 +1173,13 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 .video { position: relative; padding-top: 56.25%; margin: 22px 0; }
 .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 12px; }
 
-.message { white-space: pre-wrap; font-family: var(--serif); font-size: 1.3rem; line-height: 1.55; }
-.from { color: var(--muted); margin-top: 26px; font-family: var(--serif); font-size: 1.1rem; }
+.message { white-space: pre-wrap; font-family: var(--sans); font-size: 1.3rem; line-height: 1.55; }
+.from { color: var(--muted); margin-top: 26px; font-family: var(--sans); font-size: 1.1rem; }
 
 /* ── Responsif ──────────────────────────────────────────────────────────── */
 @media (max-width: 940px) {
-  .hero-inner { grid-template-columns: 1fr; padding-top: 44px; }
-  .hero-art { order: -1; max-width: 480px; margin: 0 auto; }
-  .hero-copy { max-width: none; }
-  .trust li { padding: 0 16px; }
+  /* Tiga aturan .hero* di sini ikut dicabut bersama blok hero-nya. */
+  .trust { grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
   .site-nav {
     position: absolute;
@@ -1049,12 +1206,12 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   .header-cta { display: none; }
 }
 
+@media (max-width: 560px) {
+  .trust { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 620px) {
   .section { padding: 60px 20px; }
-  /* Di layar sempit ketiganya BERTUMPUK, bukan dua-lalu-satu. Baris kedua
-     yang cuma berisi satu butir membuat kartunya terlihat separuh jadi. */
-  .trust { gap: 4px; padding: 14px 6px; }
-  .trust li { border-left: 0; padding: 8px 14px; flex: 1 1 100%; }
   .footer-inner { flex-direction: column; align-items: flex-start; }
   .footer-note { text-align: left; }
 }
@@ -1213,7 +1370,7 @@ body.is-editor .site-header { display: none; }
 /* FAQ dikelompokkan supaya daftar panjang tetap mudah dipindai. */
 .faq-page { max-width: 720px; }
 .faq-group {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 1.15rem;
   color: var(--rose);
   margin: 38px 0 10px;

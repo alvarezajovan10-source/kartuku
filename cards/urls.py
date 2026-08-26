@@ -9,11 +9,15 @@ urlpatterns = [
     path("kartu-saya/", views.my_cards, name="my_cards"),
     # Halaman informasi — tiap bagian landing punya alamat sendiri.
     path("template/", views.page_templates, name="page_templates"),
+    path("cari/", views.search, name="search"),
     path("cara-kerja/", views.page_how, name="page_how"),
     path("harga/", views.page_pricing, name="page_pricing"),
     path("testimoni/", views.page_testimonials, name="page_testimonials"),
     path("faq/", views.page_faq, name="page_faq"),
-    path("template/<slug:category>/", views.template_gallery, name="gallery"),
+    # Satu pola, dua nama — lihat template_or_gallery() soal kenapa halaman
+    # produk tidak diberi awalan sendiri.
+    path("template/<slug:slug>/", views.template_or_gallery, name="gallery"),
+    path("template/<slug:slug>/", views.template_or_gallery, name="template_detail"),
     path("preview/<slug:template_slug>/", views.preview, name="preview"),
     path("create/<slug:template_slug>/", views.editor, name="editor"),
     # Isi iframe preview di editor — kartu asli, tapi bisa diklik.

@@ -19,6 +19,9 @@ dari tengah tanpa ada yang pernah memeriksanya. Terukur: 41 px di atas dan 41
 px di bawah, dan pada potongan itu "LOVESTORY" maupun "MATCH" masih utuh.
 """
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pymupdf
 from PIL import Image
@@ -49,6 +52,14 @@ def main():
     im = im.crop((0, atas, LEBAR, atas + tinggi))
 
     im.save(KELUARAN, "JPEG", quality=MUTU, optimize=True, progressive=True)
+
+    # Cap VORTEIZ. Thumbnail dua template lain mendapatkannya sendiri karena
+    # dipotret dari halaman contoh yang memang sudah bercap; yang ini dirender
+    # dari PDF dan tidak pernah melewati browser, jadi capnya dipasang di sini.
+    # Kalau langkah ini terlewat, satu-satunya thumbnail tanpa cap justru
+    # thumbnail template yang paling laku.
+    from cap_gambar import beri_cap  # noqa: PLC0415 - alat sekali pakai
+    beri_cap(KELUARAN)
     print(f"tulis {KELUARAN}")
     print(f"  {im.width}x{im.height}  rasio {im.width / im.height:.4f}"
           f"  {os.path.getsize(KELUARAN) // 1024} KB")

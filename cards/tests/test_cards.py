@@ -252,8 +252,12 @@ class GalleryAndPreviewTests(TestCase):
         temanya dilewati (lihat DaftarTemplateRataTests): beranda memuat
         kartu templatenya sendiri, dengan tautan pratinjau dan editor."""
         response = self.client.get(reverse("cards:landing"))
-        self.assertContains(response, reverse("cards:preview", args=["amplop-merah"]))
-        self.assertContains(response, reverse("cards:editor", args=["amplop-merah"]))
+        # Sejak 23 Agu 2026 kartunya sendiri yang jadi tautan, menuju halaman
+        # produk — tombolnya dicabut mengikuti pola kisi Etsy. Jalan ke editor
+        # ada di halaman produk itu.
+        self.assertContains(
+            response, reverse("cards:template_detail", args=["amplop-merah"])
+        )
 
     def test_preview_renders_sample_without_creating_card(self):
         response = self.client.get(reverse("cards:preview", args=["amplop-merah"]))
@@ -723,7 +727,7 @@ class InfoPagesTests(TestCase):
         response = self.client.get(reverse("cards:page_templates"))
         self.assertContains(response, "Amplop Merah")
         self.assertContains(
-            response, reverse("cards:preview", args=["klasik-ulang-tahun"])
+            response, reverse("cards:template_detail", args=["klasik-ulang-tahun"])
         )
         self.assertContains(response, "Ulang Tahun")
 

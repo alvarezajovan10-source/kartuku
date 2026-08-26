@@ -40,7 +40,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Inter:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static_v 'css/app.css' %}">
 </head>
 {% comment %}
@@ -64,27 +64,41 @@
       </span>
     </a>
 
-    <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>
-    <label for="nav-toggle" class="nav-burger" aria-label="Buka menu">
-      <span></span><span></span><span></span>
-    </label>
-
-    {# `here` = nama URL halaman ini, dipakai menandai menu yang sedang dibuka. #}
-    {% with here=request.resolver_match.url_name %}
-    <nav class="site-nav">
-      <a href="{% url 'cards:page_templates' %}"{% if here == 'page_templates' or here == 'gallery' %} class="is-here" aria-current="page"{% endif %}>Template</a>
-      <a href="{% url 'cards:page_how' %}"{% if here == 'page_how' %} class="is-here" aria-current="page"{% endif %}>Cara Kerja</a>
-      <a href="{% url 'cards:page_pricing' %}"{% if here == 'page_pricing' %} class="is-here" aria-current="page"{% endif %}>Harga</a>
-      <a href="{% url 'cards:page_testimonials' %}"{% if here == 'page_testimonials' %} class="is-here" aria-current="page"{% endif %}>Testimoni</a>
-      <a href="{% url 'cards:page_faq' %}"{% if here == 'page_faq' %} class="is-here" aria-current="page"{% endif %}>FAQ</a>
-    </nav>
-    {% endwith %}
+    {% comment %}
+      Kolom cari — benda paling dominan di header rujukan, dan yang paling
+      membuat halaman terbaca sebagai toko. Ia MENCARI SUNGGUHAN (lihat
+      views.search): kotak cari yang tidak melakukan apa-apa adalah kebohongan
+      yang ketahuan pada percobaan pertama, dan yang mencobanya calon pembeli.
+    {% endcomment %}
+    <form class="cari" action="{% url 'cards:search' %}" method="get" role="search">
+      <input type="search" name="q" value="{{ request.GET.q|default:'' }}"
+             placeholder="Cari template kartu…" aria-label="Cari template">
+      <button type="submit" aria-label="Cari">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      </button>
+    </form>
 
     <a class="btn btn-primary btn-sm header-cta" href="{% url 'cards:page_templates' %}">
       <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z" fill="currentColor"/></svg>
       Buat Kartu
     </a>
   </div>
+
+  {% comment %}
+    Baris kategori: pita kedua di bawah header, sama seperti rujukan. Menu
+    situs yang dulu berdesak-desakan di dalam bilah utama pindah ke sini —
+    di bilah utama ruangnya sekarang milik kolom cari.
+  {% endcomment %}
+  {% with here=request.resolver_match.url_name %}
+  <div class="kategori-inner">
+    <a href="{% url 'cards:page_templates' %}"{% if here == 'page_templates' or here == 'gallery' or here == 'template_detail' %} class="is-here" aria-current="page"{% endif %}>Semua Template</a>
+    <a href="{% url 'cards:page_how' %}"{% if here == 'page_how' %} class="is-here" aria-current="page"{% endif %}>Cara Kerja</a>
+    <a href="{% url 'cards:page_pricing' %}"{% if here == 'page_pricing' %} class="is-here" aria-current="page"{% endif %}>Harga</a>
+    <a href="{% url 'cards:page_testimonials' %}"{% if here == 'page_testimonials' %} class="is-here" aria-current="page"{% endif %}>Testimoni</a>
+    <a href="{% url 'cards:page_faq' %}"{% if here == 'page_faq' %} class="is-here" aria-current="page"{% endif %}>FAQ</a>
+  </div>
+  {% endwith %}
 </header>
 
 {% block body %}

@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load static card_extras %}
+
+{% block title %}{{ template.name }} — Kartuku{% endblock %}
+{% block description %}{{ template.name }}: kartu ucapan digital {{ kategori|lower }}, Rp{{ price|floatformat:0 }} sekali bayar. Isi foto dan pesanmu, lalu bagikan linknya.{% endblock %}
+{% block og_title %}{{ template.name }} — Kartuku{% endblock %}
+{% block og_image %}{% if thumb %}{{ request.scheme }}://{{ request.get_host }}{% static thumb %}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block body %}
+<link rel="stylesheet" href="{% static_v 'css/product.css' %}">
+
+<nav class="lst-remah" aria-label="Jejak halaman">
+  <a href="{% url 'cards:landing' %}">Beranda</a> ›
+  <a href="{% url 'cards:page_templates' %}">Template</a> ›
+  <span>{{ kategori }}</span> ›
+  <span>{{ template.name }}</span>
+</nav>
+
+<div class="lst">
+  {# ══════════ KIRI: galeri ══════════ #}
+  <div class="lst-kiri">
+    <div class="lst-galeri{% if not galeri %} tanpa-strip{% endif %}">
+      {% comment %}
+        Strip thumbnail di sisi kiri, persis rujukan. Isi nomor 1 BUKAN gambar
+        melainkan kartunya yang hidup — itu yang tidak bisa ditandingi penjual
+        berkas: mereka memajang foto, di sini orang membalik halamannya sendiri
+        sebelum membayar. Sisanya potret tiap halaman, keluaran
+        tools/buat_galeri_template.js.
+      {% endcomment %}
+      {% comment %}
+        Strip disembunyikan kalau tidak ada potret halaman sama sekali —
+        untuk kartu bergulir, isi galerinya cuma kartu hidupnya. Strip berisi
+        satu tombol tidak menawarkan pilihan apa pun; ia cuma memberi tahu
+        pembeli bahwa di sini seharusnya ada lebih banyak.
+      {% endcomment %}
+      {% if galeri %}
+      <div class="lst-strip" role="tablist" aria-label="Galeri {{ template.name }}">
+        <button class="lst-thumb is-on" data-i="0" role="tab" aria-selected="true" title="Coba kartunya">
+          <span class="lst-main-ikon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg>
+          </span>
+        </button>
+        {% for g in galeri %}
+          <button class="lst-thumb" data-i="{{ forloop.counter }}" role="tab" aria-selected="false"
+                  title="Halaman {{ forloop.counter }}">
+            <img src="{{ g }}" alt="Halaman {{ forloop.counter }} {{ template.name }}" loading="lazy">
+          </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="lst-utama">
+        {% if lencana_teks %}
+          <span class="lst-lencana is-{{ lencana_kode }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17l-5.9 3 1.2-6.5L2.5 8.9 9.1 8z" fill="currentColor"/></svg>
+            {{ lencana_teks }}
+          </span>
+        {% endif %}
+
+        <div class="lst-slide is-on" data-i="0">
+          <iframe src="{% url 'cards:preview' template.slug %}?sematan=1"
+                  title="Coba {{ template.name }}" loading="lazy"></iframe>
+        </div>
+        {% for g in galeri %}
+          <div class="lst-slide" data-i="{{ forloop.counter }}">
+            <img src="{{ g }}" alt="Halaman {{ forloop.counter }} {{ template.name }}" loading="lazy">
+          </div>
+        {% endfor %}
+
+        {% if galeri %}
+          <button class="lst-nav lst-prev" aria-label="Sebelumnya">‹</button>
+          <button class="lst-nav lst-next" aria-label="Berikutnya">›</button>
+          <p class="lst-hitung"><span class="lst-kini">1</span> / {{ galeri|length|add:1 }}</p>
+        {% endif %}
+      </div>
+      <p class="lst-catatan" data-catatan-hidup>
+        Ini kartunya yang sungguhan, bukan gambar — <b>sapu ke samping untuk membalik halaman.</b>
+      </p>
+    </div>
+
+    {# ══════════ Ulasan ══════════ #}
+    <section class="lst-ulasan">
+      <h2>Ulasan untuk template ini</h2>
+      {% if ulasan %}
+        {# Diisi begitu ada ulasan asli. #}
+      {% else %}
+        {% comment %}
+          Keadaan kosong, atas keputusan pemilik situs. Yang ditulis di sini
+          sengaja bukan "belum ada ulasan" saja: kalimat telanjang seperti itu
+          cuma membuktikan belum ada yang beli. Yang ditawarkan sebagai
+          gantinya jaminan yang BISA dibuktikan sekarang juga.
+        {% endcomment %}
+        <div class="lst-kosong">
+          <p class="lst-kosong-judul">Belum ada ulasan untuk template ini</p>
+          <p>Template ini baru dirilis. Sambil menunggu ulasan pertama, ini yang bisa kamu pastikan sendiri sekarang:</p>
+          <ul>
+            <li>Kartunya bisa kamu coba <strong>sebelum bayar</strong> — balik halamannya di sebelah kiri.</li>
+            <li>Kartumu tersimpan sendiri selama diisi, dan tidak hilang kalau halamannya tertutup.</li>
+            <li>Kalau kartunya tidak aktif sesudah kamu bayar, hubungi kami dan kami perbaiki.</li>
+          </ul>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+
+  {# ══════════ KANAN: panel beli ══════════ #}
+  <aside class="lst-kanan">
+    <p class="lst-promo">Harga perkenalan</p>
+
+    <div class="lst-harga">
+      <b>Rp{{ price|floatformat:0 }}</b>
+      {% if harga_normal %}<s>Rp{{ harga_normal|floatformat:0 }}</s>{% endif %}
+    </div>
+    {% if potongan %}<p class="lst-potongan">{{ potongan }}% lebih murah</p>{% endif %}
+    <p class="lst-pajak">Sekali bayar · tanpa langganan</p>
+
+    <p class="lst-judul">{{ template.name }} — kartu {{ kategori|lower }} digital, isi sendiri foto dan pesanmu</p>
+
+    <p class="lst-toko">
+      <strong>Kartuku</strong>
+      <svg class="lst-cek" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 1.8 3-.3 1 2.8 2.6 1.5-1 2.8 1 2.8-2.6 1.5-1 2.8-3-.3L12 22l-2.4-1.8-3 .3-1-2.8L3 16.2l1-2.8-1-2.8 2.6-1.5 1-2.8 3 .3z" fill="currentColor"/><path d="M8.5 12.2l2.3 2.3 4.7-4.7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+    </p>
+
+    <a class="lst-beli" href="{% url 'cards:editor' template.slug %}">Pakai template ini</a>
+    <a class="lst-penuh" href="{% url 'cards:preview' template.slug %}">Buka contohnya layar penuh</a>
+
+    {% if lencana_teks %}
+      <div class="lst-jaminan">
+        <span class="lst-jaminan-ikon is-{{ lencana_kode }}" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17l-5.9 3 1.2-6.5L2.5 8.9 9.1 8z" fill="currentColor"/></svg>
+        </span>
+        <p>
+          <strong>{{ lencana_teks }}.</strong>
+          {% if lencana_kode == 'bestseller' %}
+            Template yang paling banyak dipakai pembeli Kartuku.
+          {% else %}
+            Template favorit yang paling sering dibagikan ulang penerimanya.
+          {% endif %}
+        </p>
+      </div>
+    {% endif %}
+
+    <details class="lst-lipat" open>
+      <summary>Detail produk</summary>
+      <div class="lst-lipat-isi">
+        <p class="lst-sorot">Isinya</p>
+        <ul class="lst-isi">
+          {% for angka, sebutan in isi %}<li><b>{{ angka }}</b> {{ sebutan }}</li>{% endfor %}
+          <li><b>∞</b> bisa dibuka berkali-kali, selamanya</li>
+        </ul>
+        <p class="lst-uraian">
+          {{ template.name }} adalah kartu ucapan digital yang kamu isi sendiri — tulis
+          pesanmu, unggah foto kalian, dan tempel satu link YouTube sebagai musik latarnya.
+          Hasilnya bukan berkas yang harus dibuka di aplikasi lain, melainkan satu link
+          permanen yang tinggal kamu kirim ke orangnya.
+        </p>
+      </div>
+    </details>
+
+    <details class="lst-lipat" open>
+      <summary>Pengiriman</summary>
+      <div class="lst-lipat-isi">
+        <p class="lst-sorot">Aktif seketika</p>
+        <p>Kartumu aktif begitu pembayaranmu terkonfirmasi. Tidak ada berkas yang
+           perlu diunduh, dan tidak perlu menunggu admin.</p>
+        <p>Kamu bisa mengisi kartunya lebih dulu tanpa bayar — draftnya tersimpan
+           sendiri, dan menunggumu kembali.</p>
+      </div>
+    </details>
+
+    <details class="lst-lipat" open>
+      <summary>Tahukah kamu?</summary>
+      <div class="lst-lipat-isi">
+        <div class="lst-tahu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z" fill="currentColor"/><path d="M8.5 12l2.5 2.5 4.5-4.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          <p><strong>Linknya permanen.</strong> Kartu yang sudah dibayar bisa dibuka
+             penerimanya kapan saja, berkali-kali, tanpa batas waktu. Link yang sudah
+             kamu bagikan tidak pernah kami matikan.</p>
+        </div>
+        <a class="lst-kebijakan" href="{% url 'cards:page_faq' %}">Lihat syarat &amp; ketentuan</a>
+      </div>
+    </details>
+
+    <details class="lst-lipat">
+      <summary>Pertanyaan umum</summary>
+      <div class="lst-lipat-isi">
+        <p class="lst-tanya">Perlu punya Canva atau aplikasi lain?</p>
+        <p>Tidak. Semuanya dikerjakan di situs ini, dan penerimanya cukup membuka link.</p>
+        <p class="lst-tanya">Bisa diubah lagi setelah dibayar?</p>
+        <p>Bisa. Isi kartunya masih bisa kamu sunting, dan linknya tetap sama.</p>
+        <p class="lst-tanya">Bagaimana kalau lagunya tidak bisa diputar?</p>
+        <p>Sebagian lagu dikunci pemiliknya di luar YouTube. Ganti dengan versi lain,
+           dan kartunya tetap jalan seperti biasa.</p>
+        <a class="lst-kebijakan" href="{% url 'cards:page_faq' %}">Buka semua pertanyaan</a>
+      </div>
+    </details>
+
+    <details class="lst-lipat">
+      <summary>Kenal pembuatnya</summary>
+      <div class="lst-lipat-isi">
+        <p><strong>Kartuku</strong> dibuat di Indonesia untuk orang yang ingin memberi
+           lebih dari sekadar ucapan di chat. Tiap template dirancang satu per satu,
+           bukan diambil dari katalog jadi.</p>
+        <a class="lst-kebijakan" href="{% url 'cards:page_how' %}">Lihat cara kerjanya</a>
+      </div>
+    </details>
+  </aside>
+</div>
+
+{% if lain %}
+<section class="section">
+  <div class="section-head is-toko">
+    <div><h2 class="display">Template lain</h2></div>
+    <a class="pil" href="{% url 'cards:page_templates' %}">Lihat semua</a>
+  </div>
+  {% include "cards/_template_grid.html" with entries=lain tampil_tema=1 %}
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{% static_v 'js/product.js' %}"></script>{% endblock %}

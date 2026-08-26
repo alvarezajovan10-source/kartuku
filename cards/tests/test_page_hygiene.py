@@ -140,14 +140,28 @@ class DaftarTemplateRataTests(TestCase):
             with self.subTest(template=nama):
                 self.assertIn(nama, isi)
 
-    def test_template_bisa_langsung_dipratinjau_dan_dipakai(self):
-        """Yang dihemat lapisan tema itu bukan kliknya saja: pembeli sekarang
-        melihat nama template DAN dua tombolnya tanpa berpindah halaman."""
+    def test_tiap_kartu_satu_tautan_ke_halaman_produk(self):
+        """Satu kartu = satu tujuan, dan harganya terbaca tanpa mengklik.
+
+        Riwayatnya dua langkah. Sampai 22 Agu 2026 tiap kartu punya dua tombol
+        ("Preview" dan "Pakai Ini") dan yang kiri melempar orang ke kartu
+        contoh selayar penuh. 23 Agu 2026 kisinya disusun ulang mengikuti pola
+        Etsy: tombolnya dicabut seluruhnya, kartunya sendiri jadi tautannya,
+        dan HARGA dituliskan di tiap kartu.
+
+        Alasan harga itu yang paling penting dijaga: orang yang menimbang
+        membeli mencari harga lebih dulu, dan kalau tidak ketemu di kartunya
+        sebagian besar pergi alih-alih mengklik.
+        """
         isi = self.client.get(reverse("cards:page_templates")).content.decode()
+        self.assertIn("Rp15.000", isi)
         for slug in ("uji-ulang-tahun", "uji-cinta"):
             with self.subTest(slug=slug):
-                self.assertIn(reverse("cards:preview", args=[slug]), isi)
-                self.assertIn(reverse("cards:editor", args=[slug]), isi)
+                self.assertIn(reverse("cards:template_detail", args=[slug]), isi)
+                self.assertNotIn(
+                    reverse("cards:editor", args=[slug]), isi,
+                    "tombol di kartu sudah dicabut; jalan ke editor lewat halaman produk",
+                )
 
     def test_nama_tema_tetap_tertulis_di_tiap_kartu(self):
         """Tanpa lapisan tema, tidak ada lagi yang memberi tahu pembeli bahwa

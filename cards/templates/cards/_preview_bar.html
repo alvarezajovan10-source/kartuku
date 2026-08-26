@@ -8,6 +8,75 @@ Dua kondisi memunculkannya:
   - `staff_peek` → pemilik situs mengintip kartu yang belum dibayar
 Kartu asli yang sudah lunas tidak memunculkan apa pun.
 {% endcomment %}
+{% comment %}
+  Cap "VORTEIZ" di atas kartu CONTOH — penjaga terakhir sebelum gambarnya
+  bisa dipakai orang lain sebagai template sendiri.
+
+  Digantung pada `watermark`, BUKAN pada `preview`. Bedanya penting: halaman
+  produk menyematkan kartu contoh dengan ?sematan=1, yang mematikan `preview`
+  supaya bilah di bawah hilang — dan kalau capnya ikut mati di sana, celahnya
+  terbuka justru di halaman yang paling banyak dilihat orang.
+
+  Kartu yang SUDAH DIBAYAR tidak pernah mendapat cap ini: yang membeli
+  membayar untuk kartu bersih. Penjaganya di views.preview(), satu-satunya
+  tempat `watermark` pernah bernilai True.
+{% endcomment %}
+{% if watermark %}
+<link rel="stylesheet" href="{% static_v 'css/watermark.css' %}">
+<div class="cap-vorteiz" aria-hidden="true"><span>VORTEIZ</span></div>
+<script>
+/* Cap dipindahkan MASUK ke #card-stage, lalu dijadikan POLA BERULANG.
+
+   Dua hal dikerjakan di sini, dan dua-duanya tidak bisa dilakukan CSS saja.
+
+   1. Dipindahkan ke dalam kartu. Berkas ini disisipkan di ujung <body>, jauh
+      di luar #card-stage. Ditinggal di sana, capnya diukur terhadap LEBAR
+      JENDELA — di jendela yang lebih lebar daripada kartunya, tandanya
+      melimpah keluar tepi dan yang terpotret di galeri cuma penggalannya.
+
+   2. Dibuat berulang. Jumlah barisnya bergantung TINGGI kartu, dan tinggi itu
+      berbeda-beda: kartu berhalaman ~550px, kartu bergulir (Scrapbook) bisa
+      7.000px lebih. Satu angka tetap akan terlalu rapat di yang pendek atau
+      meninggalkan bidang kosong luas di yang panjang.
+
+   Kerapatannya diikat ke LEBAR kartu, bukan ke piksel: lima tanda per baris
+   di kartu selebar apa pun, jadi polanya terlihat sama di thumbnail maupun di
+   potret galeri. */
+(function () {
+  var cap = document.querySelector(".cap-vorteiz");
+  var stage = document.getElementById("card-stage");
+  if (!cap || !stage) return;
+
+  var lebar = stage.offsetWidth || 390;
+  var tinggi = stage.offsetHeight || lebar;
+  var kolom = 5;
+  var tinggiSel = lebar / kolom * 0.45;      // baris LEBIH rapat daripada kolom
+  var baris = Math.max(2, Math.ceil(tinggi / tinggiSel));
+
+  cap.innerHTML = "";
+  cap.style.position = "absolute";
+  cap.style.inset = "0";
+  cap.style.display = "grid";
+  cap.style.gridTemplateRows = "repeat(" + baris + ", 1fr)";
+
+  for (var b = 0; b < baris; b++) {
+    var row = document.createElement("div");
+    row.className = "baris";
+    row.style.gridTemplateColumns = "repeat(" + kolom + ", 1fr)";
+    for (var k = 0; k < kolom; k++) {
+      var sp = document.createElement("span");
+      sp.textContent = "VORTEIZ";
+      row.appendChild(sp);
+    }
+    cap.appendChild(row);
+  }
+
+  getComputedStyle(stage).position === "static" && (stage.style.position = "relative");
+  stage.appendChild(cap);
+})();
+</script>
+{% endif %}
+
 {% if preview or staff_peek %}
 <link rel="stylesheet" href="{% static_v 'css/preview-bar.css' %}">
 <div class="preview-bar">

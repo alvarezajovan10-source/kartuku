@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static card_extras %}
+{% block title %}{% if q %}Cari "{{ q }}"{% else %}Cari template{% endif %} — Kartuku{% endblock %}
+
+{% block body %}
+<div class="section">
+  <div class="section-head is-toko">
+    <div>
+      <p class="eyebrow">Hasil pencarian</p>
+      <h2 class="display">
+        {% if q %}"{{ q }}" — {{ entries|length }} template{% else %}Semua template{% endif %}
+      </h2>
+    </div>
+    <a class="pil" href="{% url 'cards:page_templates' %}">Lihat semua</a>
+  </div>
+
+  {% if entries %}
+    {% include "cards/_template_grid.html" with tampil_tema=1 %}
+  {% else %}
+    {% comment %}
+      Hasil kosong TIDAK dibiarkan jadi halaman putih. Yang mencari lalu tidak
+      menemukan apa-apa adalah orang yang paling dekat dengan pergi — jadi di
+      sini ia langsung disodori seluruh katalognya, bukan disuruh mencari lagi.
+    {% endcomment %}
+    <p class="lede">Tidak ada template bernama <strong>{{ q }}</strong>. Ini semua yang ada:</p>
+    {% include "cards/_template_grid.html" with entries=semua tampil_tema=1 %}
+    <p class="hint"><a href="{% url 'cards:page_templates' %}">Buka halaman template</a></p>
+  {% endif %}
+</div>
+{% endblock %}

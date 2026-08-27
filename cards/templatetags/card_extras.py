@@ -10,6 +10,7 @@ Sisanya (penyimpanan, pembersihan, editor) tidak perlu dipikirkan.
 """
 
 from django import template
+from django.conf import settings
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
@@ -125,3 +126,33 @@ def static_ada(*paths):
 @register.filter
 def split(value, sep=","):
     return str(value).split(sep)
+
+
+@register.simple_tag
+def harga_coret():
+    """Harga normal untuk dicoret, atau 0 kalau tidak ada promo.
+
+    Ada sebagai tag, bukan dikirim tiap view: kisi template dipakai lima
+    halaman (beranda, /template/, galeri kategori, hasil cari, dan halaman
+    produk), dan menambahkan satu nilai ke lima context adalah lima tempat
+    yang bisa lupa. Yang lupa tidak akan error — kartunya cuma diam-diam
+    kehilangan coretannya di satu halaman, dan tidak ada yang menyadarinya.
+
+    Aturan "cuma tampil kalau memang lebih mahal" juga tinggal di sini, satu
+    tempat. Lihat catatan hukum di CARD_LIST_PRICE pada settings.py.
+    """
+    normal = getattr(settings, "CARD_LIST_PRICE", 0)
+    return normal if normal and normal > settings.CARD_PRICE else 0
+
+
+@register.simple_tag
+def potongan_persen():
+    """Besar potongan dalam persen bulat, atau 0 kalau tidak ada promo.
+
+    Dipakai lencana di sudut gambar. Dibulatkan, bukan dipotong: 82,9% yang
+    ditulis "82%" mengecilkan tawaran sendiri tanpa alasan.
+    """
+    normal = harga_coret()
+    if not normal:
+        return 0
+    return round(100 * (1 - settings.CARD_PRICE / normal))

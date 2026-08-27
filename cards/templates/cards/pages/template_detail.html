@@ -1,20 +1,24 @@
 {% extends "base.html" %}
 {% load static card_extras %}
 
-{% block title %}{{ template.name }} — Kartuku{% endblock %}
+{% block title %}{{ template.name }} · Kartuku{% endblock %}
 {% block description %}{{ template.name }}: kartu ucapan digital {{ kategori|lower }}, Rp{{ price|floatformat:0 }} sekali bayar. Isi foto dan pesanmu, lalu bagikan linknya.{% endblock %}
-{% block og_title %}{{ template.name }} — Kartuku{% endblock %}
+{% block og_title %}{{ template.name }} · Kartuku{% endblock %}
 {% block og_image %}{% if thumb %}{{ request.scheme }}://{{ request.get_host }}{% static thumb %}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block body %}
 <link rel="stylesheet" href="{% static_v 'css/product.css' %}">
 
-<nav class="lst-remah" aria-label="Jejak halaman">
-  <a href="{% url 'cards:landing' %}">Beranda</a> ›
-  <a href="{% url 'cards:page_templates' %}">Template</a> ›
-  <span>{{ kategori }}</span> ›
-  <span>{{ template.name }}</span>
-</nav>
+{% comment %}
+  Tombol pulang menggantikan jejak halaman (28 Agu 2026, permintaan pemilik
+  situs). Jejak "Beranda > Template > Ulang Tahun > Scrapbook Cerita" memakan
+  satu baris penuh di HP untuk memberi tahu orang di mana ia berada, padahal
+  ia baru saja mengklik dari halaman sebelumnya dan sudah tahu. Yang ia
+  butuhkan cuma jalan keluar.
+{% endcomment %}
+<div class="lst-pulang">
+  <a href="{% url 'cards:landing' %}">&lsaquo; Beranda</a>
+</div>
 
 <div class="lst">
   {# ══════════ KIRI: galeri ══════════ #}
@@ -50,6 +54,13 @@
       {% endif %}
 
       <div class="lst-utama">
+        {% comment %}
+          Lencana potongan di sudut KANAN atas. Sudut kiri sudah dipakai
+          lencana Bestseller/Star Seller, dan dua lencana bertumpuk di sudut
+          yang sama akan saling menutupi pada kartu yang sempit.
+        {% endcomment %}
+        {% if potongan %}<span class="lst-diskon">-{{ potongan }}%</span>{% endif %}
+
         {% if lencana_teks %}
           <span class="lst-lencana is-{{ lencana_kode }}">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17l-5.9 3 1.2-6.5L2.5 8.9 9.1 8z" fill="currentColor"/></svg>
@@ -74,7 +85,7 @@
         {% endif %}
       </div>
       <p class="lst-catatan" data-catatan-hidup>
-        Ini kartunya yang sungguhan, bukan gambar — <b>sapu ke samping untuk membalik halaman.</b>
+        Ini kartunya yang sungguhan, bukan gambar. <b>Sapu ke samping untuk membalik halaman.</b>
       </p>
     </div>
 
@@ -94,7 +105,7 @@
           <p class="lst-kosong-judul">Belum ada ulasan untuk template ini</p>
           <p>Template ini baru dirilis. Sambil menunggu ulasan pertama, ini yang bisa kamu pastikan sendiri sekarang:</p>
           <ul>
-            <li>Kartunya bisa kamu coba <strong>sebelum bayar</strong> — balik halamannya di sebelah kiri.</li>
+            <li>Kartunya bisa kamu coba <strong>sebelum bayar</strong>, balik halamannya di sebelah kiri.</li>
             <li>Kartumu tersimpan sendiri selama diisi, dan tidak hilang kalau halamannya tertutup.</li>
             <li>Kalau kartunya tidak aktif sesudah kamu bayar, hubungi kami dan kami perbaiki.</li>
           </ul>
@@ -114,7 +125,7 @@
     {% if potongan %}<p class="lst-potongan">{{ potongan }}% lebih murah</p>{% endif %}
     <p class="lst-pajak">Sekali bayar · tanpa langganan</p>
 
-    <p class="lst-judul">{{ template.name }} — kartu {{ kategori|lower }} digital, isi sendiri foto dan pesanmu</p>
+    <p class="lst-judul">{{ template.name }}: kartu {{ kategori|lower }} digital, isi sendiri foto dan pesanmu</p>
 
     <p class="lst-toko">
       <strong>Kartuku</strong>
@@ -140,6 +151,17 @@
       </div>
     {% endif %}
 
+    {% comment %}
+      HANYA "Detail produk" yang terbuka sejak awal (28 Agu 2026, permintaan
+      pemilik situs). Sisanya tertutup.
+
+      Yang di dalamnya memang beda sifat: "Detail produk" berisi ISI barangnya
+      — berapa halaman, berapa foto, berapa tulisan — dan itu bagian dari
+      keputusan membeli, bukan jawaban atas pertanyaan. Tiga blok lain
+      menjawab pertanyaan yang belum tentu ditanyakan, dan blok terbuka yang
+      isinya belum ditanyakan cuma mendorong tombol beli semakin jauh ke
+      bawah.
+    {% endcomment %}
     <details class="lst-lipat" open>
       <summary>Detail produk</summary>
       <div class="lst-lipat-isi">
@@ -148,27 +170,21 @@
           {% for angka, sebutan in isi %}<li><b>{{ angka }}</b> {{ sebutan }}</li>{% endfor %}
           <li><b>∞</b> bisa dibuka berkali-kali, selamanya</li>
         </ul>
-        <p class="lst-uraian">
-          {{ template.name }} adalah kartu ucapan digital yang kamu isi sendiri — tulis
-          pesanmu, unggah foto kalian, dan tempel satu link YouTube sebagai musik latarnya.
-          Hasilnya bukan berkas yang harus dibuka di aplikasi lain, melainkan satu link
-          permanen yang tinggal kamu kirim ke orangnya.
-        </p>
       </div>
     </details>
 
-    <details class="lst-lipat" open>
+    <details class="lst-lipat">
       <summary>Pengiriman</summary>
       <div class="lst-lipat-isi">
         <p class="lst-sorot">Aktif seketika</p>
         <p>Kartumu aktif begitu pembayaranmu terkonfirmasi. Tidak ada berkas yang
            perlu diunduh, dan tidak perlu menunggu admin.</p>
-        <p>Kamu bisa mengisi kartunya lebih dulu tanpa bayar — draftnya tersimpan
+        <p>Kamu bisa mengisi kartunya lebih dulu tanpa bayar. Draftnya tersimpan
            sendiri, dan menunggumu kembali.</p>
       </div>
     </details>
 
-    <details class="lst-lipat" open>
+    <details class="lst-lipat">
       <summary>Tahukah kamu?</summary>
       <div class="lst-lipat-isi">
         <div class="lst-tahu">
@@ -195,15 +211,6 @@
       </div>
     </details>
 
-    <details class="lst-lipat">
-      <summary>Kenal pembuatnya</summary>
-      <div class="lst-lipat-isi">
-        <p><strong>Kartuku</strong> dibuat di Indonesia untuk orang yang ingin memberi
-           lebih dari sekadar ucapan di chat. Tiap template dirancang satu per satu,
-           bukan diambil dari katalog jadi.</p>
-        <a class="lst-kebijakan" href="{% url 'cards:page_how' %}">Lihat cara kerjanya</a>
-      </div>
-    </details>
   </aside>
 </div>
 

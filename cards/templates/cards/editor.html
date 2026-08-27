@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static card_extras %}
 
-{% block title %}Edit — {{ template.name }}{% endblock %}
+{% block title %}Edit · {{ template.name }}{% endblock %}
 
 {% comment %}
   Menyembunyikan header situs saat mengedit — lihat aturannya di app.css.
@@ -41,9 +41,26 @@
     {% endcomment %}
 
     <!-- Diam sampai ada yang diklik -->
+    {% comment %}
+      Kotak sunting sudah TAMPIL sebelum ada yang dipilih, atas permintaan
+      pemilik situs (27 Agu 2026).
+
+      Sebelumnya panel ini cuma dua baris teks abu, dan kotak isiannya baru
+      lahir setelah pembeli mengklik sesuatu di kartu. Masalahnya justru di
+      situ: pembeli yang belum tahu bahwa kartunya bisa diklik tidak melihat
+      apa pun yang menyerupai tempat mengetik, jadi ia tidak pernah mencoba
+      mengklik. Yang harus ditemukan lebih dulu adalah yang paling
+      disembunyikan.
+
+      Kotaknya sengaja BENAR-BENAR kotak isian yang dimatikan, bukan gambar
+      tiruan: bentuk, ukuran, dan sudutnya persis sama dengan yang nanti
+      aktif, jadi yang dilihat pembeli sekarang adalah yang akan ia pakai.
+    {% endcomment %}
     <div class="ed-idle" x-show="!sel">
-      <p><strong>Klik apa saja di kartu</strong></p>
-      <p>Tulisan, foto, atau latarnya.</p>
+      <textarea class="ed-input ed-idle-kotak" rows="4" disabled
+                placeholder="Klik apa saja di kartu"></textarea>
+      <p class="ed-idle-ket">Tulisan, foto, atau latarnya. Kotak ini aktif
+        begitu kamu memilih salah satunya.</p>
     </div>
 
     <!-- ── Kepala: nama elemen terpilih ──────────────────────────────── -->
@@ -271,7 +288,7 @@
        mungkin beda dengan yang tampil di kartu. -->
   <div class="crop-modal" x-show="cropOpen" x-cloak @keydown.escape.window="cancelCrop()">
     <div class="crop-box">
-      <p class="crop-title">Atur fotonya — geser & perbesar</p>
+      <p class="crop-title">Atur fotonya: geser &amp; perbesar</p>
       {% comment %}
         Ukuran kanvas disetel JS dari bentuk bingkai tujuannya — lihat
         nextCrop() di alpine-editor.js. Angka di sini cuma bekal awal

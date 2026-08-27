@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Kartuku — Kartu Ucapan Digital{% endblock %}</title>
+  <title>{% block title %}Kartuku · Kartu Ucapan Digital{% endblock %}</title>
   {% comment %}
     Sengaja tidak menyebut metode bayar: ini teks yang muncul di hasil Google,
     dan metodenya bisa berganti (Lynk.id sekarang, QRIS kalau Midtrans dinyalakan).
@@ -24,7 +24,7 @@
   <meta property="og:site_name" content="Kartuku">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="id_ID">
-  <meta property="og:title" content="{% block og_title %}Kartuku — Ucapan tulus, hadiah berkesan{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}Kartuku · Ucapan tulus, hadiah berkesan{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Kartu ucapan digital dengan foto, pesan, dan lagu. Rp15.000 sekali bayar, langsung dapat link untuk dibagikan.{% endblock %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-default.jpg' %}{% endblock %}">
@@ -51,7 +51,16 @@
 <body class="{% block body_class %}{% endblock %}">
 
 <header class="site-header">
+  {% comment %}
+    Sakelar menu HP. Kotak centang tersembunyi + <label>, bukan JavaScript:
+    menu situs harus tetap bisa dibuka kalau JS gagal dimuat — di jaringan
+    seluler yang putus-putus itu bukan kemungkinan teoretis.
+  {% endcomment %}
+  <input type="checkbox" id="menu-hp" class="menu-hp" hidden>
   <div class="header-inner">
+    <label for="menu-hp" class="burger" aria-label="Buka menu">
+      <span></span><span></span><span></span>
+    </label>
     <a class="brand" href="{% url 'cards:landing' %}">
       <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
         <path d="M4 12 L20 4 L36 12 L36 34 A2 2 0 0 1 34 36 L6 36 A2 2 0 0 1 4 34 Z" fill="#f3d9d6"/>
@@ -72,7 +81,7 @@
     {% endcomment %}
     <form class="cari" action="{% url 'cards:search' %}" method="get" role="search">
       <input type="search" name="q" value="{{ request.GET.q|default:'' }}"
-             placeholder="Cari template kartu…" aria-label="Cari template">
+             placeholder="Cari template…" aria-label="Cari template">
       <button type="submit" aria-label="Cari">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
              stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
@@ -86,9 +95,13 @@
   </div>
 
   {% comment %}
-    Baris kategori: pita kedua di bawah header, sama seperti rujukan. Menu
-    situs yang dulu berdesak-desakan di dalam bilah utama pindah ke sini —
-    di bilah utama ruangnya sekarang milik kolom cari.
+    Baris kategori. Di layar lebar ia pita kedua di bawah header, sama seperti
+    rujukan. Di HP ia BERUBAH PERAN jadi isi laci menu: tersembunyi sampai
+    tombol garis tiga ditekan.
+
+    Satu daftar untuk dua bentuk, bukan dua daftar yang harus disamakan
+    tangan — menu yang isinya berbeda antara HP dan laptop adalah cacat yang
+    baru ketahuan setelah ada yang mengeluh kehilangan satu halaman.
   {% endcomment %}
   {% with here=request.resolver_match.url_name %}
   <div class="kategori-inner">

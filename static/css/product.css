@@ -7,12 +7,24 @@
    app.css dimuat SETIAP halaman. Dimuat dari dalam {% block body %}, pola yang
    sama dengan editor.html. */
 
-.lst-remah {
-  max-width: 1240px; margin: 0 auto; padding: 18px 22px 10px;
-  font-size: .82rem; color: var(--muted); text-align: center;
+.lst-pulang { max-width: 1240px; margin: 0 auto; padding: 16px 22px 6px; }
+.lst-pulang a {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .86rem; font-weight: 600; color: var(--ink-soft);
+  text-decoration: none;
 }
-.lst-remah a { color: var(--ink-soft); }
-.lst-remah span { color: var(--muted); }
+.lst-pulang a:hover { color: var(--rose); }
+
+/* Lencana potongan di gambar besar. Bentuk dan warnanya sama persis dengan
+   yang di kisi template (.tpl-diskon di app.css) — lencana yang berubah rupa
+   antara dua halaman terbaca seperti dua penawaran yang berbeda. */
+.lst-diskon {
+  position: absolute; top: 14px; right: 14px; z-index: 3;
+  background: var(--rose); color: #fff;
+  padding: 6px 12px; border-radius: 7px;
+  font-size: .82rem; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, .2);
+}
 
 .lst {
   max-width: 1240px; margin: 0 auto; padding: 6px 22px 70px;
@@ -146,10 +158,14 @@
 /* ── Blok lipat ─────────────────────────────────────────────────────────
    <details> bawaan browser, bukan JS. Bisa dibuka pakai keyboard, bisa
    dicari browser meski tertutup, dan tetap bekerja kalau JS-nya gagal. */
-.lst-lipat { border-top: 1px solid var(--line); margin-top: 22px; }
-.lst-lipat:first-of-type { margin-top: 26px; }
+/* Jaraknya dirapatkan (27 Agu 2026). Sebelumnya tiap blok punya margin 22px
+   DITAMBAH padding judul 16px atas-bawah — jadi antara akhir satu blok dan
+   judul blok berikutnya ada 54px kosong. Di HP itu berarti empat blok
+   memakan lebih dari satu layar penuh yang hampir seluruhnya ruang kosong. */
+.lst-lipat { border-top: 1px solid var(--line); margin-top: 0; }
+.lst-lipat:first-of-type { margin-top: 22px; }
 .lst-lipat summary {
-  list-style: none; cursor: pointer; padding: 16px 0;
+  list-style: none; cursor: pointer; padding: 13px 0;
   font-size: .98rem; font-weight: 600;
   display: flex; justify-content: space-between; align-items: center;
 }
@@ -159,8 +175,9 @@
   transition: transform .15s;
 }
 .lst-lipat[open] summary::after { transform: rotate(180deg); }
-.lst-lipat-isi { padding-bottom: 18px; font-size: .88rem; line-height: 1.6; color: var(--ink-soft); }
-.lst-lipat-isi p { margin: 0 0 10px; }
+.lst-lipat-isi { padding: 0 0 16px; font-size: .88rem; line-height: 1.6; color: var(--ink-soft); }
+.lst-lipat-isi p { margin: 0 0 9px; }
+.lst-lipat-isi p:last-child { margin-bottom: 0; }
 .lst-sorot { font-weight: 700; color: var(--ink); }
 .lst-tanya { font-weight: 600; color: var(--ink); margin-top: 14px; }
 .lst-isi { list-style: none; padding: 0; margin: 0 0 14px; }
@@ -192,6 +209,22 @@
 @media (max-width: 980px) {
   .lst { grid-template-columns: 1fr; gap: 28px; }
   .lst-kanan { position: static; }
+
+  /* URUTAN DI HP: galeri, panel beli, baru ulasan.
+
+     Di layar lebar ulasan duduk di kolom kiri, di bawah galeri — benar, karena
+     panel beli di kolom kanan selalu terlihat di sebelahnya. Waktu kolomnya
+     ditumpuk jadi satu, urutan itu berubah arti: harga dan tombol "Pakai
+     template ini" terdorong ke bawah SELURUH blok ulasan, dan pembeli yang
+     sudah yakin harus menggulir melewati ulasan untuk menemukan tombolnya.
+
+     display:contents membubarkan pembungkus kolom kirinya, jadi galeri dan
+     ulasan naik jadi anak kisi langsung dan bisa diurutkan sendiri-sendiri.
+     Tanpa itu keduanya terkunci sebagai satu blok. */
+  .lst-kiri { display: contents; }
+  .lst-galeri { order: 1; }
+  .lst-kanan  { order: 2; }
+  .lst-ulasan { order: 3; margin-top: 8px; }
   /* Strip pindah ke bawah dan mendatar: di layar sempit, kolom 68px memakan
      seperenam lebar layar untuk gambar sebesar kuku. */
   .lst-galeri { grid-template-columns: 1fr; }

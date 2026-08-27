@@ -1,4 +1,4 @@
-{% load static %}
+{% load static card_extras %}
 {% comment %}
   Kisi kartu template. Dipakai TIGA halaman — beranda, /template/, dan galeri
   per-tema — supaya rupanya tidak pernah berbeda di antara ketiganya.
@@ -35,11 +35,28 @@
           {% else %}
             <span class="tpl-fallback">{{ entry.template.name }}</span>
           {% endif %}
+          {% comment %}
+            Lencana potongan di sudut gambar. Angka persen terbaca dari jauh
+            saat orang menggulir cepat; harga coret di bawah baru terbaca
+            kalau ia sudah berhenti. Keduanya bekerja di momen yang berbeda,
+            jadi dua-duanya dipasang.
+          {% endcomment %}
+          {% potongan_persen as potongan %}
+          {% if potongan %}<span class="tpl-diskon">-{{ potongan }}%</span>{% endif %}
         </span>
         <span class="tpl-body">
           <span class="tpl-nama">{{ entry.template.name }}</span>
           {% if tampil_tema and entry.label %}<span class="tpl-tema">{{ entry.label }}</span>{% endif %}
-          <span class="tpl-harga">Rp{{ price|floatformat:0 }}</span>
+          {% comment %}
+            Harga coret ikut di TIAP kartu, bukan cuma di halaman produk.
+            Angka promo yang berdiri sendiri tidak punya pembanding, dan
+            "Rp15.000" tanpa apa-apa di sebelahnya terbaca sebagai harga
+            biasa, bukan sebagai potongan.
+          {% endcomment %}
+          <span class="tpl-harga">
+            Rp{{ price|floatformat:0 }}
+            {% harga_coret as normal %}{% if normal %}<s>Rp{{ normal|floatformat:0 }}</s>{% endif %}
+          </span>
         </span>
       </a>
     </article>

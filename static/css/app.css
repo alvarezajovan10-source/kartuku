@@ -193,10 +193,6 @@ img { max-width: 100%; display: block; }
    Pita kedua di bawah header, isinya tautan menjelajah. Di rujukan ia yang
    memberi tahu pengunjung bahwa ada BANYAK hal untuk dilihat, sebelum ia
    sempat menilai dari satu layar pertama saja. */
-.kategori-bar {
-  background: #fff;
-  border-bottom: 1px solid var(--line);
-}
 .kategori-inner {
   max-width: 1240px;
   margin: 0 auto;
@@ -216,12 +212,6 @@ img { max-width: 100%; display: block; }
 }
 .kategori-inner a:hover { border-bottom-color: var(--ink); }
 .kategori-inner a.is-here { border-bottom-color: var(--rose); font-weight: 600; }
-
-@media (max-width: 820px) {
-  .cari { order: 3; flex-basis: 100%; }
-  .header-inner { flex-wrap: wrap; }
-  .kategori-inner { gap: 20px; justify-content: flex-start; overflow-x: auto; }
-}
 
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
 .brand-mark { width: 38px; height: 38px; flex: none; }
@@ -256,7 +246,7 @@ img { max-width: 100%; display: block; }
 
 .header-cta { flex: none; }
 
-.nav-burger { display: none; }
+
 
 /* ── Tombol ─────────────────────────────────────────────────────────────── */
 .btn {
@@ -625,6 +615,18 @@ img { max-width: 100%; display: block; }
    harus mengklik untuk tahu — dan sebagian besar tidak mengklik, mereka pergi.
    Etsy menuliskannya di tiap kartu, dan itu bukan kebetulan. */
 .tpl-harga { margin-top: 4px; font-size: 1.02rem; font-weight: 700; color: var(--ink); }
+.tpl-harga s { margin-left: 7px; font-size: .82rem; font-weight: 500; color: var(--muted); }
+
+/* Lencana potongan, menempel di sudut kiri atas gambar. Merah pekat dan
+   bersudut kecil, bukan pil membulat: bentuk pil terbaca sebagai label
+   kategori, sedangkan yang ini harus terbaca sebagai harga. */
+.tpl-diskon {
+  position: absolute; top: 8px; left: 8px; z-index: 2;
+  background: var(--rose); color: #fff;
+  padding: 4px 9px; border-radius: 6px;
+  font-size: .74rem; font-weight: 700; letter-spacing: .01em;
+  box-shadow: 0 2px 6px rgba(28, 25, 23, .18);
+}
 
 /* Nama tema di bawah judul template. Muncul di beranda dan /template/, tidak
    di galeri per-tema — di sana seluruh isinya sudah satu tema dan menuliskan
@@ -787,8 +789,28 @@ img { max-width: 100%; display: block; }
 .ed-back { font-size: .78rem; color: var(--rose); text-decoration: none; }
 .ed-back:hover { text-decoration: underline; }
 
-.ed-idle { color: var(--muted); font-size: .85rem; padding: 30px 4px 16px; }
-.ed-idle p { margin: 0 0 4px; }
+.ed-idle { padding: 4px 0 12px; }
+.ed-idle p { margin: 0; }
+/* Kotak isian yang dimatikan, bukan tiruan: bentuknya persis sama dengan
+   kotak yang nanti aktif. Garis putus-putus dan tulisan di tengah yang
+   memberi tahu ia belum bisa dipakai — bukan warna pucat, yang cuma terbaca
+   sebagai "kotaknya rusak". */
+.ed-idle-kotak {
+  border-style: dashed;
+  text-align: center;
+  color: var(--ink-soft);
+  cursor: default;
+  resize: none;
+}
+.ed-idle-kotak::placeholder {
+  color: var(--ink);
+  font-weight: 600;
+  opacity: 1;
+  /* Placeholder textarea menempel di baris pertama; digeser turun supaya
+     jatuh kira-kira di tengah kotaknya. */
+  line-height: 5.4;
+}
+.ed-idle-ket { margin-top: 8px; font-size: .78rem; color: var(--muted); line-height: 1.5; }
 
 /* Kotak lagu tetap di panel — lagu bukan elemen visual kartu.
    Dibuat menonjol: saat diuji ke orang awam, tidak ada yang menemukannya
@@ -847,7 +869,6 @@ img { max-width: 100%; display: block; }
 .mc-comped { background: #e6e2f5; color: #5b4b9c; }
 .mc-links { display: flex; flex-wrap: wrap; gap: 8px; }
 @media (max-width: 560px) { .mc-item { flex-direction: column; align-items: flex-start; } }
-.ed-idle strong { color: var(--ink); }
 
 .ed-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -1176,33 +1197,77 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
 .message { white-space: pre-wrap; font-family: var(--sans); font-size: 1.3rem; line-height: 1.55; }
 .from { color: var(--muted); margin-top: 26px; font-family: var(--sans); font-size: 1.1rem; }
 
+/* CATATAN URUTAN: blok ini WAJIB berada sesudah aturan dasar header, dan
+   itu sebabnya ia ada di bagian responsif alih-alih di sebelah bagian header.
+   Media query tidak menambah spesifisitas — yang menang adalah yang tertulis
+   belakangan. Waktu blok ini sempat ditaruh di atas, dua aturannya mati diam:
+   tombol garis tiga tidak pernah muncul, dan ukuran merek tidak pernah
+   mengecil. Tidak ada error, cuma tampilan yang tidak berubah. */
+/* ── Header di HP ────────────────────────────────────────────────────────
+   Satu baris saja: garis tiga, merek, lalu kolom cari mengisi sisanya.
+
+   Sebelumnya baris kategori tetap tampil sebagai pita kedua dan kolom cari
+   turun ke baris ketiga — header memakan 129px, hampir seperenam layar,
+   sebelum satu barang pun terlihat. Dan lima menunya tetap tidak muat
+   sebaris, jadi ia pecah jadi 3 + 2 yang terbaca seperti salah susun.
+
+   Menunya sekarang masuk laci di balik tombol garis tiga. Isinya elemen yang
+   SAMA dengan pita kategori di layar lebar — cuma berubah bentuk. */
+/* Tombol garis tiga, hanya muncul di HP.
+
+   Ditulis DI SINI, tepat sebelum blok media yang menghidupkannya — bukan di
+   bawahnya bersama aturan header lain. CSS tidak punya spesifisitas yang
+   berbeda antara keduanya, jadi yang menang adalah yang tertulis BELAKANGAN:
+   ditaruh sesudah, `display:none` ini akan mematikan tombolnya lagi di HP,
+   dan gejalanya cuma "tombolnya tidak ada" tanpa error apa pun. */
+.burger { display: none; }
+.burger span { width: 20px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+@media (max-width: 820px) {
+  .burger {
+    display: flex; flex-direction: column; gap: 5px;
+    flex: none; padding: 8px 4px; cursor: pointer;
+  }
+  .header-inner { gap: 12px; padding: 12px 16px; }
+  /* Anak kalimat merek disembunyikan: di baris selebar 390px, "Kartu Ucapan
+     Digital" memakan ruang yang dibutuhkan kolom cari, dan ia tidak pernah
+     dibaca siapa pun di HP. */
+  .brand-text em { display: none; }
+  /* Merek dirampingkan supaya kolom cari kebagian ruang. Terukur: pada
+     ukuran sebelumnya merek memakan 188px dari 390px dan kolom carinya
+     tinggal 118px — sempit sampai kata "template" pun terpotong. */
+  .brand-mark { width: 26px; height: 26px; }
+  .brand-text strong { font-size: .84rem; letter-spacing: .05em; }
+  .brand { gap: 8px; }
+  .cari { padding: 3px 3px 3px 14px; }
+  .cari input { font-size: 14px; padding: 6px 0; }
+  .cari button { width: 34px; height: 34px; }
+  .cari button svg { width: 16px; height: 16px; }
+
+  /* Pita kategori berubah jadi laci. */
+  .kategori-inner {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    padding: 4px 16px 12px;
+  }
+  .menu-hp:checked ~ .kategori-inner { display: flex; }
+  .kategori-inner a {
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+    border-bottom-color: var(--line);
+    font-size: .96rem;
+  }
+  .kategori-inner a:last-child { border-bottom: 0; }
+  .kategori-inner a.is-here { color: var(--rose); }
+}
+
 /* ── Responsif ──────────────────────────────────────────────────────────── */
 @media (max-width: 940px) {
   /* Tiga aturan .hero* di sini ikut dicabut bersama blok hero-nya. */
   .trust { grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
-  .site-nav {
-    position: absolute;
-    top: 100%; left: 0; right: 0;
-    flex-direction: column;
-    gap: 0;
-    background: var(--cream);
-    border-bottom: 1px solid var(--line);
-    padding: 8px 24px 16px;
-    display: none;
-  }
-  .nav-toggle:checked ~ .site-nav { display: flex; }
-  .site-nav a { padding: 12px 0; border-bottom: 1px solid var(--line); }
-  .nav-burger {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    margin-left: auto;
-    padding: 8px;
-    cursor: pointer;
-  }
-  .nav-burger span { width: 22px; height: 2px; background: var(--ink); border-radius: 2px; }
-  .header-inner { position: relative; flex-wrap: wrap; }
+  .header-inner { position: relative; }
   .header-cta { display: none; }
 }
 
@@ -1210,8 +1275,45 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
   .trust { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── Kerapatan di HP ─────────────────────────────────────────────────────
+   Keluhan pemilik situs: foto dan huruf terlalu besar, hasilnya terasa tidak
+   rapi dan "sempit". Terukur di layar 390px sebelum perbaikan ini: kisi
+   template jatuh ke SATU kolom, jadi tiap kartu setinggi 466px — hampir
+   setengah layar untuk satu barang, dan melihat tiga template butuh
+   menggulir 1.400px.
+
+   Rujukannya memakai DUA kolom di HP, dan itu bukan sekadar memuat lebih
+   banyak: kartu berdampingan bisa dibandingkan tanpa mengingat, dan
+   membandingkan itulah yang dilakukan orang di halaman katalog. */
 @media (max-width: 620px) {
-  .section { padding: 60px 20px; }
+  .section { padding: 34px 16px; }
+
+  .tpl-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+  .tpl-nama { font-size: .84rem; line-height: 1.3; }
+  .tpl-tema { font-size: .64rem; }
+  .tpl-harga { font-size: .88rem; margin-top: 2px; }
+  .tpl-harga s { margin-left: 5px; font-size: .72rem; }
+  .tpl-art { border-radius: 8px; }
+
+  /* Judul bagian ikut turun: pada ukuran laptop ia memakan tiga baris di HP
+     dan mendorong barangnya keluar layar pertama. */
+  .section-head.is-toko { margin-bottom: 18px; gap: 12px; }
+  .section-head.is-toko .display { font-size: 1.32rem; }
+  .eyebrow { font-size: .66rem; }
+  .pil { padding: 9px 16px; font-size: .76rem; }
+
+  /* Kalimat pengantar disembunyikan. Empat baris penuh sebelum satu template
+     pun terlihat, dan yang datang dari TikTok menggulir melewatinya. */
+  .section-head .section-lede { display: none; }
+
+  .jaminan { padding: 18px 16px 16px; }
+  .trust svg { width: 26px; height: 26px; padding: 5px; }
+  .trust strong { font-size: .78rem; }
+  .trust span { font-size: .7rem; }
+
+  .cta-band { padding: 44px 20px; }
+  .cta-band .display { font-size: 1.3rem; }
+
   .footer-inner { flex-direction: column; align-items: flex-start; }
   .footer-note { text-align: left; }
 }

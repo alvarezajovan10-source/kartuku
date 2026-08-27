@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Template Kartu — Kartuku{% endblock %}
+{% block title %}Template Kartu · Kartuku{% endblock %}
 
 {% block body %}
 <section class="section page">
-  {% include "cards/pages/_head.html" with eyebrow="Template" heading="Semua template" lede="Sementara ini semuanya ditampilkan di satu halaman — lihat contohnya dulu, baru pakai." %}
+  {% include "cards/pages/_head.html" with eyebrow="Template" heading="Semua template" lede="Sementara ini semuanya ditampilkan di satu halaman, lihat contohnya dulu, baru pakai." %}
 
   {% include "cards/_template_grid.html" with tampil_tema=1 %}
 
   <p class="page-note">
-    Semua template harganya sama, Rp{{ price|floatformat:0 }} per kartu —
+    Semua template harganya sama, Rp{{ price|floatformat:0 }} per kartu ,
     <a href="{% url 'cards:page_pricing' %}">lihat rincian harga</a>.
   </p>
 </section>

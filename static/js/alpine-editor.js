@@ -24,13 +24,14 @@ window.cardEditor = function () {
     kue: "Tiup Lilin", gameover: "Penutup",
     // Valentine Story. Halamannya majalah, jadi namanya nomor halaman —
     // itu yang dilihat pembeli waktu membalik lembarnya.
-    hal1: "Hal 1 — Sampul", hal2: "Hal 2 — Strip film",
-    hal3: "Hal 3 — Daftar isi", hal4: "Hal 4 — The Day We Met",
-    hal5: "Hal 5 — Kalender", hal6: "Hal 6 — Our Love",
-    hal7: "Hal 7 — Liontin", hal8: "Hal 8 — Galeri pita",
-    hal9: "Hal 9 — Galeri jepitan", hal10: "Hal 10 — Things I Love About You",
-    hal11: "Hal 11 — My Wish For You",
-    hal12: "Hal 12 — Hati renda",
+    hal1: "Hal 1 · Sampul", hal2: "Hal 2 · Strip film",
+    hal3: "Hal 3 · Daftar isi", hal4: "Hal 4 · The Day We Met",
+    hal5: "Hal 5 · Kalender", hal6: "Hal 6 · Our Love",
+    hal7: "Hal 7 · Liontin", hal8: "Hal 8 · Galeri pita",
+    hal9: "Hal 9 · Galeri jepitan",
+    hal10: "Hal 10 · Things I Love About You",
+    hal11: "Hal 11 · Letter For You",
+    hal12: "Hal 12 · Hati renda",
   };
 
   var specByKey = {};
@@ -57,6 +58,11 @@ window.cardEditor = function () {
     maxPhotos: init.maxPhotos,
 
     sel: null,
+    /* Penjaga agar pemilihan otomatis hanya terjadi SEKALI, di muatan
+       pertama. Pratinjau dimuat ulang tiap kali foto diunggah, dan tanpa
+       penjaga ini tiap unggahan akan menyeret pilihan pembeli kembali ke
+       elemen pertama — tepat saat ia sedang mengerjakan yang lain. */
+    otomatisSudah: false,
     scenes: [],
     currentScene: "",
     busy: false,
@@ -217,6 +223,19 @@ window.cardEditor = function () {
         if (data.type === "ready") {
           self.scenes = data.scenes || [];
           if (!self.currentScene) self.currentScene = self.scenes[0] || "";
+          /* Satu elemen teks dipilih otomatis di muatan pertama, supaya panel
+             sunting tampil PENUH dan langsung bisa dipakai.
+
+             Sebelumnya panel kosong sampai pembeli mengklik sesuatu di kartu
+             — dan di situ masalahnya: yang belum tahu kartunya bisa diklik
+             tidak melihat apa pun yang menyerupai tempat mengetik, jadi ia
+             tidak pernah mencoba mengklik. Yang harus ditemukan lebih dulu
+             adalah yang paling disembunyikan.
+
+             Dipanggil SEBELUM replay(): replay() yang mengirim pesan "select"
+             ke kartunya, jadi elemen yang terpilih ikut tersorot di
+             pratinjau, bukan cuma di panel. */
+          self.pilihPertama();
           // Preview baru saja dimuat dari server, jadi hanya berisi data yang
           // SUDAH tersimpan. Editan yang masih di memori dipasang ulang di
           // sini — tanpa ini, mengunggah foto akan menghapus tampilan editan.
@@ -236,6 +255,23 @@ window.cardEditor = function () {
           if (data.scene) self.currentScene = data.scene;
         }
       });
+    },
+
+    /* Pilih satu elemen TEKS pertama, sekali saja. Teks, bukan kolom isian
+       seperti nama penerima: yang ingin diperlihatkan adalah bahwa tulisan DI
+       ATAS KARTU bisa diubah, dan kolom isian tidak menunjukkan itu. */
+    pilihPertama: function () {
+      if (this.otomatisSudah || this.sel) return;
+      this.otomatisSudah = true;
+      var pertama = null;
+      init.elements.forEach(function (spec) {
+        if (pertama) return;
+        if (spec.type === "text") pertama = spec.key;
+      });
+      if (pertama) {
+        this.sel = pertama;
+        this.error = "";
+      }
     },
 
     /* ── Kirim ke iframe ──────────────────────────────────────────────── */

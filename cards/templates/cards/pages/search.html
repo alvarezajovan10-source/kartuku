@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static card_extras %}
-{% block title %}{% if q %}Cari "{{ q }}"{% else %}Cari template{% endif %} — Kartuku{% endblock %}
+{% block title %}{% if q %}Cari "{{ q }}"{% else %}Cari template{% endif %} · Kartuku{% endblock %}
 
 {% block body %}
 <div class="section">
@@ -8,7 +8,7 @@
     <div>
       <p class="eyebrow">Hasil pencarian</p>
       <h2 class="display">
-        {% if q %}"{{ q }}" — {{ entries|length }} template{% else %}Semua template{% endif %}
+        {% if q %}"{{ q }}", {{ entries|length }} template{% else %}Semua template{% endif %}
       </h2>
     </div>
     <a class="pil" href="{% url 'cards:page_templates' %}">Lihat semua</a>

@@ -222,12 +222,15 @@ img { max-width: 100%; display: block; }
   font-weight: 700;
   letter-spacing: .14em;
 }
+/* Slogan, bukan label kategori. Kapital-kecil yang direnggangkan terbaca
+   sebagai keterangan; yang dimau di sini sebuah pernyataan, jadi huruf
+   besar-kecil biasa dan renggang yang wajar. Lebarnya harus tetap di bawah
+   lebar "KARTUKU" supaya kunci mereknya tidak berat di bawah. */
 .brand-text em {
   font-style: normal;
-  font-size: .58rem;
-  letter-spacing: .2em;
+  font-size: .62rem;
+  letter-spacing: .04em;
   color: var(--muted);
-  text-transform: uppercase;
 }
 
 .site-nav { margin-left: auto; display: flex; gap: 34px; }
@@ -747,7 +750,19 @@ img { max-width: 100%; display: block; }
   text-align: center;
   padding: 76px 24px;
 }
-.cta-band .display { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin-bottom: 26px; }
+.cta-band .display { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin-bottom: 10px; }
+/* Judul pita ini dulu sebuah pertanyaan yang mengundang; slogan tidak
+   mengundang. Baris inilah yang sekarang mengerjakannya, jadi ia rapat ke
+   judul dan berjarak ke tombol. */
+.cta-lede {
+  max-width: 52ch;   /* kalimatnya 49 karakter: di bawah ini ia pecah
+                        dan menyisakan satu kata yatim di baris kedua */
+  margin: 0 auto 28px;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  text-wrap: balance;  /* di HP ia pecah dua baris; tanpa ini kata terakhir
+                          tertinggal sendirian. Peramban lama mengabaikannya. */
+}
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */
 .site-footer { background: var(--ink); color: #e9ddd6; padding: 44px 24px; }

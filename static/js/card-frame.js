@@ -141,7 +141,11 @@
   window.addEventListener("load", function () {
     send({
       type: "ready",
-      scenes: all(".scene[id]").map(function (el) { return el.id; }),
+      // data-tanpa-tab: babak yang ADA dan bisa dituju window.show(), tapi
+      // tidak pantas muncul sebagai tab di editor — mis. layar pemutar foto
+      // Sweetflix, yang isinya dibangun JS dan tidak punya satu pun kolom
+      // untuk disunting. Tab yang tidak bisa diapa-apakan cuma membingungkan.
+      scenes: all(".scene[id]:not([data-tanpa-tab])").map(function (el) { return el.id; }),
     });
   });
 })();

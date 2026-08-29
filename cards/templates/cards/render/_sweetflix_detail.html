@@ -1,0 +1,67 @@
+{% load card_extras %}{% comment %}
+Layar DETAIL satu profil, mengikuti panel detail yang dikirim pemilik situs:
+kartu mengambang di atas beranda yang diredupkan, bukan layar penuh.
+
+Beranda di belakangnya sengaja DIBIARKAN aktif — lihat show() di
+static/js/render/sweetflix.js. Itu yang membuat panel ini terbaca sebagai
+lapisan di atas halaman, bukan halaman lain.
+
+Kedelapan ceritanya ada di DOM, hanya satu yang bertanda .tampil. Satu babak
+per profil, bukan panel tersembunyi di dalam beranda: editor cuma bisa
+melompat ke elemen yang berada di dalam sebuah `.scene` ber-id (kontrak di
+static/js/card-frame.js).
+
+Kolom kanan diisi dari data yang SUDAH ada — nama penerima dan pengirim jadi
+"Cast", nomor poster jadi peringkat, baris meta profil jadi keterangan. Tidak
+ada satu pun kolom baru yang harus diisi pembeli.
+{% endcomment %}
+{% with km=h|add:"_meta" kb=h|add:"_baris1" %}
+<section class="scene layar layar-detail" id="detail_{{ h }}" data-profil="{{ h }}">
+  <div class="det-tabir" data-ke="home_{{ h }}"></div>
+
+  {% for i in "1,2,3,4,5,6,7,8"|split:"," %}{% with kp=h|add:"_p"|add:i %}{% with foto_ini=frame_photos|get:kp %}
+  <article class="det{% if forloop.first %} tampil{% endif %}" data-poster="{{ i }}">
+
+    <div class="det-atas">
+      <span class="det-gbr">{% if foto_ini %}<img src="{{ foto_ini.image.url }}" alt="">{% endif %}</span>
+      <span class="det-tirai"></span>
+      <div class="det-aksi">
+        <button type="button" class="tbl-putar" data-warp="{{ h }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Putar
+        </button>
+        <span class="det-bulat" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </span>
+        <span class="det-bulat" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9z"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="det-badan">
+      <div class="det-kiri">
+        <p class="det-meta">{% t card km %} <span class="det-hd">HD</span></p>
+        <p class="det-peringkat">
+          <span class="det-lencana" aria-hidden="true">TOP<b>10</b></span>
+          #{{ i }} di {% t card kb %}
+        </p>
+        {% comment %} Ceritanya = caption fotonya sendiri, bukan kolom
+        terpisah: pembeli cukup mengetik di satu tempat. Batas 40 karakter
+        (models.py:229) diterima apa adanya oleh pemilik situs. {% endcomment %}
+        <p class="det-cerita">{{ foto_ini.caption }}</p>
+      </div>
+      <div class="det-kanan">
+        <p><span>Pemeran:</span>
+          <b data-nama-tamu>{{ card.recipient_name|default:"kamu" }}</b>{% if card.sender_name %}, {{ card.sender_name }}{% endif %}</p>
+        <p><span>Genre:</span> Romantis, Kenangan</p>
+        <p><span>Serial ini:</span> Bikin senyum</p>
+      </div>
+    </div>
+
+    <button type="button" class="det-tutup" data-ke="home_{{ h }}" aria-label="Tutup">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </article>
+  {% endwith %}{% endwith %}{% endfor %}
+</section>
+{% endwith %}

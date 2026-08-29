@@ -39,7 +39,10 @@
      delapan, tiap tanda tinggal 8px di kartu selebar 390px dan sudah tidak
      terbaca sebagai kata. Yang menandai tetap rapatnya kisi, tapi tanda yang
      tidak terbaca tidak menandai apa pun. */
-  font-size: 3.1cqw;
+  /* Bawaan. Untuk kartu yang tidak bergulir, skrip di _preview_bar.html
+     menimpanya dengan nilai PIKSEL yang diikat ke lebar kartu — di luar
+     kartu, cqw mengukur lebar jendela dan tandanya ikut membesar. */
+  font-size: var(--cap-fs, 3.1cqw);
   /* 500, turun dari 800. Huruf tebal berbayang buram terbaca seperti stempel
      tanda terima, bukan tanda milik — dan itu justru MENURUNKAN kesan barang
      yang ditandainya. Bobot sedang dengan tracking lebar terbaca sebagai
@@ -88,7 +91,17 @@
 
    Tanpa geseran, kemiringannya sendiri yang membentuk deret diagonal rapi —
    dan itu yang membuat polanya terbaca disengaja. */
-.cap-vorteiz .baris {
+/* Nama BERPAGAR, bukan ".baris".
+
+   Sempat bernama .baris saja, dan itu bertabrakan dengan kelas milik
+   template: sweetflix.css punya `.baris { position: absolute; bottom: 8px }`
+   untuk deretan posternya. Akibatnya ketujuh baris cap ditumpuk di tepi bawah
+   kartu, dan seluruh bidang di atasnya tidak tertandai sama sekali — persis
+   celah yang cap ini ada untuk menutup.
+
+   Kelas milik berkas bersama harus berpagar namanya. Yang berikutnya menulis
+   `.baris` di template lain tidak akan tahu ia sedang mematikan cap. */
+.cap-vorteiz .cap-baris {
   display: grid;
   align-items: center;
   justify-items: center;

@@ -1,0 +1,80 @@
+{% load card_extras %}{% comment %}
+Satu layar BERANDA untuk satu profil. Disertakan dua kali dari sweetflix.html
+dengan `h` = a/b, jadi kedua profil punya isi berbeda tanpa markup kembar.
+
+Kunci elemennya dirangkai dari `h` (mis. h="b" -> "b_judul"), karena tag
+`el`/`t`/`frame` menerima kunci sebagai variabel, bukan cuma teks mati.
+
+Foto latarnya SEPENUH layar dan berada di belakang deretan poster — bukan
+banner terpotong seperti versi pertama. Bayangannya (.latar-tirai) yang
+menjaga tulisan dan poster tetap terbaca di atas foto seterang apa pun.
+{% endcomment %}
+{% with kl=h|add:"_hero" kj=h|add:"_judul" km=h|add:"_meta" kd=h|add:"_desk" kb=h|add:"_baris1" %}
+<section class="scene layar layar-home" id="home_{{ h }}" data-profil="{{ h }}">
+
+  {% comment %} Foto memenuhi bidang sampai ke tepi. Pernah dicoba
+  ditampilkan utuh dengan latar buram supaya tidak terpotong; hasilnya foto
+  jadi KOTAK di tengah dengan garis tegas di kiri-kanan, dan pemilik situs
+  menolaknya: "itu jadinya menurunkan value". Yang menjaga tulisan tetap
+  terbaca adalah .latar-tirai, dan potongan fotonya diatur pembeli sendiri
+  lewat geser/zoom (--ox/--oy/--zoom). {% endcomment %}
+  {% with foto=frame_photos|get:kl %}
+  <div class="latar{% if editing and not foto %} is-empty{% endif %}"{% frame card editing kl %}>
+    {% if foto %}<img src="{{ foto.image.url }}" alt="">{% endif %}
+    {% if editing %}<span class="ketuk"></span>{% endif %}
+  </div>
+  {% endwith %}
+  <span class="latar-tirai"></span>
+
+  <header class="bar">
+    <button type="button" class="kembali kembali-bar" data-ke="profil" aria-label="Ganti profil">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="merek"{% el card editing "merek" %}>{% t card "merek" %}</span>
+    <nav class="menu" aria-hidden="true">
+      <span>Beranda</span><span>Serial</span><span>Film</span>
+      <span>Baru &amp; Populer</span><span>Daftar Saya</span><span>Jelajah</span>
+    </nav>
+    <span class="bar-kanan" aria-hidden="true">
+      <svg class="ikon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg>
+      {% with ka=h|add:"_avatar" %}{% with foto=frame_photos|get:ka %}
+      <span class="bar-avatar">{% if foto %}<img src="{{ foto.image.url }}" alt="">{% endif %}</span>
+      {% endwith %}{% endwith %}
+    </span>
+  </header>
+
+  <div class="hero-isi">
+    <h2 class="hero-judul"{% el card editing kj %}>{% t card kj %}</h2>
+    <p class="hero-meta"{% el card editing km %}>{% t card km %}</p>
+    {% comment %} Ucapan singkat. Dipotong kalau kepanjangan — lihat
+    potongSatu() di static/js/render/sweetflix.js. data-aksi menunjuk ke mana
+    tombol "selengkapnya" disisipkan: sejajar dengan tombol Putar, bukan
+    menempel di bawah kalimatnya. {% endcomment %}
+    <p class="hero-desk potong" data-aksi=".hero-aksi"{% el card editing kd %}>{% t card kd %}</p>
+    <div class="hero-aksi">
+      <button type="button" class="tbl-putar" data-warp="{{ h }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Putar
+      </button>
+      {% comment %} "selengkapnya" disisipkan JS di sini {% endcomment %}
+    </div>
+  </div>
+
+  {% comment %} Satu baris, 8 poster, bisa digeser mendatar. Poster yang
+  fotonya belum diunggah tidak dirender sama sekali, jadi barisnya menyusut
+  dan kartu yang belum lengkap tetap terlihat utuh. {% endcomment %}
+  <div class="baris">
+    <h3 class="baris-judul"{% el card editing kb %}>{% t card kb %}</h3>
+    <div class="rel">
+      {% for i in "1,2,3,4,5,6,7,8"|split:"," %}{% with kp=h|add:"_p"|add:i %}{% with foto=frame_photos|get:kp %}
+      {% if foto or editing %}
+      <button type="button" class="kartu-poster{% if editing and not foto %} is-empty{% endif %}"
+              data-detail="{{ h }}" data-poster="{{ i }}"{% frame card editing kp %}>
+        {% if foto %}<img src="{{ foto.image.url }}" alt="">{% endif %}
+      </button>
+      {% endif %}
+      {% endwith %}{% endwith %}{% endfor %}
+    </div>
+  </div>
+
+</section>
+{% endwith %}

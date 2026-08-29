@@ -1,0 +1,572 @@
+/* SWEETFLIX — kartu MENDATAR 16:9 bergaya antarmuka layanan streaming.
+
+   Nama, logo, dan warna merek Netflix TIDAK dipakai. Yang diambil hanya
+   bahasa visual yang umum di banyak layanan: latar gelap, baris poster yang
+   digeser, dan pemilih profil. Nama layanannya diisi pembeli (bawaan
+   SWEETFLIX), dan merahnya sengaja #e11d3c, bukan merah merek mana pun. */
+
+:root {
+  /* Harus sama dengan W0_LEBAR di static/js/card-stage.js. */
+  --w0: 960px;
+  --h0: 540px;
+
+  --hitam: #0b0b0f;
+  --merah: #e11d3c;
+  --merah-tua: #7a0d20;
+  --putih: #ffffff;
+  --redup: #b3b3b3;
+
+  /* Satu tempat untuk seluruh irama kartu. Pemilik situs meminta perpindahan
+     yang lambat dan sinematik; mengubah angka di sini mengubah semuanya
+     serentak, bukan sepuluh tempat yang gampang tertinggal satu. */
+  --pudar: .9s;
+  --halus: .4s;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #000; }
+
+body {
+  font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--putih);
+  -webkit-font-smoothing: antialiased;
+}
+
+#card-stage {
+  width: var(--w0);
+  height: var(--h0);
+  background: var(--hitam);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Babak & pudar-silang ───────────────────────────────────────────────── */
+
+/* Dulu display:none <-> block. `display` TIDAK bisa ditransisikan, jadi
+   perpindahannya potongan keras — itu yang terasa "terlalu cepat", bukan
+   durasinya. Sekarang opacity yang berubah, dan visibility ditunda persis
+   selama pudarnya supaya babak yang sedang pergi tidak hilang mendadak. */
+.layar {
+  position: absolute;
+  inset: 0;
+  background: var(--hitam);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity var(--pudar) ease, visibility 0s linear var(--pudar);
+}
+.layar.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  transition: opacity var(--pudar) ease, visibility 0s;
+}
+
+/* Babak yang isinya dipusatkan. display disetel PERMANEN, bukan digantung di
+   .active — kalau digantung, ia kembali ke none begitu kelasnya lepas dan
+   pudarnya batal sebelum sempat terlihat. */
+.layar-profil { display: grid; place-content: center; }
+.layar-profil { gap: 34px; }
+
+/* ── Foto: hormati pilihan pembeli ──────────────────────────────────────────
+   cards/styles.py:element_css() memancarkan --fit, --ox, --oy, --zoom, --br
+   saat pembeli menggeser dan memperbesar fotonya di editor. Versi sebelumnya
+   menulis `object-fit: cover` mati dan mengabaikan semuanya — jadi kontrol
+   potongan foto di editor tidak berefek apa pun, dan itulah sebab foto yang
+   "ke-crop besar". Pola ini sama dengan scrapbook.css:96 dan majalah.css:284. */
+img {
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: var(--fit, cover);
+  object-position: var(--ox, 50%) var(--oy, 50%);
+  transform: scale(var(--zoom, 1));
+  transform-origin: var(--ox, 50%) var(--oy, 50%);
+  border-radius: var(--br, 0);
+}
+
+.is-empty {
+  background: repeating-linear-gradient(45deg, #1a1a20 0 8px, #14141a 8px 16px);
+  border: 1px dashed rgba(255, 255, 255, .3);
+}
+.ketuk { position: absolute; inset: 0; }
+
+/* ── 1. Layar pembuka ───────────────────────────────────────────────────── */
+
+/* Lebar dan tinggi ditulis EKSPLISIT, tidak mengandalkan inset:0 saja.
+   `editing.css` punya [data-frame].is-empty { position: relative } yang
+   spesifisitasnya lebih tinggi dan dimuat belakangan; tanpa ukuran eksplisit
+   bingkainya kehilangan tinggi dan runtuh ke min-height .8em = 12,8px. */
+.buka-gbr { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.buka-tirai {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Jauh lebih gelap daripada sebelumnya: sekarang ada kotak isian dan tombol
+     di atasnya, dan keduanya harus menang atas foto seterang apa pun. */
+  background:
+    linear-gradient(180deg, rgba(8, 5, 6, .80), rgba(8, 5, 6, .72) 40%, rgba(8, 5, 6, .84) 100%),
+    radial-gradient(105% 80% at 50% 48%, rgba(8, 5, 6, .34) 0%, rgba(8, 5, 6, .86) 76%);
+}
+
+/* ── Tombol putar (dipakai di layar pembuka DAN di banner beranda) ───────── */
+
+.tbl-putar {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 24px 9px 19px;
+  border: 0; border-radius: 4px;
+  background: var(--putih); color: #101014;
+  font-family: inherit; font-size: 14.5px; font-weight: 700;
+  cursor: pointer;
+  transition: background var(--halus) ease, transform var(--halus) ease;
+}
+.tbl-putar svg { width: 18px; height: 18px; fill: #101014; }
+.tbl-putar:hover { background: #e6e6e6; }
+
+/* ── Halaman pertama: tanya nama ────────────────────────────────────────
+   Mengikuti rujukan yang dikirim pemilik situs. Yang mengetik di sini
+   PENERIMA, bukan pembeli — namanya dipakai di layar berikutnya. */
+
+.layar-buka { display: grid; place-content: center; }
+
+.buka-isi { position: relative; z-index: 3; width: 430px; text-align: center; }
+
+.buka-judul {
+  margin: 0 0 10px;
+  font-size: 42px; font-weight: 800; letter-spacing: -.03em; line-height: 1.06;
+}
+.buka-sub { margin: 0 0 26px; font-size: 15px; color: #cfcfcf; }
+
+.buka-nama {
+  display: block; width: 100%;
+  padding: 15px 18px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, .38);
+  color: var(--putih);
+  font-family: inherit; font-size: 17px;
+  outline: none;
+  transition: border-color var(--halus) ease, background var(--halus) ease;
+}
+.buka-nama::placeholder { color: #8d8d8d; }
+.buka-nama:focus { border-color: rgba(255, 255, 255, .8); background: rgba(0, 0, 0, .55); }
+.buka-nama:disabled { opacity: .7; }
+
+.tbl-lanjut {
+  display: block; width: 100%;
+  padding: 15px 0;
+  border: 0; border-radius: 4px;
+  background: var(--merah); color: var(--putih);
+  font-family: inherit; font-size: 17px; font-weight: 700;
+  cursor: pointer;
+  transition: background var(--halus) ease;
+}
+.tbl-lanjut:hover { background: #f22546; }
+
+/* ── 2. Pemilih profil ──────────────────────────────────────────────────── */
+
+/* Dua kabut merah yang mengapung dengan periode berbeda (23 dan 31 detik) dan
+   tidak pernah sinkron, jadi polanya tidak terbaca berulang — tapi keduanya
+   tetap di dalam layar karena yang bergerak posisinya, bukan elemennya. */
+.layar-profil { background: linear-gradient(160deg, #2a0710 0%, #14060a 46%, var(--hitam) 100%); }
+/* inset NEGATIF, bukan 0. Dengan inset:0 lapisan ini digeser keluar oleh
+   animasinya sendiri dan menyingkap latar hitam di tepi — pemilik situs
+   melihatnya sebagai "background bergeser, muncul latar hitam". Dibuat jauh
+   lebih besar daripada layarnya, pergeseran sebesar apa pun tetap di dalam. */
+.layar-profil { overflow: hidden; }
+.layar-profil::before,
+.layar-profil::after {
+  content: "";
+  position: absolute; inset: -45%;
+  pointer-events: none;
+  will-change: transform;
+}
+.layar-profil::before {
+  background: radial-gradient(46% 58% at 20% 22%, rgba(225, 29, 60, .52) 0%, rgba(122, 13, 32, .16) 52%, transparent 74%);
+  animation: kabutA 23s ease-in-out infinite;
+}
+.layar-profil::after {
+  background: radial-gradient(38% 50% at 78% 72%, rgba(190, 22, 50, .34) 0%, rgba(122, 13, 32, .12) 55%, transparent 76%);
+  animation: kabutB 31s ease-in-out infinite;
+}
+@keyframes kabutA {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(9%, 6%) scale(1.12); }
+  50%  { transform: translate(3%, 12%) scale(1.04); }
+  75%  { transform: translate(-7%, 4%) scale(1.16); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes kabutB {
+  0%   { transform: translate(0, 0) scale(1.06); }
+  30%  { transform: translate(-10%, -7%) scale(1); }
+  60%  { transform: translate(-4%, 5%) scale(1.18); }
+  100% { transform: translate(0, 0) scale(1.06); }
+}
+
+.merek {
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 25px; letter-spacing: .06em;
+  color: var(--merah);
+  line-height: 1;
+}
+.merek-pojok { position: absolute; left: 32px; top: 22px; z-index: 3; }
+
+.profil-tanya {
+  margin: 0; position: relative; z-index: 3;
+  font-size: 40px; font-weight: 400;
+  text-align: center; letter-spacing: -.01em;
+}
+
+.profil-baris { display: flex; gap: 44px; justify-content: center; position: relative; z-index: 3; }
+
+.profil { background: none; border: 0; padding: 0; cursor: pointer;
+          display: grid; gap: 14px; justify-items: center; }
+.profil-gbr {
+  display: block;
+  width: 140px; height: 140px;
+  border-radius: 6px; overflow: hidden;
+  background: #24141a;
+  border: 3px solid transparent;
+  transition: border-color var(--halus) ease, transform var(--halus) ease;
+}
+.profil:hover .profil-gbr { border-color: var(--putih); transform: scale(1.05); }
+.profil-cap { font-size: 16px; color: var(--redup); letter-spacing: .05em;
+              text-transform: uppercase; transition: color var(--halus) ease; }
+.profil:hover .profil-cap { color: var(--putih); }
+
+/* ── 3. Beranda ─────────────────────────────────────────────────────────── */
+
+.latar { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Isi foto digeser ke kanan supaya bagian pentingnya keluar dari bidang gelap
+   dan jatuh di area terang. Bingkainya TIDAK berubah — tetap penuh sampai
+   tepi; yang bergeser isinya.
+
+   Digeser begitu saja akan menyisakan celah kosong di tepi kiri, jadi fotonya
+   diperbesar 1,18x lebih dulu: luapan tiap sisi jadi (0,18/2) x 960 = 86px,
+   sementara pergeserannya 6,5% x 960 = 62px — masih 24px di dalam luapan.
+   Zoom pilihan pembeli mengalikannya, dan ZOOM_MIN di cards/styles.py adalah
+   1.0, jadi hasilnya tidak pernah bisa turun sampai celahnya terbuka.
+
+   transform-origin dipatok tengah di sini, TIDAK mengikuti --ox seperti
+   bingkai lain: dengan origin di tepi kiri, pembesarannya cuma melebar ke
+   kanan dan justru luapan kiri yang dibutuhkan itu yang hilang. */
+.latar img {
+  transform: translateX(var(--geser, 6.5%)) scale(calc(var(--zoom, 1) * 1.18));
+  transform-origin: center center;
+}
+
+/* Gradasi kiri didorong lebih ke kanan atas permintaan pemilik situs: dulu
+   .74 di 32% dan .18 di 66%, sekarang menutup jauh lebih lebar supaya tulisan
+   duduk di atas bidang gelap yang lapang, bukan tepat di batas foto. */
+.latar-tirai {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    /* Bidang gelap kiri didorong jauh ke tengah atas permintaan pemilik situs
+       supaya potongan foto tidak terlihat kasar. Perhentiannya sengaja banyak
+       dan rapat: dengan tiga perhentian, peralihannya membentuk pita yang
+       terlihat — dan pita itu persis "kotak" yang ditolak. Di 50% masih .58
+       (dulu .42), lalu meluruh sampai benar-benar nol di 84%. */
+    linear-gradient(90deg,
+      rgba(11, 11, 15, .97) 0%,
+      rgba(11, 11, 15, .94) 18%,
+      rgba(11, 11, 15, .86) 32%,
+      rgba(11, 11, 15, .70) 44%,
+      rgba(11, 11, 15, .48) 54%,
+      rgba(11, 11, 15, .26) 64%,
+      rgba(11, 11, 15, .10) 74%,
+      rgba(11, 11, 15, 0) 84%),
+    linear-gradient(0deg, rgba(11, 11, 15, .96) 0%, rgba(11, 11, 15, .80) 22%, rgba(11, 11, 15, .18) 46%, rgba(11, 11, 15, 0) 62%),
+    linear-gradient(180deg, rgba(11, 11, 15, .78) 0%, rgba(11, 11, 15, 0) 22%);
+}
+
+.bar {
+  position: absolute; left: 0; right: 0; top: 0; z-index: 6;
+  height: 46px;
+  display: flex; align-items: center; gap: 22px;
+  padding: 0 32px 0 26px;
+}
+.menu { display: flex; gap: 17px; font-size: 12.5px; color: #dcdcdc; white-space: nowrap; }
+.menu span:first-child { color: var(--putih); font-weight: 600; }
+.bar-kanan { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.ikon { width: 17px; height: 17px; fill: none; stroke: var(--putih); stroke-width: 2; }
+.bar-avatar { width: 26px; height: 26px; border-radius: 4px; overflow: hidden;
+              background: #2a2a33; display: block; }
+
+.hero-isi { position: absolute; left: 44px; top: 128px; z-index: 4; max-width: 400px; }
+.hero-judul { margin: 0 0 9px; font-size: 40px; font-weight: 800; line-height: 1.04;
+              letter-spacing: -.025em; }
+.hero-meta { margin: 0 0 10px; font-size: 12px; color: var(--redup); letter-spacing: .02em; }
+
+/* Huruf dan ukurannya SAMA dengan .hero-meta di atas atas permintaan pemilik
+   situs; yang membedakan cuma warnanya yang lebih putih. */
+.hero-desk {
+  margin: 0 0 20px;
+  font-size: 12px; letter-spacing: .02em; line-height: 1.62;
+  color: #f2f2f2;
+}
+
+.baris { position: absolute; left: 0; right: 0; bottom: 8px; z-index: 4; }
+.baris-judul { margin: 0 0 4px 32px; font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
+
+/* Bantalan atas-bawah bukan hiasan: baris ini menggulir mendatar, dan
+   overflow-x otomatis memangkas arah tegak juga — tanpa bantalan, poster yang
+   membesar saat disentuh akan terpotong. */
+.rel {
+  display: flex; gap: 9px;
+  padding: 22px 32px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.rel::-webkit-scrollbar { display: none; }
+
+.kartu-poster {
+  flex: 0 0 auto;
+  width: 160px; height: 90px;
+  padding: 0; border-radius: 4px;
+  /* Garis tipis di seluruh tepi: memisahkan poster dari foto latar yang ada
+     tepat di belakangnya, dan itu yang membuat deretannya terbaca sebagai
+     kartu, bukan sebagai potongan foto yang menempel. */
+  border: 1px solid rgba(255, 255, 255, .55);
+  overflow: hidden; background: #1a1a20;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform .5s cubic-bezier(.2,.7,.3,1), box-shadow .5s ease;
+}
+.kartu-poster:hover {
+  transform: scale(1.42);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .7);
+  z-index: 3;
+}
+
+/* ── 4. Layar detail: kartu mengambang di atas beranda ───────────────────
+   Mengikuti panel detail yang dikirim pemilik situs. Beranda di belakangnya
+   tetap aktif dan terlihat; yang meredupkannya .det-tabir. */
+
+.layar-detail { background: none; }
+.layar-detail.active { z-index: 5; }
+
+.det-tabir { position: absolute; inset: 0; background: rgba(0, 0, 0, .68); }
+
+.det {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 640px;
+  max-height: 476px;
+  transform: translate(-50%, -50%) scale(.97);
+  background: #181818;
+  border-radius: 8px;
+  overflow: hidden auto;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .78);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--pudar) ease, transform var(--pudar) ease,
+              visibility 0s linear var(--pudar);
+  scrollbar-width: thin;
+}
+.det.tampil {
+  opacity: 1; visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity var(--pudar) ease, transform var(--pudar) ease, visibility 0s;
+}
+.det::-webkit-scrollbar { width: 5px; }
+.det::-webkit-scrollbar-thumb { background: rgba(255,255,255,.26); border-radius: 4px; }
+
+.det-atas { position: relative; height: 258px; flex: 0 0 auto; }
+.det-gbr { position: absolute; inset: 0; display: block; background: #101014; }
+/* Foto meluruh ke warna kartu, bukan berhenti dengan garis tegas. */
+.det-tirai {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(0deg, #181818 0%, rgba(24, 24, 24, .72) 16%, rgba(24, 24, 24, 0) 46%),
+    linear-gradient(90deg, rgba(24, 24, 24, .74) 0%, rgba(24, 24, 24, 0) 52%);
+}
+
+.det-aksi {
+  position: absolute; left: 30px; bottom: 26px;
+  display: flex; align-items: center; gap: 12px;
+}
+.det-bulat {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border: 2px solid rgba(255, 255, 255, .55);
+  border-radius: 50%;
+  background: rgba(42, 42, 42, .6);
+}
+.det-bulat svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2; }
+
+.det-badan {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 26px;
+  padding: 4px 30px 28px;
+}
+
+.det-meta { margin: 0 0 10px; font-size: 13px; color: #bcbcbc; }
+.det-hd {
+  display: inline-block; margin-left: 6px; padding: 0 4px;
+  border: 1px solid rgba(255,255,255,.4); border-radius: 3px;
+  font-size: 10px; letter-spacing: .04em; vertical-align: 1px;
+}
+
+.det-peringkat {
+  margin: 0 0 14px;
+  display: flex; align-items: center; gap: 9px;
+  font-size: 14.5px; font-weight: 700;
+}
+.det-lencana {
+  display: grid; place-items: center; line-height: 1;
+  width: 21px; padding: 3px 0;
+  border-radius: 2px; background: var(--merah);
+  font-size: 7.5px; font-weight: 700; letter-spacing: .04em;
+}
+.det-lencana b { font-size: 10px; }
+
+.det-cerita { margin: 0; font-size: 15px; line-height: 1.58; color: #f0f0f0; }
+
+.det-kanan { font-size: 13px; line-height: 1.62; color: #e8e8e8; }
+.det-kanan p { margin: 0 0 9px; }
+.det-kanan span { color: #8f8f8f; }
+
+.det-tutup {
+  position: absolute; right: 16px; top: 16px; z-index: 3;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 50%;
+  background: #181818;
+  cursor: pointer;
+  transition: background var(--halus) ease;
+}
+.det-tutup svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2.2; }
+.det-tutup:hover { background: #2a2a2a; }
+
+/* ── Pemotong teks panjang ──────────────────────────────────────────────── */
+
+.potong { overflow: hidden; }
+.potong.terpotong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--baris, 3);
+}
+.potong.terbuka { -webkit-line-clamp: unset; }
+
+/* Dibuka BUKAN berarti bebas tumbuh. Kanvas mendatar tingginya mati, dan teks
+   yang memanjang mendorong tombol Putar sampai menabrak baris poster di
+   bawahnya — terukur: tombol pindah dari y287 ke y399, sedangkan baris poster
+   mulai di y377. Yang terbuka digulir di dalam kotaknya sendiri. */
+/* Barisan aksi: tombol Putar dan "selengkapnya" berdampingan dan sejajar,
+   dengan jarak yang cukup — bukan tautan yang menempel di bawah kalimat. */
+.hero-aksi { display: flex; align-items: center; gap: 20px; }
+/* margin-top milik tata letak lama (tautan menempel di bawah kalimat). Di
+   baris yang dipusatkan, margin itu menggeser titik tengahnya separuh — 3px,
+   cukup untuk terlihat tidak sejajar dengan tombol di sebelahnya. */
+.hero-aksi .selengkapnya { margin-top: 0; line-height: 1; }
+
+/* Membaca ucapan panjang. Kanvas mendatar tingginya mati 540px dan baris
+   poster memakan ~160px di bawah, jadi teks yang dibuka HARUS diberi tempat,
+   bukan sekadar digulir di kotak sempit — pemilik situs membaca gulir itu
+   sebagai "kalimat saya terpotong". Saat membaca, blok tulisan naik dan baris
+   poster mundur; keduanya kembali begitu ditutup. */
+/* Ruang bacanya diperbesar dari DUA arah, bukan cuma ditinggikan: blok
+   tulisan dinaikkan DAN dilebarkan hampir dua kali lipat. Melebarkan yang
+   paling berpengaruh — barisnya jadi ~100 karakter, bukan ~62, jadi jumlah
+   huruf yang muat naik jauh lebih banyak daripada sekadar menambah tinggi. */
+.hero-desk.terbuka { max-height: 324px; overflow-y: auto; padding-right: 10px; }
+.layar-home.baca .hero-isi { top: 56px; max-width: 660px; }
+.layar-home.baca .baris { opacity: 0; pointer-events: none; }
+.layar-home .hero-isi { transition: top var(--halus) ease, max-width var(--halus) ease; }
+.layar-home .baris { transition: opacity var(--halus) ease; }
+.potong.terbuka::-webkit-scrollbar { width: 4px; }
+.potong.terbuka::-webkit-scrollbar-thumb { background: rgba(255,255,255,.28); border-radius: 4px; }
+
+.selengkapnya {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 0;
+  border: 0; background: none;
+  color: var(--merah);
+  font-family: inherit; font-size: 13.5px; font-weight: 700;
+  cursor: pointer;
+  transition: color var(--halus) ease;
+}
+.selengkapnya:hover { color: #ff4a68; text-decoration: underline; }
+
+/* ── 5. Pemutar foto: gulungan tegak berlensa tabung ─────────────────────
+   Mengikuti rekaman template yang dikirim pemilik situs: foto bertumpuk naik
+   terus-menerus, melengkung seperti permukaan drum, dengan satu baris teks
+   yang diam di tengah layar sementara fotonya lewat.
+
+   Lengkungannya BUKAN border-radius — itu cuma membulatkan sudut. Yang
+   membuatnya terbaca sebagai drum adalah kemiringan 3D tiap kartu menurut
+   jaraknya dari tengah layar, dan itu dihitung JS tiap bingkai. */
+
+.layar-warp { background: #000; }
+
+.warp-panggung {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+}
+
+.warp-gulung {
+  position: absolute; left: 50%; top: 0;
+  width: 500px; margin-left: -250px;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.warp-kartu {
+  position: absolute; left: 0;
+  width: 500px; height: 281px;      /* 16:9, sama dengan kanvasnya */
+  overflow: hidden;
+  /* Radius ELIPS, bukan lingkaran: jari-jari mendatarnya jauh lebih besar
+     daripada yang tegak, jadi tepi atas dan bawah ikut MEMBUSUR — bukan cuma
+     sudutnya yang tumpul. Itu yang membuatnya terbaca sebagai kaca layar
+     tabung seperti di rekaman yang dikirim pemilik situs. */
+  border-radius: 34% / 11%;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .72);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+.warp-kartu img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Teks yang DIAM di tengah sementara foto lewat di belakangnya. Garis tepi
+   gelap tipis, bukan bayangan buram: di atas foto terang mana pun ia tetap
+   terbaca, dan tidak terlihat seperti stempel. */
+.warp-teks {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  margin: 0;
+  width: 420px;
+  text-align: center;
+  font-size: 34px; font-weight: 700; line-height: 1.16;
+  letter-spacing: -.01em;
+  color: #fff;
+  -webkit-text-stroke: .6px rgba(12, 8, 10, .55);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .55);
+  pointer-events: none;
+}
+
+/* ── Tombol kembali ─────────────────────────────────────────────────────── */
+
+.kembali {
+  position: absolute; left: 24px; top: 20px; z-index: 20;
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 50%;
+  background: rgba(0, 0, 0, .5);
+  cursor: pointer;
+  transition: background var(--halus) ease;
+}
+.kembali svg { width: 20px; height: 20px; fill: none; stroke: var(--putih); stroke-width: 2.2; }
+.kembali:hover { background: rgba(0, 0, 0, .78); }
+
+.kembali-bar { position: static; width: 30px; height: 30px; flex: 0 0 auto; background: none; }
+.kembali-bar:hover { background: rgba(255, 255, 255, .14); }

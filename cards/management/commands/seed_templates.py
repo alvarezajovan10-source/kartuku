@@ -284,6 +284,60 @@ SEEDS = [
     # Kategorinya tetap tampil di situs sebagai "Coming soon" — lihat
     # _category_cards() di cards/views.py, yang menandai kategori tanpa
     # template aktif. Tambahkan di sini kalau templatenya sudah jadi.
+    (
+        "sweetflix",
+        "Sweetflix",
+        CardType.LOVE_STORY,
+        {
+            # Merah streaming, tapi SENGAJA bukan #E50914 milik Netflix.
+            "accent": "#e11d3c",
+            # Renderer MENDATAR kedua (data-stage="lebar"), mengikuti tangkapan
+            # layar rujukan pemilik situs.
+            "renderer": "sweetflix",
+            # SATU profil. Sempat empat (butuh 41 foto — di atas
+            # MAX_PHOTOS_PER_CARD 30 dan ~82MB per kartu), lalu dua, dan
+            # akhirnya satu atas permintaan pemilik situs. Sekarang 11 foto.
+            # Menambah profil berarti menghitung ulang jatah fotonya.
+            # "rasio" = lebar/tinggi bingkai. Kotak crop di editor
+            # mengikuti angka ini (alpine-editor.js:574); tanpa itu ia
+            # selalu bujur sangkar, dan pembeli memilih bagian fotonya di
+            # bentuk yang bukan bentuk tampilannya. "asli" menaikkan sisi
+            # panjang hasil potongan dari 1100 ke 2400 px — untuk foto yang
+            # memenuhi satu layar penuh, 1100 px terlihat pecah.
+            "frames": [
+                {"key": "f_buka", "label": "Foto layar pembuka", "rasio": 1.7778, "asli": True},
+                {"key": "a_avatar", "label": "KAMU · Foto profil", "rasio": 1.0},
+                {"key": "a_hero", "label": "KAMU · Foto latar", "rasio": 1.7778, "asli": True},
+                {"key": "a_p1", "label": "KAMU · Poster 1", "rasio": 1.7778},
+                {"key": "a_p2", "label": "KAMU · Poster 2", "rasio": 1.7778},
+                {"key": "a_p3", "label": "KAMU · Poster 3", "rasio": 1.7778},
+                {"key": "a_p4", "label": "KAMU · Poster 4", "rasio": 1.7778},
+                {"key": "a_p5", "label": "KAMU · Poster 5", "rasio": 1.7778},
+                {"key": "a_p6", "label": "KAMU · Poster 6", "rasio": 1.7778},
+                {"key": "a_p7", "label": "KAMU · Poster 7", "rasio": 1.7778},
+                {"key": "a_p8", "label": "KAMU · Poster 8", "rasio": 1.7778},
+            ],
+            "texts": [
+                # Bawaan ini yang pertama dilihat pembeli waktu membuka editor,
+                # jadi tugasnya memberi contoh nada yang bisa ditiru.
+                #
+                # Cerita tiap poster TIDAK ada di sini: ia diambil dari caption
+                # fotonya (GiftPhoto.caption), supaya pembeli cukup mengetik di
+                # satu tempat. Batas caption 40 karakter, dan pemilik situs
+                # menerima batas itu apa adanya — lihat models.py:229.
+                {"key": "merek", "label": "Nama layanan", "default": "SWEETFLIX"},
+                {"key": "buka_judul", "label": "Judul halaman pertama", "default": "Who's watching?"},
+                {"key": "buka_sub", "label": "Sub halaman pertama", "default": "Let's start with your name."},
+                {"key": "judul_pilih", "label": "Judul layar pilih profil", "default": "Choose"},
+                {"key": "putar_teks", "label": "Teks saat foto diputar", "default": "I love you forever and ever!"},
+                {"key": "a_cap", "label": "KAMU · Nama profil", "default": "KAMU"},
+                {"key": "a_judul", "label": "KAMU · Judul banner", "default": "Love of My Life"},
+                {"key": "a_meta", "label": "KAMU · Baris keterangan", "default": "Serial · Romantis · 2024 · 12 Episode"},
+                {"key": "a_desk", "label": "KAMU · Ucapan singkat", "default": "happy birthday to my favorite person in the world. you're the best person i could ever ask for, and i don't know where i'd be without you. you're the funniest, sweetest, and most loving person ever"},
+                {"key": "a_baris1", "label": "KAMU · Judul baris", "default": "Our Pictures"},
+            ],
+        },
+    ),
 ]
 
 

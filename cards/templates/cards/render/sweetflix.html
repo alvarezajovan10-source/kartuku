@@ -1,0 +1,114 @@
+{% load static card_extras %}<!DOCTYPE html>
+<html lang="id" data-stage="lebar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk {{ card.recipient_name|default:"kamu" }} ♥</title>
+<meta name="robots" content="noindex, nofollow">
+{% include "cards/_card_head.html" %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
+<link rel="stylesheet" href="{% static_v 'css/render/sweetflix.css' %}">
+{% include "cards/_stage_head.html" %}
+{% if editing %}
+<link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
+<script defer src="{% static_v 'js/card-frame.js' %}"></script>
+{% endif %}
+</head>
+<body{% if editing %} class="is-editing"{% endif %}>
+
+<!-- Kanvas kanonis 960x540 — lihat cards/_stage_head.html -->
+<div id="card-viewport"><div id="card-stage">
+
+  {% comment %} ============ 1. LAYAR PEMBUKA ============
+  Bingkai fotonya SEPENUH layar. Tinggi/lebarnya ditulis eksplisit, bukan
+  mengandalkan inset:0 — `editing.css` punya aturan
+  `[data-frame].is-empty { position: relative }` yang menang atas CSS ini,
+  dan tanpa ukuran eksplisit bingkainya runtuh jadi 12,8px (min-height .8em).
+  Itu yang membuat bingkainya "kecil dan tipis" di versi pertama. {% endcomment %}
+  <section class="scene layar layar-buka active" id="buka">
+    {% comment %} Foto memenuhi bidang sampai ke tepi — lihat catatan di
+    _sweetflix_home.html soal kenapa versi "utuh + latar buram" ditolak. {% endcomment %}
+    {% with foto=frame_photos|get:"f_buka" %}
+    <div class="buka-gbr{% if editing and not foto %} is-empty{% endif %}"{% frame card editing "f_buka" %}>
+      {% if foto %}<img src="{{ foto.image.url }}" alt="">{% endif %}
+      {% if editing %}<span class="ketuk"></span>{% endif %}
+    </div>
+    {% endwith %}
+    <span class="buka-tirai"></span>
+    <span class="merek merek-pojok"{% el card editing "merek" %}>{% t card "merek" %}</span>
+
+    <div class="buka-isi">
+      <h2 class="buka-judul"{% el card editing "buka_judul" %}>{% t card "buka_judul" %}</h2>
+      <p class="buka-sub"{% el card editing "buka_sub" %}>{% t card "buka_sub" %}</p>
+      {% comment %} Kotak nama diisi PENERIMA, bukan pembeli. Isinya jadi nama
+      profil di layar berikutnya dan "Pemeran" di panel cerita — lihat
+      pakaiNama() di static/js/render/sweetflix.js. Dimatikan saat menyunting
+      supaya pembeli tidak mengira ini kolom miliknya. {% endcomment %}
+      <input type="text" class="buka-nama" id="namaTamu" maxlength="24"
+             placeholder="Your name" autocomplete="off" spellcheck="false"
+             {% if editing %}disabled{% endif %}>
+      <button type="button" class="tbl-lanjut" id="tblLanjut">Continue</button>
+    </div>
+  </section>
+
+  {% comment %} ============ 2. PEMILIH PROFIL ============ {% endcomment %}
+  <section class="scene layar layar-profil" id="profil">
+    <span class="merek merek-pojok"{% el card editing "merek" %}>{% t card "merek" %}</span>
+    <h2 class="profil-tanya"{% el card editing "judul_pilih" %}>{% t card "judul_pilih" %}</h2>
+    <div class="profil-baris">
+      {% for h in "a"|split:"," %}{% with ka=h|add:"_avatar" kc=h|add:"_cap" %}
+      <button type="button" class="profil" data-ke="home_{{ h }}">
+        {% with foto=frame_photos|get:ka %}
+        <span class="profil-gbr{% if editing and not foto %} is-empty{% endif %}"{% frame card editing ka %}>
+          {% if foto %}<img src="{{ foto.image.url }}" alt="">{% endif %}
+        </span>
+        {% endwith %}
+        <span class="profil-cap" data-nama-tamu{% el card editing kc %}>{% t card kc %}</span>
+      </button>
+      {% endwith %}{% endfor %}
+    </div>
+  </section>
+
+  {% comment %} ============ 3. BERANDA ============ {% endcomment %}
+  {% for h in "a"|split:"," %}
+    {% include "cards/render/_sweetflix_home.html" with h=h %}
+  {% endfor %}
+
+  {% comment %} ============ 4. LAYAR DETAIL ============ {% endcomment %}
+  {% for h in "a"|split:"," %}
+    {% include "cards/render/_sweetflix_detail.html" with h=h %}
+  {% endfor %}
+
+  {% comment %} ============ 5. PEMUTAR FOTO ============
+  Tujuan tombol "Putar": foto poster diputar satu per satu SEPENUH layar,
+  1,7 detik masing-masing, berganti dengan luruhan butiran. Selesai foto
+  terakhir ia melambat lalu BERHENTI; panah di kiri atas jalan keluarnya.
+  Isinya diisi JS dari
+  poster yang benar-benar ada, jadi kartu yang belum lengkap tidak memutar
+  bingkai kosong. Babak ini disembunyikan dari daftar tab editor lewat
+  data-tanpa-tab — lihat static/js/card-frame.js. {% endcomment %}
+  <section class="scene layar layar-warp" id="warp" data-tanpa-tab>
+    {% comment %} Gulungan tegak: foto bertumpuk naik terus-menerus di dalam
+    bingkai melengkung seperti layar tabung, dengan satu baris teks yang DIAM
+    di tengah. Isinya dibangun JS dari poster yang benar-benar ada, jadi kartu
+    yang belum lengkap tidak memutar bingkai kosong. {% endcomment %}
+    <div class="warp-panggung">
+      <div class="warp-gulung" id="warpGulung"></div>
+    </div>
+    <p class="warp-teks"{% el card editing "putar_teks" %}>{% t card "putar_teks" %}</p>
+    <button type="button" class="kembali" data-kembali-dinamis aria-label="Kembali">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+  </section>
+
+</div></div>
+
+<script defer src="{% static_v 'js/render/sweetflix.js' %}"></script>
+{% include "cards/_bgm.html" %}
+{% include "cards/_fullscreen.html" %}
+{% include "cards/_preview_bar.html" %}
+</body>
+</html>

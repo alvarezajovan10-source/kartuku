@@ -57,6 +57,16 @@ const TEMPLATES = [
   // angka di bawah langsung berlaku lagi.
   { slug: 'valentine-story',  lebar: 900,  tinggi: 1200, cara: 'elemen',
     manual: 'tools/buat_thumb_valentine.py' },
+  // Sweetflix: mendatar 16:9 seperti Game 8-Bit, jadi disusun ke kanvas 3:4
+  // yang sama supaya kisi etalase tetap seragam.
+  //
+  // `babak` menyimpang dari aturan "potret halaman pertama". Halaman pertama
+  // Sweetflix layar isian nama: latar gelap dengan satu kotak teks dan tombol.
+  // Benar sebagai pembuka kartu, tapi sebagai gambar etalase ia tidak
+  // memperlihatkan APA PUN dari isinya. Yang dipotret berandanya, tempat foto
+  // dan deretan posternya terlihat.
+  { slug: 'sweetflix', lebar: 1600, tinggi: 900, cara: 'elemen', babak: 'home_a',
+    susun: { lebar: 900, tinggi: 1200, latar: '#0b0b0f' } },
   // Stage "flow": lebar kanonis kartu 390px. Viewport dibuat sedikit lebih
   // lebar saja — dilebarkan sampai 900px, kartunya tetap 390px dan sisanya
   // jadi latar kosong.
@@ -123,6 +133,10 @@ async function susunKeKanvas(browser, berkas, { lebar, tinggi, latar }) {
     await page.addStyleTag({ content: `${BUANG}{display:none !important}` });
     await page.evaluate(() => document.fonts && document.fonts.ready);
     await tidur(2500);
+    if (t.babak) {
+      await page.evaluate((b) => { if (typeof window.show === 'function') window.show(b); }, t.babak);
+      await tidur(1200);
+    }
 
     const berkas = path.join(OUT, `${t.slug}.png`);
     if (t.cara === 'elemen') {

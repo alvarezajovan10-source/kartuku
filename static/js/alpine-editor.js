@@ -32,6 +32,9 @@ window.cardEditor = function () {
     hal10: "Hal 10 · Things I Love About You",
     hal11: "Hal 11 · Letter For You",
     hal12: "Hal 12 · Hati renda",
+    // Sweetflix. SATU profil, dengan beranda dan layar cerita sendiri.
+    buka: "Layar Pembuka", profil: "Pilih Profil",
+    home_a: "Beranda", detail_a: "Cerita",
   };
 
   var specByKey = {};

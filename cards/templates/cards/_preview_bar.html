@@ -47,21 +47,46 @@ Kartu asli yang sudah lunas tidak memunculkan apa pun.
   var stage = document.getElementById("card-stage");
   if (!cap || !stage) return;
 
-  var lebar = stage.offsetWidth || 390;
-  var tinggi = stage.offsetHeight || lebar;
+  /* Kartu BERGULIR (stage "flow") capnya harus ikut bergulir bersama isinya,
+     jadi ia tetap dipasang DI DALAM kartu. Kartu yang muat utuh di layar
+     (lebar / buku / majalah) tidak bergulir sama sekali — dan di sana
+     memasang cap di dalam kartu meninggalkan celah: kartu mendatar 16:9 di
+     dalam bingkai yang tinggi menyisakan pita kosong di atas dan bawahnya,
+     dan pita itu sama sekali tidak tertandai. Terukur di halaman produk:
+     kartu 678x381 di jendela 678x848 — 55% tingginya telanjang.
+
+     Untuk kartu semacam itu capnya menutup SELURUH layar, tapi ukuran
+     tandanya tetap diikat ke lebar KARTU supaya polanya sama di mana pun. */
+  var bergulir = document.documentElement.dataset.stage === "flow";
+  var kotak = stage.getBoundingClientRect();
+  var lebarKartu = kotak.width || stage.offsetWidth || 390;
+
   var kolom = 5;
-  var tinggiSel = lebar / kolom * 0.45;      // baris LEBIH rapat daripada kolom
-  var baris = Math.max(2, Math.ceil(tinggi / tinggiSel));
+  var lebarSel = lebarKartu / kolom;
+  var tinggiSel = lebarSel * 0.45;           // baris LEBIH rapat daripada kolom
+
+  var lebarBidang = bergulir ? stage.offsetWidth : (window.innerWidth || lebarKartu);
+  var tinggiBidang = bergulir ? stage.offsetHeight
+                              : (window.innerHeight || kotak.height || lebarKartu);
+  if (bergulir) { lebarSel = stage.offsetWidth / kolom; tinggiSel = lebarSel * 0.45; }
+
+  var baris = Math.max(2, Math.ceil(tinggiBidang / tinggiSel));
+  kolom = Math.max(kolom, Math.ceil(lebarBidang / lebarSel));
 
   cap.innerHTML = "";
-  cap.style.position = "absolute";
+  cap.style.position = bergulir ? "absolute" : "fixed";
   cap.style.inset = "0";
   cap.style.display = "grid";
   cap.style.gridTemplateRows = "repeat(" + baris + ", 1fr)";
+  /* Ukuran huruf dipatok piksel, bukan cqw: di luar kartu, cqw mengukur
+     LEBAR JENDELA, dan tandanya membesar mengikuti jendela alih-alih kartu. */
+  /* Lewat VARIABEL, bukan style.fontSize: aturan `.cap-vorteiz span`
+     mengatur ukurannya di span, jadi nilai yang disetel di wadah kalah. */
+  if (!bergulir) cap.style.setProperty("--cap-fs", (lebarKartu * 0.031).toFixed(2) + "px");
 
   for (var b = 0; b < baris; b++) {
     var row = document.createElement("div");
-    row.className = "baris";
+    row.className = "cap-baris";
     row.style.gridTemplateColumns = "repeat(" + kolom + ", 1fr)";
     for (var k = 0; k < kolom; k++) {
       var sp = document.createElement("span");
@@ -71,8 +96,12 @@ Kartu asli yang sudah lunas tidak memunculkan apa pun.
     cap.appendChild(row);
   }
 
-  getComputedStyle(stage).position === "static" && (stage.style.position = "relative");
-  stage.appendChild(cap);
+  if (bergulir) {
+    getComputedStyle(stage).position === "static" && (stage.style.position = "relative");
+    stage.appendChild(cap);
+  } else {
+    document.body.appendChild(cap);
+  }
 })();
 </script>
 {% endif %}

@@ -28,6 +28,14 @@ const OUT = process.argv[3] || 'static/img/galeri';
 const TEMPLATES = [
   { slug: 'valentine-story',  lebar: 900,  tinggi: 1200, pilih: '.lembar' },
   { slug: 'game-8bit',        lebar: 1600, tinggi: 900,  pilih: '.scene'  },
+  /* Sweetflix: babaknya ditulis TEGAS, tidak diambil dari .scene.
+     Dua alasan. Babak pemutar foto kosong sampai tombol Putar ditekan — kalau
+     ikut dipotret otomatis, yang masuk galeri layar hitam. Dan layar cerita
+     memuat delapan panel yang cuma satu tampil, jadi memotretnya sekali
+     membuang tujuh yang lain; di sini ia dipotret tiga kali dengan poster
+     berbeda. Tanda "#n" berarti: buka babak itu lalu tampilkan poster ke-n. */
+  { slug: 'sweetflix', lebar: 1600, tinggi: 900, pilih: '.scene',
+    halaman: ['buka', 'profil', 'home_a', 'detail_a#1', 'detail_a#4', 'detail_a#7'] },
   /* Kartu BERGULIR (Scrapbook) sengaja TIDAK ada di sini.
 
      Sempat dipotret jadi satu gambar panjang yang digulir di kotak galeri,
@@ -54,7 +62,12 @@ const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
     headless: 'new', args: ['--no-sandbox'],
   });
 
+  /* Argumen ketiga (opsional) = slug yang mau dibuat saja. Tanpa itu semua
+     template ditulis ulang, dan menulis ulang yang sudah benar cuma menambah
+     peluang berubah tanpa disadari. */
+  const saring = process.argv[4];
   for (const t of TEMPLATES) {
+    if (saring && t.slug !== saring) continue;
     const dir = path.join(OUT, t.slug);
     fs.rmSync(dir, { recursive: true, force: true });
     fs.mkdirSync(dir, { recursive: true });
@@ -69,7 +82,7 @@ const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
     await page.evaluate(() => document.fonts && document.fonts.ready);
     await tidur(2500);
 
-    const id = await page.evaluate((sel) =>
+    const id = t.halaman || await page.evaluate((sel) =>
       [...document.querySelectorAll(sel)].map((el, i) => el.id || `n${i}`), t.pilih);
 
     let n = 0;
@@ -77,8 +90,19 @@ const tidur = (ms) => new Promise((r) => setTimeout(r, ms));
       /* window.show() ada di kartu berbabak; kartu bergulir tidak punya, jadi
          di sana elemennya digulirkan ke tengah layar. */
       await page.evaluate((h, sel) => {
-        if (typeof window.show === 'function' && !h.startsWith('n')) { window.show(h); return; }
-        const el = [...document.querySelectorAll(sel)][parseInt(h.slice(1), 10)];
+        /* "babak#n": buka babaknya lalu tampilkan panel ke-n di dalamnya. */
+        const [nama, poster] = h.split('#');
+        if (typeof window.show === 'function' && !nama.startsWith('n')) {
+          window.show(nama);
+          if (poster) {
+            const kotak = document.querySelectorAll('#' + nama + ' [data-poster]');
+            kotak.forEach(function (d) {
+              d.classList.toggle('tampil', d.getAttribute('data-poster') === poster);
+            });
+          }
+          return;
+        }
+        const el = [...document.querySelectorAll(sel)][parseInt(nama.slice(1), 10)];
         if (el) el.scrollIntoView({ block: 'center' });
       }, halaman, t.pilih);
       await tidur(900);

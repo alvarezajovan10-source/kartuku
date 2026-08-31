@@ -1,6 +1,13 @@
 /* Kiri bawah — kanan atas milik tombol musik (cards/_bgm.html), kiri atas
-   milik tombol "kembali" di template Amplop Merah. */
-.fs-fab{position:fixed;bottom:14px;left:14px;z-index:60;width:42px;height:42px;
+   milik tombol "kembali" di template Amplop Merah.
+
+   z-index 95 sengaja DI ATAS gerbang orientasi (orientasi.css, 90). Tombol
+   lagu memang harus ditembus gerbang — memilih lagu sambil disuruh memutar HP
+   tidak masuk akal. Tombol ini kebalikannya: layar penuh DULU lalu diputar
+   adalah urutan yang wajar, dan Sweetflix satu-satunya template bergerbang,
+   jadi tanpa pengecualian ini ia jadi satu-satunya kartu yang kehilangan
+   tombol layar penuhnya di HP tegak sementara tujuh lainnya punya. */
+.fs-fab{position:fixed;bottom:14px;left:14px;z-index:95;width:42px;height:42px;
   border-radius:50%;border:0;cursor:pointer;display:none;place-items:center;
   background:rgba(20,10,14,.55);color:#faf2e4;backdrop-filter:blur(6px);
   box-shadow:0 4px 14px -4px rgba(0,0,0,.5);transition:transform .2s,background .2s}

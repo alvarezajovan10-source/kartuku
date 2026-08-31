@@ -108,6 +108,23 @@ Kartu asli yang sudah lunas tidak memunculkan apa pun.
 
 {% if preview or staff_peek %}
 <link rel="stylesheet" href="{% static_v 'css/preview-bar.css' %}">
+<script>
+/* Tinggi bar dikirim ke CSS supaya tombol layar penuh bisa duduk di ATASNYA.
+   Diukur, bukan ditebak: barnya membungkus jadi berapa pun barisnya
+   tergantung lebar layar dan panjang teksnya. */
+(function () {
+  function ukur() {
+    var bar = document.querySelector(".preview-bar");
+    if (!bar) return;
+    document.documentElement.style.setProperty(
+      "--bar-h", Math.round(bar.getBoundingClientRect().height) + "px");
+  }
+  addEventListener("load", ukur);
+  addEventListener("resize", ukur);      // putar HP = jumlah baris berubah
+  addEventListener("orientationchange", ukur);
+  document.addEventListener("DOMContentLoaded", ukur);
+})();
+</script>
 <div class="preview-bar">
   {% if preview %}
     <span class="tag">Contoh</span>

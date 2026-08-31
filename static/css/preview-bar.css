@@ -24,3 +24,15 @@
 [data-stage="frame"] #card-viewport{bottom:96px}
 [data-stage="flow"] body{padding-bottom:96px}
 @media (max-width:520px){ .preview-bar .txt{display:none} }
+
+/* Tombol layar penuh duduk di kiri bawah (fullscreen.css). Bar ini melintang
+   di sepanjang dasar layar dengan z-index 9999, dan di layar sempit ia
+   MEMBUNGKUS jadi dua-tiga baris — di HP tombolnya tertelan seluruhnya dan
+   tidak bisa disentuh sama sekali. Terukur: elementFromPoint di titik tombol
+   mengembalikan .preview-bar, bukan tombolnya.
+
+   Tingginya tidak bisa ditebak dari media query karena bergantung pada
+   berapa baris yang terbentuk, jadi angkanya diukur di _preview_bar.html dan
+   dikirim lewat --bar-h. Tanpa nilai itu tombolnya kembali ke 14px seperti
+   di kartu asli, yang memang benar di sana — di kartu asli tidak ada bar. */
+.fs-fab{ bottom: calc(var(--bar-h, 0px) + 14px); }

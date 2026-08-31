@@ -1,0 +1,45 @@
+{% load static card_extras %}{% comment %}
+Ajakan memutar HP untuk kartu MENDATAR — sertakan sebelum </body>.
+
+Kartu 16:9 dibuka dalam bentuk tegak jadi strip kecil di tengah layar dengan
+pita hitam lebar di atas dan bawahnya. Ajakan ini yang memberi tahu penerima
+bahwa kartunya memang dibuat mendatar.
+
+DUA penjaga, dan dua-duanya lahir dari kesalahan yang nyata:
+
+1. `is-editing` — pembeli menyunting di jendela iframe yang tegak, dan gerbang
+   ini akan menutupi seluruh pratinjaunya.
+
+2. DI DALAM IFRAME — halaman produk menyematkan kartu contoh di kotak 678x848,
+   yang tegak. Tanpa penjaga ini, etalase menampilkan "Putar HP-mu" alih-alih
+   kartunya. Itu benar-benar terjadi pada Game 8-Bit dan sempat tayang: bukan
+   di halaman kartu, melainkan tepat di halaman yang paling menjual.
+
+Bisa dilewati. Penerima yang memang ingin membaca sambil tegak tidak boleh
+dipaksa — kartunya tetap terbaca, cuma lebih kecil.
+{% endcomment %}
+{% if not editing %}
+<link rel="stylesheet" href="{% static_v 'css/orientasi.css' %}">
+<div class="putar-layar" id="putarLayar" role="dialog" aria-label="Putar perangkat">
+  <svg viewBox="0 0 48 48" aria-hidden="true">
+    <rect x="17" y="5" width="14" height="27" rx="2.5"/>
+    <path d="M9 34a15 15 0 0 0 30 0"/>
+    <path d="M39 34l-4-4M39 34l4-4"/>
+  </svg>
+  <p class="putar-judul">Putar HP-mu</p>
+  <p class="putar-sub">Kartu ini dibuat untuk layar mendatar</p>
+  <button type="button" id="putarLewati">Lanjut saja</button>
+</div>
+<script>
+(function () {
+  var el = document.getElementById("putarLayar");
+  if (!el) return;
+  /* Disematkan di halaman produk: kotaknya tegak, tapi ini BUKAN HP penerima.
+     Dicek dari JS, bukan dari template, supaya berlaku di mana pun kartunya
+     disematkan — termasuk halaman yang belum ada. */
+  try { if (window.self !== window.top) el.classList.add("pergi"); } catch (e) { el.classList.add("pergi"); }
+  var lewati = document.getElementById("putarLewati");
+  if (lewati) lewati.addEventListener("click", function () { el.classList.add("pergi"); });
+})();
+</script>
+{% endif %}

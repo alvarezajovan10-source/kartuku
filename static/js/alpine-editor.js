@@ -554,7 +554,8 @@ window.cardEditor = function () {
            lebih besar dari 640 px, jadi foto sampul yang memenuhi satu
            halaman penuh selalu terlihat pecah. */
         var rasio = spec.rasio || 1;
-        var sisi = spec.asli ? 2400 : 1100;   // px sisi panjang yang dituju
+        // Bingkai boleh minta sisi sendiri; tanpa itu angkanya seperti dulu.
+        var sisi = spec.sisi || (spec.asli ? 2400 : 1100);   // px sisi panjang
         var w = rasio >= 1 ? sisi : Math.round(sisi * rasio);
         var h = rasio >= 1 ? Math.round(sisi / rasio) : sisi;
 

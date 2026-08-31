@@ -50,6 +50,9 @@
       <input type="text" class="buka-nama" id="namaTamu" maxlength="24"
              placeholder="Your name" autocomplete="off" spellcheck="false"
              {% if editing %}disabled{% endif %}>
+      {% comment %} Pesan kalau nama belum diisi. hidden sampai dibutuhkan —
+      layar pembuka tidak boleh membuka dengan peringatan. {% endcomment %}
+      <p class="buka-galat" id="bukaGalat" role="alert" hidden>Enter your name to continue</p>
       <button type="button" class="tbl-lanjut" id="tblLanjut">Continue</button>
     </div>
   </section>
@@ -108,6 +111,7 @@
 
 <script defer src="{% static_v 'js/render/sweetflix.js' %}"></script>
 {% include "cards/_bgm.html" %}
+{% include "cards/_orientasi.html" %}
 {% include "cards/_fullscreen.html" %}
 {% include "cards/_preview_bar.html" %}
 </body>

@@ -304,10 +304,15 @@ SEEDS = [
             # bentuk yang bukan bentuk tampilannya. "asli" menaikkan sisi
             # panjang hasil potongan dari 1100 ke 2400 px — untuk foto yang
             # memenuhi satu layar penuh, 1100 px terlihat pecah.
+            # "sisi" hanya di dua bingkai LATAR. Kartu mendatar dibentangkan
+            # memenuhi jendela tanpa batas pembesaran, jadi di laptop retina
+            # satu piksel foto harus mengisi 3.398 piksel layar: pada 2400 px
+            # rasionya 0,71 (masih lembut), pada 3200 px jadi 0,94. Poster dan
+            # avatar TIDAK diubah — mereka tampil kecil dan sudah tajam.
             "frames": [
-                {"key": "f_buka", "label": "Foto layar pembuka", "rasio": 1.7778, "asli": True},
+                {"key": "f_buka", "label": "Foto layar pembuka", "rasio": 1.7778, "asli": True, "sisi": 3200},
                 {"key": "a_avatar", "label": "KAMU · Foto profil", "rasio": 1.0},
-                {"key": "a_hero", "label": "KAMU · Foto latar", "rasio": 1.7778, "asli": True},
+                {"key": "a_hero", "label": "KAMU · Foto latar", "rasio": 1.7778, "asli": True, "sisi": 3200},
                 {"key": "a_p1", "label": "KAMU · Poster 1", "rasio": 1.7778},
                 {"key": "a_p2", "label": "KAMU · Poster 2", "rasio": 1.7778},
                 {"key": "a_p3", "label": "KAMU · Poster 3", "rasio": 1.7778},

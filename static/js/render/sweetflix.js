@@ -139,12 +139,30 @@
     } catch (e) { /* localStorage ditutup peramban — kartunya tetap jalan */ }
   }
 
+  var pesanGalat = document.getElementById("bukaGalat");
+
+  function tandaiKosong() {
+    if (pesanGalat) pesanGalat.hidden = false;
+    if (!kotakNama) return;
+    kotakNama.classList.add("salah");
+    // Kelas goyang dilepas dulu supaya ketukan KEDUA ikut bergoyang; tanpa itu
+    // animasinya cuma jalan sekali dan penekanan berikutnya terasa mati.
+    kotakNama.classList.remove("buka-goyang");
+    void kotakNama.offsetWidth;
+    kotakNama.classList.add("buka-goyang");
+    kotakNama.focus();
+  }
+
   function lanjut() {
-    var nama = kotakNama ? kotakNama.value : "";
-    if (nama && !menyunting) {
-      pakaiNama(nama);
-      try { localStorage.setItem(KUNCI_NAMA, nama.trim().slice(0, 24)); } catch (e) {}
-    }
+    /* Saat MENYUNTING kotaknya dimatikan, jadi ia selalu kosong. Menahan di
+       sana berarti pembeli tidak pernah bisa melihat halaman berikutnya. */
+    if (menyunting) { show("profil"); return; }
+
+    var nama = (kotakNama ? kotakNama.value : "").trim();
+    if (!nama) { tandaiKosong(); return; }
+
+    pakaiNama(nama);
+    try { localStorage.setItem(KUNCI_NAMA, nama.slice(0, 24)); } catch (e) {}
     show("profil");
   }
 
@@ -152,6 +170,11 @@
   // Enter di kotak nama sama dengan menekan Continue.
   if (kotakNama) kotakNama.addEventListener("keydown", function (ev) {
     if (ev.key === "Enter") { ev.preventDefault(); lanjut(); }
+  });
+  // Peringatan hilang begitu ia mulai mengetik — bukan menunggu ditekan lagi.
+  if (kotakNama) kotakNama.addEventListener("input", function () {
+    kotakNama.classList.remove("salah");
+    if (pesanGalat) pesanGalat.hidden = true;
   });
 
   /* ── Pemutar foto: gulungan tegak berlensa tabung ──────────────────────

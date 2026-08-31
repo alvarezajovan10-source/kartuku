@@ -155,6 +155,30 @@ img {
 .buka-nama:focus { border-color: rgba(255, 255, 255, .8); background: rgba(0, 0, 0, .55); }
 .buka-nama:disabled { opacity: .7; }
 
+/* Nama WAJIB diisi sebelum masuk. Penandanya dua: tepi kotak memerah dan satu
+   baris pesan — warna saja tidak cukup untuk yang sulit membedakan warna. */
+.buka-galat {
+  margin: -6px 0 14px;
+  font-size: 13px;
+  color: #ff8f9e;
+  text-align: left;
+}
+.buka-galat[hidden] { display: none; }
+
+.buka-nama.salah { border-color: var(--merah); }
+.buka-nama.salah:focus { border-color: var(--merah); }
+
+.buka-goyang { animation: bukaGoyang .34s ease; }
+@keyframes bukaGoyang {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-7px); }
+  50%      { transform: translateX(6px); }
+  78%      { transform: translateX(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .buka-goyang { animation: none; }
+}
+
 .tbl-lanjut {
   display: block; width: 100%;
   padding: 15px 0;
@@ -241,23 +265,18 @@ img {
 
 .latar { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-/* Isi foto digeser ke kanan supaya bagian pentingnya keluar dari bidang gelap
-   dan jatuh di area terang. Bingkainya TIDAK berubah — tetap penuh sampai
-   tepi; yang bergeser isinya.
+/* TIDAK ada geseran maupun pembesaran di sini, dan itu disengaja.
 
-   Digeser begitu saja akan menyisakan celah kosong di tepi kiri, jadi fotonya
-   diperbesar 1,18x lebih dulu: luapan tiap sisi jadi (0,18/2) x 960 = 86px,
-   sementara pergeserannya 6,5% x 960 = 62px — masih 24px di dalam luapan.
-   Zoom pilihan pembeli mengalikannya, dan ZOOM_MIN di cards/styles.py adalah
-   1.0, jadi hasilnya tidak pernah bisa turun sampai celahnya terbuka.
+   Foto latar sempat digeser 6,5% ke kanan dan diperbesar 1,18x supaya wajah
+   keluar dari bidang gelap kiri. Ongkosnya baru terlihat setelah diukur:
+   pembeli memotong bidang 16:9, tapi kartu cuma menampilkan 84,7% darinya —
+   15,5% tepi kanan, 2,5% tepi kiri, dan 9% atas-bawah hilang. Yang dipotong
+   bukan yang muncul, dan itu keluhan pemilik situs.
 
-   transform-origin dipatok tengah di sini, TIDAK mengikuti --ox seperti
-   bingkai lain: dengan origin di tepi kiri, pembesarannya cuma melebar ke
-   kanan dan justru luapan kiri yang dibutuhkan itu yang hilang. */
-.latar img {
-  transform: translateX(var(--geser, 6.5%)) scale(calc(var(--zoom, 1) * 1.18));
-  transform-origin: center center;
-}
+   Waktu geseran itu dibuat, kotak crop masih bujur sangkar dan pembeli tidak
+   punya kendali atas bingkainya. Sekarang kotaknya sudah 16:9: kalau wajah
+   perlu keluar dari bidang gelap, pembeli menaruhnya sendiri waktu memotong.
+   Itu memang guna alat potong, dan hasilnya bisa ia lihat sebelum menyimpan. */
 
 /* Gradasi kiri didorong lebih ke kanan atas permintaan pemilik situs: dulu
    .74 di 32% dan .18 di 66%, sekarang menutup jauh lebih lebar supaya tulisan

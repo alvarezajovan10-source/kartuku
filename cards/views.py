@@ -687,6 +687,10 @@ def editor(request, template_slug):
                 # sangkar padahal yang tampil nanti persegi panjang, dan
                 # potongannya tidak pernah sesuai dugaannya.
                 "rasio": spec.get("rasio"),
+                # Sisi panjang hasil potongan, kalau bingkainya minta sendiri.
+                # Bingkai latar butuh lebih besar daripada yang lain — lihat
+                # catatan di cards/utils.py:validate_and_compress_photo.
+                "sisi": spec.get("sisi"),
                 # Topeng BENTUK bingkai, kalau bingkainya bukan persegi
                 # panjang. `rasio` saja tidak cukup untuk bingkai hati:
                 # lubangnya cuma mengisi ~67% kotak pembatasnya, jadi

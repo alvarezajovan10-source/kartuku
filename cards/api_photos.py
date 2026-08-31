@@ -88,10 +88,13 @@ def upload_photo(request, card_id):
 
     # Bingkai bertanda "asli" di config template boleh berkas lebih besar dan
     # tidak dikecilkan sekeras yang lain — lihat validate_and_compress_photo.
-    besar = any(f.get("key") == slot and f.get("asli") for f in card.frames())
+    spec_bingkai = next((f for f in card.frames() if f.get("key") == slot), {})
+    besar = bool(spec_bingkai.get("asli"))
+    # Bingkai boleh minta sisi panjang sendiri — lihat validate_and_compress_photo.
+    sisi_pinta = spec_bingkai.get("sisi")
 
     try:
-        processed = validate_and_compress_photo(upload, besar=besar)
+        processed = validate_and_compress_photo(upload, besar=besar, sisi_pinta=sisi_pinta)
     except ValidationError as exc:
         return Response({"detail": " ".join(exc.messages)}, status=400)
 

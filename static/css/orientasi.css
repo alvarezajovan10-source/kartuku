@@ -1,0 +1,63 @@
+/* Ajakan memutar HP untuk kartu mendatar — pasangan cards/_orientasi.html.
+
+   Satu-satunya @media berbasis orientasi di situs ini, dan sengaja begitu:
+   yang diatur cuma LAPISAN INI, yang berada di luar kanvas kartu. Tata letak
+   kartunya sendiri tetap identik di semua alat. */
+
+.putar-layar { display: none; }
+
+@media (orientation: portrait) {
+  .putar-layar {
+    position: fixed;
+    inset: 0;
+    /* 90 — DI ATAS SEMUA perkakas kartu, bukan cuma di atas cap VORTEIZ (60).
+       Tombol lagu dan catatannya duduk di 80, dan pada 70 keduanya menembus
+       gerbang ini: penerima melihat tombol mengambang di atas layar yang
+       menyuruhnya memutar HP. Gerbang itu lapisan PENGHALANG — tidak boleh
+       ada yang duduk di atasnya. */
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px;
+    text-align: center;
+    background: #0b0b0f;
+    font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #fff;
+  }
+}
+
+.putar-layar.pergi { display: none !important; }
+body.is-editing .putar-layar { display: none !important; }
+
+.putar-layar svg {
+  width: 66px; height: 66px;
+  fill: none; stroke: #e11d3c; stroke-width: 2.4;
+  stroke-linecap: round; stroke-linejoin: round;
+  animation: putarMiring 2.6s ease-in-out infinite;
+}
+@keyframes putarMiring {
+  0%, 55%, 100% { rotate: 0deg; }
+  72%, 88%      { rotate: -90deg; }
+}
+
+.putar-judul { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.putar-sub   { margin: 0; font-size: 14px; color: #a8a8a8; max-width: 260px; line-height: 1.5; }
+
+.putar-layar button {
+  margin-top: 8px;
+  padding: 11px 24px;
+  border: 1px solid rgba(255, 255, 255, .4);
+  border-radius: 4px;
+  background: none;
+  color: #fff;
+  font-family: inherit; font-size: 14px;
+  cursor: pointer;
+}
+.putar-layar button:hover { background: rgba(255, 255, 255, .12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .putar-layar svg { animation: none; }
+}

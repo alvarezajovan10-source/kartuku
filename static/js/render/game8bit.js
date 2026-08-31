@@ -229,6 +229,16 @@ window.addEventListener('load', () => {
    tegak tidak boleh dipaksa. */
 const putarEl = document.getElementById('putarHp');
 const putarBtn = document.getElementById('putarLanjut');
+/* DI DALAM IFRAME ajakan ini tidak pernah benar. Halaman produk menyematkan
+   kartu contoh di kotak 678x848 — tegak, tapi itu bukan HP penerima. Tanpa
+   penjaga ini etalase menampilkan "MIRINGKAN HP-MU" alih-alih kartunya, dan
+   itu SUDAH TAYANG sebelum ketahuan: bukan di halaman kartu, melainkan tepat
+   di halaman yang paling menjual. */
+if (putarEl) {
+  let disematkan = true;
+  try { disematkan = window.self !== window.top; } catch (e) { /* lintas-asal */ }
+  if (disematkan) putarEl.classList.add('pergi');
+}
 if (putarBtn && putarEl) {
   putarBtn.addEventListener('click', () => putarEl.classList.add('pergi'));
 }

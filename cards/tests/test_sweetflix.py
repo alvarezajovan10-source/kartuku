@@ -85,6 +85,21 @@ class KonfigurasiTests(TestCase):
                 if kunci == "f_buka" or kunci.endswith("_hero"):
                     self.assertTrue(f.get("asli"), f"{kunci} perlu asli=True")
 
+    def test_hanya_bingkai_latar_yang_minta_potongan_besar(self):
+        """Foto LATAR dibentangkan memenuhi jendela tanpa batas pembesaran:
+        di laptop retina satu piksel foto harus mengisi 3.398 piksel layar.
+        Terukur, pada potongan 2400 px rasionya 0,71 — masih lembut; pada
+        3200 px jadi 0,94. Poster dan avatar tampil kecil dan sudah tajam,
+        jadi menaikkannya cuma menambah berat berkas tanpa terlihat."""
+        latar = {"f_buka", "a_hero"}
+        for f in self.config["frames"]:
+            with self.subTest(bingkai=f["key"]):
+                if f["key"] in latar:
+                    self.assertEqual(f.get("sisi"), 3200)
+                    self.assertTrue(f.get("asli"))
+                else:
+                    self.assertIsNone(f.get("sisi"))
+
     def test_judul_pilih_profil_bisa_disunting(self):
         """Pemilik situs meminta "Choose" bisa diganti pembeli, bukan mati."""
         self.assertEqual(self.teks.get("judul_pilih"), "Choose")
@@ -148,36 +163,24 @@ class GayaTests(TestCase):
         cards/styles.py:element_css(). Akibatnya kontrol geser dan zoom foto di
         editor TIDAK berefek apa pun, dan pemilik situs melaporkannya sebagai
         "fotonya ke-crop besar". Renderer lain memakai pola yang sama —
-        scrapbook.css:96, majalah.css:284, birthday.css:77."""
+        scrapbook.css:96, birthday.css:136, valentine.css:334."""
         isi = css()
         for var in ["var(--fit,", "var(--ox,", "var(--oy,", "var(--zoom,"]:
             with self.subTest(var=var):
                 self.assertIn(var, isi, f"{var} tidak dipakai — gaya foto pembeli diabaikan")
 
-    def test_geser_foto_latar_tidak_menyisakan_celah(self):
-        """Isi foto latar digeser ke kanan supaya bagian pentingnya keluar dari
-        bidang gelap. Digeser begitu saja akan menyisakan celah kosong di tepi
-        kiri, jadi fotonya diperbesar lebih dulu — dan pembesarannya HARUS
-        melebihi pergeserannya. Menaikkan --geser tanpa menaikkan skalanya
-        akan membuka celah itu diam-diam, dan tidak ada yang menyadarinya
-        sampai ada pembeli yang mengeluh."""
-        import re
+    def test_latar_tidak_digeser_atau_diperbesar(self):
+        """Foto latar harus tampil PERSIS seperti yang dipotong pembeli.
+
+        Sempat digeser 6,5% dan diperbesar 1,18x supaya wajah keluar dari
+        bidang gelap. Terukur, itu memakan 15,5% tepi kanan potongan dan 9%
+        atas-bawahnya: yang dipotong bukan yang muncul. Kendali bingkainya
+        sekarang milik pembeli lewat kotak crop 16:9."""
         isi = css()
         blok = isi.split(".latar img {", 1)
-        self.assertEqual(len(blok), 2, ".latar img hilang dari CSS")
-        aturan = blok[1].split("}", 1)[0]
-
-        geser = re.search(r"--geser,\s*([\d.]+)%", aturan)
-        skala = re.search(r"var\(--zoom,\s*1\)\s*\*\s*([\d.]+)", aturan)
-        self.assertTrue(geser and skala, "angka geser/skala tidak terbaca")
-
-        geser = float(geser.group(1)) / 100          # bagian dari lebar bingkai
-        luapan = (float(skala.group(1)) - 1) / 2      # luapan tiap sisi
-        self.assertLess(
-            geser, luapan,
-            f"pergeseran {geser:.3f} melebihi luapan {luapan:.3f} — tepi kiri "
-            f"akan menyisakan celah kosong",
-        )
+        self.assertEqual(len(blok), 1,
+                         ".latar img dihidupkan lagi — potongan pembeli akan terpangkas")
+        self.assertNotIn("--geser", isi)
 
     def test_babak_memakai_pudar_bukan_display(self):
         """`display` tidak bisa ditransisikan. Selama .layar memakai
@@ -321,3 +324,35 @@ class RenderTests(TestCase):
 
     def test_tidak_memakai_merek_netflix(self):
         self.assertNotIn("netflix", self.isi().lower())
+
+    def test_nama_wajib_diisi_sebelum_masuk(self):
+        """Layar pembuka meniru Netflix: pilih dulu siapa yang menonton. Kalau
+        Continue tetap jalan dengan kotak kosong, seluruh sapaan bernama di
+        kartu ini jatuh ke kosong dan layar pembukanya jadi pajangan."""
+        with open(settings.BASE_DIR / "static/js/render/sweetflix.js") as fh:
+            js = fh.read()
+        badan = js.split("function lanjut()", 1)[1].split("\n  }", 1)[0]
+        self.assertIn("tandaiKosong()", badan,
+                      "lanjut() tidak menahan apa pun saat nama kosong")
+        self.assertIn(".trim()", badan,
+                      "spasi saja harus dihitung kosong, bukan diterima")
+        # Penjaga yang paling gampang hilang: saat menyunting kotaknya DIMATIKAN,
+        # jadi ia selalu kosong. Tanpa jalan pintas ini pembeli terkunci di
+        # layar pembuka dan tidak pernah bisa melihat halaman berikutnya.
+        self.assertIn("if (menyunting)", badan,
+                      "pembeli akan terkunci di layar pembuka saat menyunting")
+        self.assertLess(badan.index("if (menyunting)"), badan.index("tandaiKosong()"),
+                        "jalan pintas menyunting harus DI ATAS penahannya")
+
+    def test_alasan_ditahan_terbaca_bukan_cuma_warna(self):
+        """Tepi memerah saja tidak menjelaskan apa-apa, dan tidak terbaca oleh
+        yang sulit membedakan warna maupun pembaca layar."""
+        isi = self.isi()
+        self.assertIn('id="bukaGalat"', isi)
+        self.assertIn('role="alert"', isi)
+        self.assertIn("hidden", isi.split('id="bukaGalat"', 1)[1].split(">", 1)[0],
+                      "pesan galat tampil sebelum ada yang salah")
+        with open(settings.BASE_DIR / "static/js/render/sweetflix.js") as fh:
+            js = fh.read()
+        self.assertIn('addEventListener("input"', js,
+                      "peringatan tidak hilang saat ia mulai mengetik")

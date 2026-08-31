@@ -56,10 +56,13 @@ JPEG_QUALITY = 82
 # ke 1600 px, foto seperti itu terlihat pecah — di kartu buku, satu foto bisa
 # merentang selebar halaman pada layar retina.
 MAX_DIMENSION_BESAR = 2400
+# Batas atas untuk "sisi" yang diminta bingkai di config template.
+MAX_DIMENSION_PINTA = 3600
 JPEG_QUALITY_BESAR = 92
 
 
-def validate_and_compress_photo(uploaded, besar: bool = False) -> InMemoryUploadedFile:
+def validate_and_compress_photo(uploaded, besar: bool = False,
+                                sisi_pinta: int | None = None) -> InMemoryUploadedFile:
     """Validasi MIME asli (lewat Pillow, bukan ekstensi), resize, lalu kompres.
 
     Semua foto dinormalisasi ke JPEG supaya ukuran & rendering konsisten.
@@ -72,6 +75,18 @@ def validate_and_compress_photo(uploaded, besar: bool = False) -> InMemoryUpload
     batas = settings.MAX_PHOTO_BYTES_BESAR if besar else settings.MAX_PHOTO_BYTES
     sisi = MAX_DIMENSION_BESAR if besar else MAX_DIMENSION
     mutu = JPEG_QUALITY_BESAR if besar else JPEG_QUALITY
+
+    # Bingkai boleh meminta sisi lebih panjang lewat "sisi" di config-nya.
+    # Alasannya diukur, bukan selera: foto LATAR kartu mendatar dibentangkan
+    # memenuhi jendela tanpa batas pembesaran, jadi di laptop retina satu
+    # piksel foto harus mengisi 3.398 piksel layar. Pada 2400 px rasionya 0,71
+    # — masih terlihat lembut; pada 3200 px jadi 0,94, praktis tajam.
+    #
+    # Dibatasi MAX_DIMENSION_PINTA supaya config yang salah ketik tidak
+    # membuat server menyimpan foto raksasa. Kartu lain tidak terpengaruh:
+    # tanpa "sisi", angkanya tetap seperti sebelumnya.
+    if sisi_pinta:
+        sisi = max(sisi, min(int(sisi_pinta), MAX_DIMENSION_PINTA))
 
     if uploaded.size > batas:
         limit_mb = batas // (1024 * 1024)

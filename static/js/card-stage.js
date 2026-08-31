@@ -36,18 +36,24 @@
     // clientWidth sudah tidak termasuk scrollbar, jadi kartu tidak akan
     // meluber horizontal di desktop yang scrollbar-nya memakan tempat.
     var w = root.clientWidth || window.innerWidth || W0;
+    // Tinggi yang BENAR-BENAR terlihat. Di Safari iPhone, bilah alamat
+    // memakan tinggi tapi tidak mengubah clientHeight, jadi kartu dihitung
+    // dari bidang yang lebih besar daripada yang dilihat penerima dan
+    // bagian bawahnya bersembunyi di balik bilah.
+    var vv = window.visualViewport;
+    var hNyata = (vv && vv.height) || root.clientHeight || window.innerHeight;
     if (root.dataset.stage === "lebar") {
       // TANPA K_MAX. Batas 1,15 itu masuk akal untuk kartu tegak — kartu
       // selebar HP tidak perlu dibesarkan sampai memenuhi layar laptop.
       // Untuk kartu mendatar justru kebalikannya: bentuknya sudah sama
       // dengan layar, jadi dibatasi 1,15 ia tampil sebagai kotak kecil di
       // tengah dan penerima harus memperbesar sendiri.
-      var h = root.clientHeight || window.innerHeight || H0_LEBAR;
+      var h = hNyata || H0_LEBAR;
       root.style.setProperty("--k", Math.min(w / W0_LEBAR, h / H0_LEBAR));
       return;
     }
     if (root.dataset.stage === "buku") {
-      var hb = (root.clientHeight || window.innerHeight || H0_BUKU) - SISA_NAV;
+      var hb = (hNyata || H0_BUKU) - SISA_NAV;
       root.style.setProperty(
         "--k", Math.min(w / W0_BUKU, hb / H0_BUKU, K_MAX_BUKU)
       );
@@ -59,6 +65,13 @@
   fit();
   window.addEventListener("resize", fit);
   window.addEventListener("orientationchange", fit);
+  // Bilah alamat Safari yang menyusut TIDAK memicu resize pada window —
+  // yang terpicu cuma visualViewport. Tanpa pendengar ini, ruang yang baru
+  // dilepas Safari dibiarkan kosong dan kartunya tetap kecil.
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", fit);
+    window.visualViewport.addEventListener("scroll", fit);
+  }
 
   // Mode flow: tinggi pembungkus harus mengikuti tinggi stage x skala.
   // offsetHeight mengabaikan transform — justru itu yang dibutuhkan.

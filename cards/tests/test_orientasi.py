@@ -115,6 +115,27 @@ class SweetflixMemakaiGerbangTests(TestCase):
         for peristiwa in ("resize", "orientationchange"):
             self.assertIn(f'"{peristiwa}", ukur', html)
 
+    def test_gerbang_menyarankan_tablet_atau_laptop(self):
+        """Kartu 16:9 di HP tetap kecil walau sudah dimiringkan — 693x390 di
+        iPhone, dan cuma 533x300 begitu bilah Safari muncul. Gerbang ini titik
+        satu-satunya tempat penerima masih mau membaca sebelum masuk kartu."""
+        isi = self.client.get(f"/{self.kartu.id}/").content.decode()
+        self.assertIn("putar-saran", isi)
+        self.assertIn("tablet atau laptop", isi)
+
+    def test_saran_lebih_redup_daripada_ajakan_utama(self):
+        """Ini SARAN, bukan syarat: tombol "Lanjut saja" tetap ada. Kalau
+        ukurannya menyamai `.putar-sub`, gerbangnya terbaca seperti dua
+        perintah dan penerima ber-HP merasa kartunya memang bukan untuknya."""
+        import re
+        css = berkas("static/css/orientasi.css")
+
+        def ukuran(kelas):
+            blok = re.search(rf"\.{kelas}\s*{{([^}}]*)}}", css).group(1)
+            return float(re.search(r"font-size:\s*([\d.]+)px", blok).group(1))
+
+        self.assertLess(ukuran("putar-saran"), ukuran("putar-sub"))
+
     def test_kartu_terbit_tidak_memuat_bar_pratinjau(self):
         """Penjaga untuk perbaikan di atas: kalau bar itu suatu saat ikut
         terbit di kartu berbayar, --bar-h jadi 0 dan tombolnya tertelan lagi."""

@@ -46,6 +46,20 @@ body.is-editing .putar-layar { display: none !important; }
 .putar-judul { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
 .putar-sub   { margin: 0; font-size: 14px; color: #a8a8a8; max-width: 260px; line-height: 1.5; }
 
+/* Saran alat, bukan syarat. Sengaja lebih kecil dan lebih redup daripada
+   `.putar-sub`, dan dipisah garis tipis: penerima yang cuma pegang HP tetap
+   bisa menekan "Lanjut saja", jadi tulisan sebesar kalimat di atasnya akan
+   terbaca seperti pintu yang tertutup padahal cuma anjuran. */
+.putar-saran {
+  margin: -4px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, .13);
+  max-width: 260px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #7c7c7c;
+}
+
 .putar-layar button {
   margin-top: 8px;
   padding: 11px 24px;

@@ -16,6 +16,7 @@
 
 {% block body %}
 <link href="{{ fonts_url }}" rel="stylesheet">
+<link rel="stylesheet" href="{% static_v 'css/tutorial.css' %}">
 {{ editor_init|json_script:"editor-init" }}
 
 <div class="ed" x-data="cardEditor()" x-cloak>
@@ -348,6 +349,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script defer src="{% static_v 'js/tutorial.js' %}"></script>
 <script src="{% static_v 'js/alpine-editor.js' %}"></script>
 <script defer src="{% static_v 'js/alpine.min.js' %}"></script>
 {% endblock %}

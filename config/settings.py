@@ -41,6 +41,11 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # perantara, lewat .env.
 USE_X_FORWARDED_HOST = env.bool("USE_X_FORWARDED_HOST", default=False)
 
+# Nama domain yang dilihat pengunjung, saat situs disajikan lewat perantara.
+# Dipakai config.domain_publik.DomainPublik; lihat berkas itu untuk alasannya
+# tidak memakai X-Forwarded-Host. Kosong = tidak ada yang berubah.
+PUBLIC_HOST = env("PUBLIC_HOST", default="")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -61,6 +66,9 @@ INSTALLED_APPS = [
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 MIDDLEWARE = [
+    # Wajib paling atas: SecurityMiddleware di bawahnya memakai get_host()
+    # untuk mengalihkan ke https.
+    "config.domain_publik.DomainPublik",
     "django.middleware.security.SecurityMiddleware",
     # Menyajikan file di STATIC_ROOT langsung dari Django, jadi hosting tidak
     # perlu dikonfigurasi menunjuk folder static. Wajib tepat di bawah

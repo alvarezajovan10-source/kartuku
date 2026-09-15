@@ -28,6 +28,19 @@ if not DEBUG and SECRET_KEY == DEV_SECRET_KEY:
     )
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
+# Saat situs disajikan lewat perantara di domain lain, Django harus memakai
+# nama domain yang dilihat pengunjung — bukan nama host tempat ia sebenarnya
+# berjalan. Perantara mengirimkannya lewat X-Forwarded-Host.
+#
+# Tanpa ini, QR code kartu dibuat berisi alamat host aslinya, dan itu TIDAK
+# bisa diperbaiki oleh perantara: alamatnya sudah jadi piksel di dalam gambar
+# PNG. Pelanggan yang memindai QR akan dibawa ke alamat yang salah, dan itu
+# baru ketahuan setelah kartunya dicetak dan dibagikan.
+#
+# Bawaannya mati: hanya dinyalakan di pemasangan yang memang berada di balik
+# perantara, lewat .env.
+USE_X_FORWARDED_HOST = env.bool("USE_X_FORWARDED_HOST", default=False)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

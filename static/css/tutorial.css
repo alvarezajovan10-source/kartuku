@@ -13,6 +13,11 @@
   /* Tidak diberi latar sendiri: yang menggelapkan layar adalah box-shadow
      raksasa milik .tut-sorot, supaya lubang sorotnya terbentuk tanpa SVG. */
   background: transparent;
+  /* WAJIB tembus sentuhan. Ada langkah yang menyuruh pengguna mengetuk
+     tulisan di kartu, dan tutorial baru maju setelah ketukan itu terjadi —
+     kalau tirainya menelan sentuhan, langkah itu tidak akan pernah selesai
+     dan tutorialnya menggantung selamanya. */
+  pointer-events: none;
 }
 
 .tut-sorot {
@@ -37,6 +42,7 @@
 .tut-kotak {
   position: fixed;
   z-index: 10000;
+  pointer-events: auto;
   width: min(330px, calc(100vw - 32px));
   background: var(--white, #fff);
   color: var(--ink, #1c1917);

@@ -99,7 +99,9 @@ img{image-rendering:auto}
 }
 .teman{
   position:absolute;left:0;bottom:10px;z-index:19;
-  width:102px;height:138px;
+  /* Sel sprite chibi 128x256 ditampilkan 85x170 (x0,664) — lihat
+     tools/buat_sprite_8bit_chibi.py. Dulu 102x138 (karakter 34x46 x3). */
+  width:85px;height:170px;
   transform:translateX(var(--x,0px));
   will-change:transform;
   cursor:pointer;pointer-events:auto;
@@ -109,10 +111,11 @@ img{image-rendering:auto}
 .teman .sprite{
   position:absolute;inset:0;display:block;
   background-repeat:no-repeat;
-  background-size:calc(102px*6) calc(138px*12);
-  /* Wajib: tanpa ini browser menghaluskan sprite saat diperbesar dan
-     piksel-artnya jadi buram. */
-  image-rendering:pixelated;
+  background-size:calc(85px*6) calc(170px*12);
+  /* Sprite chibi DIPERKECIL (x0,664), bukan diperbesar: "pixelated" di sini
+     membuang baris piksel secara tidak rata dan garis luarnya putus-putus.
+     Penghalusan biasa yang benar untuk pengecilan. */
+  image-rendering:auto;
   transform:scaleX(var(--hadap,1));
   transform-origin:center bottom;
   animation:jalan-sprite var(--dur,.9s) steps(var(--frames,2)) infinite;
@@ -138,7 +141,7 @@ img{image-rendering:auto}
    JS lewat gaya sebaris, jadi dua sumbunya tidak saling menimpa. */
 @keyframes jalan-sprite{
   from{background-position-x:0}
-  to{background-position-x:calc(-102px * var(--frames,2))}
+  to{background-position-x:calc(-85px * var(--frames,2))}
 }
 .teman.cowok .sprite{background-image:url("../../img/render/8bit-cowok.png")}
 .teman.cewek .sprite{background-image:url("../../img/render/8bit-cewek.png")}

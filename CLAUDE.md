@@ -417,6 +417,14 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
 
     Penjaganya `PenggeserSentuhTests` di `cards/tests/test_editor_ux.py`.
 
+- **Karakter Game 8-Bit diganti chibi (12 Okt 2026)**, permintaan pemilik
+  situs, dari "Lembar Sprite Pixel Chibi Romantis" (`tools/8bit/lembar_chibi.png`,
+  TIDAK di-commit). Pembuatnya sekarang `tools/buat_sprite_8bit_chibi.py`
+  (`buat_sprite_8bit.py` lama dibiarkan untuk jalan pulang). Sel 128x256,
+  tampil 85x170, `image-rendering:auto` (sprite DIPERKECIL — pixelated
+  memutus garis luar). Langkah cewek 5 frame, cowok 6 (`ANIM.walk.cewek`).
+  Gerakan yang tidak ada di lembarnya dirakit: kepala ekspresi ditempel ke
+  badan berdiri, lompat = frame diangkat. PNG 256 warna (~230-280 KB).
 - **Template Game 8-Bit** (5 Agu 2026) — kartu MENDATAR 16:9 pertama
   (`data-stage="lebar"`), 8 babak, dua karakter piksel yang berjalan
   menemani penerima, babak tiup lilin, dan ubin Momen yang bisa dibalik ke

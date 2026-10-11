@@ -257,21 +257,23 @@ if (putarBtn && putarEl) {
    urutan di sana diubah, ubah juga di sini. */
 const ANIM = {
   idle: { baris: 0, frames: 2, dur: 1.1 },
-  walk: { baris: 1, frames: 4, dur: .62 },
-  run: { baris: 2, frames: 4, dur: .42 },
-  wave: { baris: 3, frames: 3, dur: .66 },
-  happy: { baris: 4, frames: 2, dur: .5 },
-  surprised: { baris: 5, frames: 2, dur: .7 },
+  // Langkah cewek 5 frame, cowok 6 — sesuai lembar sprite chibi-nya.
+  walk: { baris: 1, frames: 6, dur: .78, cewek: 5 },
+  run: { baris: 2, frames: 6, dur: .48, cewek: 5 },
+  wave: { baris: 3, frames: 2, dur: .7 },
+  happy: { baris: 4, frames: 2, dur: .7 },
+  surprised: { baris: 5, frames: 2, dur: .8 },
   sit: { baris: 6, frames: 2, dur: 1.5 },
   sleep: { baris: 7, frames: 2, dur: 2.2 },
   jump: { baris: 8, frames: 3, dur: .5 },
-  celebrate: { baris: 9, frames: 4, dur: .48 },
+  celebrate: { baris: 9, frames: 4, dur: .64 },
   hug: { baris: 10, frames: 2, dur: 1.4 },
-  blow: { baris: 11, frames: 3, dur: .42 },
+  blow: { baris: 11, frames: 3, dur: .6 },
 };
 
-const TINGGI_FRAME = 138;
-const LEBAR_TEMAN = 102;
+// Sel sprite chibi 128x256 ditampilkan 85x170 (tools/buat_sprite_8bit_chibi.py).
+const TINGGI_FRAME = 170;
+const LEBAR_TEMAN = 85;
 const W_KANVAS = 960;          // lebar kanonis; sama dengan --w0 di CSS
 
 /* Ke mana mereka berdiri di tiap babak, dan sedang apa. Posisi dalam pecahan
@@ -313,7 +315,8 @@ Teman.prototype.pasang = function (nama) {
   if (this.anim === nama) return;
   const a = ANIM[nama] || ANIM.idle;
   this.anim = nama;
-  this.sprite.style.setProperty('--frames', a.frames);
+  const cewek = this.el.classList.contains('cewek');
+  this.sprite.style.setProperty('--frames', (cewek && a.cewek) || a.frames);
   this.sprite.style.setProperty('--dur', a.dur + 's');
   this.sprite.style.backgroundPositionY = -(a.baris * TINGGI_FRAME) + 'px';
 };

@@ -143,8 +143,12 @@ img{image-rendering:auto}
   from{background-position-x:0}
   to{background-position-x:calc(-85px * var(--frames,2))}
 }
-.teman.cowok .sprite{background-image:url("../../img/render/8bit-cowok.png")}
-.teman.cewek .sprite{background-image:url("../../img/render/8bit-cewek.png")}
+/* ?v= WAJIB dinaikkan tiap lembar sprite dibuat ulang: perantara PHP di
+   Rumahweb menyimpan /static/ 7 hari dengan kunci alamat lengkap, dan url()
+   di CSS tidak ikut diberi penanda versi otomatis. Tanpa ini pengunjung
+   yourdigitalcard.my.id tetap melihat karakter lama (terjadi 12 Okt 2026). */
+.teman.cowok .sprite{background-image:url("../../img/render/8bit-cowok.png?v=chibi1")}
+.teman.cewek .sprite{background-image:url("../../img/render/8bit-cewek.png?v=chibi1")}
 /* Bayangan kecil supaya mereka berpijak, bukan melayang. */
 .teman::after{
   content:"";position:absolute;left:50%;bottom:-7px;
@@ -401,8 +405,8 @@ img{image-rendering:auto}
   background-size:calc(136px*6) calc(184px*12);
   image-rendering:pixelated;
 }
-.tokoh.cowok{background-image:url("../../img/render/8bit-cowok.png")}
-.tokoh.cewek{background-image:url("../../img/render/8bit-cewek.png")}
+.tokoh.cowok{background-image:url("../../img/render/8bit-cowok.png?v=chibi1")}
+.tokoh.cewek{background-image:url("../../img/render/8bit-cewek.png?v=chibi1")}
 
 /* ---------- BAR XP (halaman naik level) ---------- */
 .xp{

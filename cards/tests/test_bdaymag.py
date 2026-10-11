@@ -168,3 +168,22 @@ class Revisi11OktTests(TestCase):
         html = HTML.read_text(encoding="utf-8")
         for k in ("editor_title", "editor_title2", "playlist_name", "playlist_word"):
             self.assertRegex(html, r'--d-w:700[^"]*"><p class="tx f-tangan"\{% el card editing "' + k + '"')
+
+
+class HalamanProdukTests(TestCase):
+    """Halaman produk Birthday Magazine tanpa kartu hidup (12 Okt 2026):
+    galeri langsung dari potret ekspor Canva."""
+
+    def setUp(self):
+        _slug, nama, kategori, cfg = next(s for s in SEEDS if s[0] == "birthday-magazine")
+        Template.objects.create(slug="birthday-magazine", name=nama, category=kategori,
+                                config=cfg, is_active=True)
+
+    def test_galeri_langsung_tanpa_pratinjau_hidup(self):
+        self.assertTrue(config().get("galeri_saja"))
+        r = self.client.get(reverse("cards:template_detail", args=["birthday-magazine"]))
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, "?sematan=1")
+        self.assertNotContains(r, "data-catatan-hidup")
+        self.assertContains(r, '<span class="lst-kini">1</span> / 9')
+        self.assertContains(r, 'class="lst-slide is-on" data-i="0"')

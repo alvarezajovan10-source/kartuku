@@ -359,6 +359,9 @@ SEEDS = [
             # pelatnya. Jangan disunting di sini; ubah tools/bdaymag/spek.py
             # lalu jalankan ulang skripnya dan salin hasilnya.
             "renderer": "bdaymag",
+            # Halaman produk tanpa kartu hidup: galeri langsung dari potret
+            # ekspor Canva berfoto (permintaan pemilik situs, 12 Okt 2026).
+            "galeri_saja": True,
             "frames": [
                 {"key": "f_sampul", "label": "Foto sampul", "area": "bm1", "rasio": 0.689, "asli": True},
                 {"key": "f_isi1", "label": "Daftar isi — foto 1", "area": "bm2", "rasio": 1.234},

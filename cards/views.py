@@ -367,6 +367,7 @@ def template_detail(request, template_slug):
             "harga_normal": normal if potongan else 0,
             "potongan": potongan,
             "galeri": _galeri(template.slug),
+            "galeri_saja": bool(config.get("galeri_saja")) and bool(_galeri(template.slug)),
             "lencana_kode": lencana_kode,
             "lencana_teks": lencana_teks,
             "lain": lain,

@@ -39,13 +39,21 @@
       {% endcomment %}
       {% if galeri %}
       <div class="lst-strip" role="tablist" aria-label="Galeri {{ template.name }}">
+        {% comment %}
+          galeri_saja (config template): tanpa kartu hidup, galeri langsung
+          dibuka dari potret pertama. Untuk template yang potretnya dari
+          desain berfoto (Birthday Magazine, ekspor Canva) — kartu contohnya
+          yang kosong kalah jauh dibanding potret itu sebagai etalase.
+        {% endcomment %}
+        {% if not galeri_saja %}
         <button class="lst-thumb is-on" data-i="0" role="tab" aria-selected="true" title="Coba kartunya">
           <span class="lst-main-ikon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z" fill="currentColor" stroke="none"/></svg>
           </span>
         </button>
+        {% endif %}
         {% for g in galeri %}
-          <button class="lst-thumb" data-i="{{ forloop.counter }}" role="tab" aria-selected="false"
+          <button class="lst-thumb{% if galeri_saja and forloop.first %} is-on{% endif %}" data-i="{% if galeri_saja %}{{ forloop.counter0 }}{% else %}{{ forloop.counter }}{% endif %}" role="tab" aria-selected="{% if galeri_saja and forloop.first %}true{% else %}false{% endif %}"
                   title="Halaman {{ forloop.counter }}">
             <img src="{{ g }}" alt="Halaman {{ forloop.counter }} {{ template.name }}" loading="lazy">
           </button>
@@ -68,12 +76,14 @@
           </span>
         {% endif %}
 
+        {% if not galeri_saja %}
         <div class="lst-slide is-on" data-i="0">
           <iframe src="{% url 'cards:preview' template.slug %}?sematan=1"
                   title="Coba {{ template.name }}" loading="lazy"></iframe>
         </div>
+        {% endif %}
         {% for g in galeri %}
-          <div class="lst-slide" data-i="{{ forloop.counter }}">
+          <div class="lst-slide{% if galeri_saja and forloop.first %} is-on{% endif %}" data-i="{% if galeri_saja %}{{ forloop.counter0 }}{% else %}{{ forloop.counter }}{% endif %}">
             <img src="{{ g }}" alt="Halaman {{ forloop.counter }} {{ template.name }}" loading="lazy">
           </div>
         {% endfor %}
@@ -81,12 +91,14 @@
         {% if galeri %}
           <button class="lst-nav lst-prev" aria-label="Sebelumnya">‹</button>
           <button class="lst-nav lst-next" aria-label="Berikutnya">›</button>
-          <p class="lst-hitung"><span class="lst-kini">1</span> / {{ galeri|length|add:1 }}</p>
+          <p class="lst-hitung"><span class="lst-kini">1</span> / {% if galeri_saja %}{{ galeri|length }}{% else %}{{ galeri|length|add:1 }}{% endif %}</p>
         {% endif %}
       </div>
+      {% if not galeri_saja %}
       <p class="lst-catatan" data-catatan-hidup>
         Ini kartunya yang sungguhan, bukan gambar. <b>Sapu ke samping untuk membalik halaman.</b>
       </p>
+      {% endif %}
     </div>
 
     {# ══════════ Ulasan ══════════ #}

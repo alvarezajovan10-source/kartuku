@@ -1150,6 +1150,95 @@ Ringkasan untuk sesi berikutnya. Perbarui bagian ini kalau keadaannya berubah.
   > **Satu-satunya yang ditambahkan** ke desainnya: bayangan lipatan
   > punggung buku di tepi kiri dan efek cahaya saat lembar dibalik.
 
+- **Template Birthday Magazine** (`birthday-magazine`, renderer `bdaymag`,
+  6-7 Okt 2026, kategori Birthday) — majalah ulang tahun TERBUKA sembilan
+  hamparan dari desain Canva pemilik situs "magazine template 1"
+  (`DAHTj9DbLAg`). **47 bingkai foto, 50 teks.** Masih LOKAL: belum
+  di-commit, belum di-deploy, belum ada thumbnail galeri.
+
+  Gabungan dua renderer: rangka & balik hamparan dari Majalah Cinta
+  (`data-stage="majalah"`, `bdaymag.js` = SALINAN `majalah.js`, bukan
+  dipakai bersama), halaman berupa PELAT berlubang seperti Valentine Story.
+
+  - **Tiga berkas KELUARAN skrip — jangan disunting langsung.**
+    `static/img/bdaymag/s{1-9}{k,n}.webp` dari `tools/buat_pelat_bdaymag.py`;
+    `cards/templates/cards/render/bdaymag.html` dan daftar frames/texts di
+    `seed_templates.py` dari `tools/buat_html_bdaymag.py`. Yang disunting:
+    `tools/bdaymag/spek.py` (elemen Canva mana yang jadi teks/foto sunting)
+    dan `tools/bdaymag/kerangka.html` (rangka HTML). Bahannya di
+    `tools/bdaymag/`: `asli/majalah.pdf` (ekspor PDF), `asli/hal*.png`
+    (ekspor PNG 2x), `canva_struktur.json` (read-design: posisi & id elemen).
+  - **Desain Canva-nya TIDAK BOLEH diubah** (pemilik situs menolak menyimpan
+    salinan yang teksnya dicabut). Semua pembongkaran dari ekspor saja. Ada
+    salinan `DAHXP0HJ7u8` di akun Canva-nya, isinya identik dengan asli.
+  - **Foto dikenali dari ketiadaan SMask** di PDF (semua hiasan Canva
+    berlatar transparan), lubangnya dari render putih/hitam seperti Valentine.
+    Pengecualian: 3 polaroid bertumpuk hamparan 8 adalah grup yang
+    langitnya terbakar di gambarnya — fotonya di ATAS pelat (`.di-atas`).
+  - **Judul rubrik berfont berbayar SENGAJA tetap di pelat** (CONTENTS,
+    WHO'S THAT GIRL?, Her iconic moments, angka 1-10, "Love you").
+    **Sampul pengecualian sejak 11 Okt 2026:** SEMUA teksnya bisa disunting
+    (masthead BIRTHDAY, MAGAZINE, BIRTHDAY EDITION, HAPPY BIRTHDAY ikut
+    dicabut dari pelat). MAGAZINE = Copperplate Gothic -> **Cinzel + 0,11em**
+    (`SPASI_PENGGANTI` di spek.py; semua padanan bebas lebih sempit).
+  - **Latar playlist (`f_lagu_latar`) berkelas `.latar`** (opsi `"latar"` di
+    spek.FOTO): fotonya diredupkan `brightness(.58)`, dan `.ketuk`-nya di
+    BAWAH pelat supaya arsiran & label "+ foto latar" tidak menimpa kartu
+    lagu (label di celah kartu 1-2).
+  - **Halaman 17 (surat) seluruhnya Indie Flower** (11 Okt 2026; contoh
+    pemilik situs "JarvisHand" bukan font sungguhan). Lewat
+    `spek.FONT_ELEMEN` (font per elemen) dan `spek.SESUAI_ELEMEN`: kotak isi
+    surat Canva memanjang sampai 88,8% dan menimpa salam penutup — dihentikan
+    di 85,4%, huruf x0,92. Judul "The Editors Notes" (hal 4) dan "Keelya's
+    Playlist" (hal 12) ikut Indie Flower dan dicabut dari pelat jadi teks
+    sunting (`editor_title`, `editor_title2`, `playlist_word`). Judul tangan
+    (huruf Canva >= 30px) selalu tebal, isi selalu biasa. `SESUAI_ELEMEN`
+    kini juga punya `"lebar"` (pengali) dan `"geser"` (persen halaman).
+    Teks sunting: Montserrat/Poppins/Be Vietnam Pro/Pinyon/Playfair (font
+    Google asli desainnya) + pengganti terukur: The Seasons -> **Bellefair**
+    (lebar 1,016; Bodoni Moda 1,124 membuat teks sampul mengecil ke 0,88),
+    Edwardian -> Pinyon, Amsterdam -> Allura.
+  - **Tinggi kotak teks Canva = (baris-1) x line-height + ~1,2 x ukuran
+    huruf.** CSS menghitung baris pertama setinggi line-height penuh, jadi
+    `.tx` diberi margin negatif `(--d-m - line-height)/2`. Tanpa itu SEMUA
+    teks satu baris berukuran besar terukur kepanjangan dan pengecil
+    `--muat` di `bdaymag.js` mengecilkan teks bawaan yang sebenarnya pas.
+  - **Tiga jebakan yang sudah dibayar** (dijaga `cards/tests/test_bdaymag.py`):
+    1. Posisi bingkai di `.slot`, BUKAN di `.bingkai`: di kartu terbit
+       `{% frame %}` menulis atribut style sendiri (crop pembeli) dan
+       atribut style kedua dibuang browser.
+    2. `.majalah .slot > .bingkai` tiga bagian: `editing.css` memasang
+       `[data-frame].is-empty{position:relative}` dan dua kelas SERI lalu
+       kalah urutan — bingkai kosong jadi setinggi nol.
+    3. Id hamparan `bm1..bm9`, bukan `sp*`: `SCENE_LABELS` di
+       `alpine-editor.js` global, dan `sp*` milik Majalah Cinta.
+  - Redaksi teks sempat menghapus "1" dari angka "10" (hamparan 8) — kotak
+    hurufnya menyentuh paragraf JEWELRY. Dipulihkan `selamatkan_teks_tetap()`
+    dari render tanpa redaksi, dibatasi kotak elemen.
+  - Server dev dengan `--noreload` menyimpan template lama di memori:
+    sesudah menjalankan ulang `buat_html_bdaymag.py`, restart server-nya.
+  - **Revisi balik halaman 11 Okt 2026** (keluhan pemilik situs: balik ke
+    sampul sesudah sunting/unggah, pelat hal 8-9 "jalan" hilang, putaran
+    tidak mulus, kedipan halaman lama). Dijaga `BalikHalamanTests`.
+    1. **Satu akar untuk empat keluhan:** `card-frame.js` dimuat `defer`,
+       jadi `.active` dari `?scene=` dipasang SESUDAH `bdaymag.js` jalan.
+       Mesinnya mengira sampul yang terbuka -> pelat hamparan yang tampil
+       tidak `.dekat` (tidak di-decode) dan panah melompat ke hal 2.
+       Sekarang `hamparanAwal()` membaca `?scene=` sendiri, lalu
+       sessionStorage (`bdaymag:<path>`, bukan saat menyunting).
+    2. Editor tidak pernah tahu halaman yang dibalik di DALAM pratinjau;
+       sekarang kartu mengirim pesan `halaman` dan `alpine-editor.js`
+       menyalinnya ke `currentScene`.
+    3. Tetangga `.dekat` ikut DIGAMBAR di bawah hamparan aktif (z-index),
+       bukan `visibility:hidden` — menghapus kedipan saat klon dibuang.
+    4. Putaran memakai Web Animations (transform + opacity saja, lapisan
+       `.bayang`), bisa DITARIK jari/mouse (lembar mengikuti, dilepas
+       diteruskan >1/3 atau dilempar). Klon digambar dua bingkai sebelum
+       bergerak: render klon pertama 40-110 ms di WebKit.
+    5. **Sisi lembar ditukar JS di 90 derajat**, bukan `backface-visibility`
+       — WebKit memperlihatkan muka tercermin (sama seperti Valentine).
+       Terukur di WebKit & Chrome: ~60 fps selama bergerak.
+
 ### Sedang berjalan
 
 1. **Webhook Lynk.id** — Lynk punya webhook (Settings → Integrations → Webhook).

@@ -1,0 +1,86 @@
+{% load static card_extras %}<!DOCTYPE html>
+<html lang="id" data-stage="majalah">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk {{ card.recipient_name|default:"kamu" }} ♥</title>
+<meta name="robots" content="noindex, nofollow">
+{% include "cards/_card_head.html" %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+{% comment %}
+  BIRTHDAY MAGAZINE — BERKAS INI KELUARAN tools/buat_html_bdaymag.py.
+  Jangan disunting langsung: sunting tools/bdaymag/kerangka.html (rangka ini)
+  atau tools/bdaymag/spek.py (teks & foto mana yang bisa disunting), lalu
+  jalankan skripnya. Kotak-kotak di bawah diturunkan dari koordinat desain
+  Canva yang SAMA dengan pelat gambarnya (tools/buat_pelat_bdaymag.py), dan
+  keduanya harus tetap berpasangan.
+
+  Font. Desainnya memakai lima font yang memang font Google — Montserrat,
+  Poppins, Be Vietnam, Pinyon Script, Playfair Display — jadi teks itu
+  hurufnya SAMA PERSIS dengan Canva. Tiga sisanya font berbayar yang
+  lisensinya cuma berlaku di dalam Canva, dan diganti:
+    TheSeasons-Bd       -> Bellefair     (teks sampul; padanan terukur, lihat spek.py)
+    ITC Edwardian Script-> Pinyon Script (nama di judul playlist)
+    Amsterdam-Four      -> Allura        (tanda tangan surat)
+  Judul rubrik yang memakai font berbayar lain (CONTENTS, WHO'S THAT GIRL?,
+  Her iconic moments, angka Things She Loves) TIDAK ditulis ulang — mereka
+  dibiarkan menyatu dengan pelat, jadi tetap huruf Canva aslinya.
+{% endcomment %}
+<link href="https://fonts.googleapis.com/css2?family=Bellefair&family=Poppins:wght@400;700&family=Montserrat:wght@400;700&family=Be+Vietnam+Pro:ital,wght@0,400;1,400&family=Playfair+Display:wght@400;700&family=Pinyon+Script&family=Allura&family=Cinzel&family=Indie+Flower&display=swap" rel="stylesheet">
+{% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
+<link rel="stylesheet" href="{% static_v 'css/render/bdaymag.css' %}">
+{% include "cards/_stage_head.html" %}
+{% if editing %}
+<link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
+<script defer src="{% static_v 'js/card-frame.js' %}"></script>
+{% endif %}
+</head>
+<body{% if editing %} class="is-editing"{% endif %}>
+
+{% comment %}
+  Tiap <section class="scene"> = satu HAMPARAN (kiri + kanan), sama seperti
+  Majalah Cinta, dan kontrak editornya sama: id hamparan dipakai sebagai
+  "area" bingkai foto di seed_templates.py, hamparan yang dibaca ber-.active,
+  dan window.show(id) ada di bdaymag.js.
+
+  Isi satu halaman bertumpuk dalam urutan tetap:
+    .bingkai .gbr   foto pembeli       (z 1) — DI BELAKANG pelat
+    .pelat          karya Canva        (z 2) — berlubang di tempat foto
+    .bingkai .ketuk sasaran klik foto  (z 3) — hanya saat menyunting
+    .di-atas .gbr   foto polaroid h.8  (z 3) — lihat buat_pelat_bdaymag.py
+    .kotak-tx       teks sunting       (z 4)
+  .bingkai sendiri SENGAJA tidak diputar dan tidak ber-z-index: kalau ia
+  membuat konteks tumpukan, .gbr dan .ketuk terkunci di sisi pelat yang
+  sama dan salah satunya pasti salah. Yang diputar anak-anaknya.
+{% endcomment %}
+<div id="card-viewport"><div id="card-stage">
+<div class="majalah" id="majalah">
+{# ISI_HAMPARAN #}
+
+  <!-- Punggung majalah: bayangan lipatan di tengah, di ATAS kedua halaman. -->
+  <div class="punggung" aria-hidden="true"></div>
+</div>
+</div></div>
+
+{% comment %}
+  Navigasi di LUAR #card-viewport supaya ukurannya normal di layar besar.
+  Tingginya harus sepadan dengan SISA_NAV (54px) di card-stage.js.
+{% endcomment %}
+<nav class="nav" id="nav">
+  <button type="button" class="nav-tbl" data-arah="mundur" aria-label="Halaman sebelumnya">‹</button>
+  <span class="nav-hitung" id="nav-hitung">1 / 9</span>
+  <button type="button" class="nav-tbl" data-arah="maju" aria-label="Halaman berikutnya">›</button>
+</nav>
+
+<div class="putar-hp" id="putar-hp" hidden>
+  <span aria-hidden="true">⟳</span>
+  <p>Majalah ini terbuka lebar — putar HP-mu ke samping supaya terbaca.</p>
+</div>
+
+<script src="{% static_v 'js/render/bdaymag.js' %}"></script>
+{% include "cards/_bgm.html" %}
+{% include "cards/_fullscreen.html" %}
+{% include "cards/_preview_bar.html" %}
+</body>
+</html>

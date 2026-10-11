@@ -28,6 +28,19 @@
   var W0_BUKU = 390;
   var H0_BUKU = 551.6;   // 390 x (842,25/595,5) — perbandingan A4
   var K_MAX_BUKU = 1.6;  // di atas ini pelat halamannya mulai terlihat lunak
+
+  // Kartu "majalah": majalah TERBUKA, dua halaman A4 berdampingan. Aturannya
+  // sama dengan "buku" — harus muat utuh, tinggi layar dipotong dulu sebesar
+  // bilah navigasi — hanya kanvas kanonisnya dua kali lebih lebar.
+  //
+  // K_MAX-nya lebih kecil daripada "buku" (1,15 vs 1,6) bukan karena pelatnya,
+  // melainkan karena hamparan yang dibesarkan melewati itu sudah lebih lebar
+  // daripada layar laptop mana pun: yang membatasi selalu lebar, tidak pernah
+  // tinggi, jadi angka besar di sini tidak pernah terpakai dan cuma menyesatkan
+  // orang yang membacanya nanti.
+  var W0_MAJALAH = 780;    // 2 x 390
+  var H0_MAJALAH = 551.6;  // sama dengan H0_BUKU — perbandingan A4
+  var K_MAX_MAJALAH = 1.15;
   var SISA_NAV = 54;
 
   var root = document.documentElement;
@@ -50,6 +63,13 @@
       // tengah dan penerima harus memperbesar sendiri.
       var h = hNyata || H0_LEBAR;
       root.style.setProperty("--k", Math.min(w / W0_LEBAR, h / H0_LEBAR));
+      return;
+    }
+    if (root.dataset.stage === "majalah") {
+      var hm = (hNyata || H0_MAJALAH) - SISA_NAV;
+      root.style.setProperty(
+        "--k", Math.min(w / W0_MAJALAH, hm / H0_MAJALAH, K_MAX_MAJALAH)
+      );
       return;
     }
     if (root.dataset.stage === "buku") {

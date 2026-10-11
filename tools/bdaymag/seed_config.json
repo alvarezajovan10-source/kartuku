@@ -1,0 +1,576 @@
+{
+ "frames": [
+  {
+   "key": "f_sampul",
+   "label": "Foto sampul",
+   "area": "bm1",
+   "rasio": 0.689,
+   "asli": true
+  },
+  {
+   "key": "f_isi1",
+   "label": "Daftar isi — foto 1",
+   "area": "bm2",
+   "rasio": 1.234
+  },
+  {
+   "key": "f_isi2",
+   "label": "Daftar isi — foto 2",
+   "area": "bm2",
+   "rasio": 1.173
+  },
+  {
+   "key": "f_isi3",
+   "label": "Daftar isi — foto 3",
+   "area": "bm2",
+   "rasio": 1.256
+  },
+  {
+   "key": "f_isi4",
+   "label": "Daftar isi — foto 4",
+   "area": "bm2",
+   "rasio": 1.415
+  },
+  {
+   "key": "f_editor",
+   "label": "Foto Editor's Notes",
+   "area": "bm3",
+   "rasio": 1.711
+  },
+  {
+   "key": "f_cheers",
+   "label": "Polaroid Cheers",
+   "area": "bm3",
+   "rasio": 1.471
+  },
+  {
+   "key": "f_girl",
+   "label": "Potret Who's That Girl",
+   "area": "bm4",
+   "rasio": 0.363,
+   "asli": true
+  },
+  {
+   "key": "f_girl1",
+   "label": "Galeri dia — besar 1",
+   "area": "bm4",
+   "rasio": 0.778
+  },
+  {
+   "key": "f_girl2",
+   "label": "Galeri dia — besar 2",
+   "area": "bm4",
+   "rasio": 1.484
+  },
+  {
+   "key": "f_girl3",
+   "label": "Galeri dia — besar 3",
+   "area": "bm4",
+   "rasio": 1.071
+  },
+  {
+   "key": "f_girl4",
+   "label": "Galeri dia — kecil 1",
+   "area": "bm4",
+   "rasio": 1.132
+  },
+  {
+   "key": "f_girl5",
+   "label": "Galeri dia — kecil 2",
+   "area": "bm4",
+   "rasio": 1.132
+  },
+  {
+   "key": "f_girl6",
+   "label": "Galeri dia — kecil 3",
+   "area": "bm4",
+   "rasio": 1.132
+  },
+  {
+   "key": "f_girl7",
+   "label": "Galeri dia — kecil 4",
+   "area": "bm4",
+   "rasio": 1.132
+  },
+  {
+   "key": "f_j1",
+   "label": "Polaroid perjalanan 1",
+   "area": "bm5",
+   "rasio": 0.93
+  },
+  {
+   "key": "f_j2",
+   "label": "Polaroid perjalanan 2",
+   "area": "bm5",
+   "rasio": 0.935
+  },
+  {
+   "key": "f_j3",
+   "label": "Polaroid perjalanan 3",
+   "area": "bm5",
+   "rasio": 1.075
+  },
+  {
+   "key": "f_j4",
+   "label": "Polaroid perjalanan 4",
+   "area": "bm5",
+   "rasio": 0.977
+  },
+  {
+   "key": "f_j6",
+   "label": "Polaroid perjalanan 6",
+   "area": "bm5",
+   "rasio": 0.899
+  },
+  {
+   "key": "f_j5",
+   "label": "Polaroid perjalanan 5",
+   "area": "bm5",
+   "rasio": 1.102
+  },
+  {
+   "key": "f_love1",
+   "label": "Foto besar Love (atas)",
+   "area": "bm6",
+   "rasio": 1.421
+  },
+  {
+   "key": "f_love2",
+   "label": "Foto besar You (bawah)",
+   "area": "bm6",
+   "rasio": 1.432
+  },
+  {
+   "key": "f_m1",
+   "label": "Momen 1",
+   "area": "bm6",
+   "rasio": 0.977
+  },
+  {
+   "key": "f_m3",
+   "label": "Momen 3",
+   "area": "bm6",
+   "rasio": 0.977
+  },
+  {
+   "key": "f_m5",
+   "label": "Momen 5",
+   "area": "bm6",
+   "rasio": 0.977
+  },
+  {
+   "key": "f_m2",
+   "label": "Momen 2",
+   "area": "bm6",
+   "rasio": 0.977
+  },
+  {
+   "key": "f_m4",
+   "label": "Momen 4",
+   "area": "bm6",
+   "rasio": 0.977
+  },
+  {
+   "key": "f_m6",
+   "label": "Momen 6",
+   "area": "bm6",
+   "rasio": 0.977
+  },
+  {
+   "key": "f_lagu_latar",
+   "label": "Latar halaman playlist",
+   "area": "bm7",
+   "rasio": 0.782,
+   "asli": true
+  },
+  {
+   "key": "f_lagu",
+   "label": "Sampul lagu di pemutar",
+   "area": "bm7",
+   "rasio": 0.939
+  },
+  {
+   "key": "f_lagu1",
+   "label": "Sampul lagu 1",
+   "area": "bm7",
+   "rasio": 1.027
+  },
+  {
+   "key": "f_lagu2",
+   "label": "Sampul lagu 2",
+   "area": "bm7",
+   "rasio": 1.027
+  },
+  {
+   "key": "f_lagu3",
+   "label": "Sampul lagu 3",
+   "area": "bm7",
+   "rasio": 1.027
+  },
+  {
+   "key": "f_suka1",
+   "label": "Kesukaan — foto 1",
+   "area": "bm8",
+   "rasio": 0.828
+  },
+  {
+   "key": "f_suka2",
+   "label": "Kesukaan — foto 2",
+   "area": "bm8",
+   "rasio": 1.555
+  },
+  {
+   "key": "f_suka3",
+   "label": "Kesukaan — foto 3",
+   "area": "bm8",
+   "rasio": 1.339
+  },
+  {
+   "key": "f_suka4",
+   "label": "Kesukaan — foto 4",
+   "area": "bm8",
+   "rasio": 0.871
+  },
+  {
+   "key": "f_suka5",
+   "label": "Kesukaan — foto 5",
+   "area": "bm8",
+   "rasio": 2.535
+  },
+  {
+   "key": "f_suka9",
+   "label": "Kesukaan — foto 9",
+   "area": "bm8",
+   "rasio": 1.369
+  },
+  {
+   "key": "f_suka12",
+   "label": "Kesukaan — foto 12",
+   "area": "bm8",
+   "rasio": 0.77
+  },
+  {
+   "key": "f_suka11",
+   "label": "Kesukaan — foto 11",
+   "area": "bm8",
+   "rasio": 0.77
+  },
+  {
+   "key": "f_suka10",
+   "label": "Kesukaan — foto 10",
+   "area": "bm8",
+   "rasio": 0.871
+  },
+  {
+   "key": "f_suka6",
+   "label": "Kesukaan — polaroid kiri",
+   "area": "bm8",
+   "rasio": 0.938
+  },
+  {
+   "key": "f_suka7",
+   "label": "Kesukaan — polaroid tengah",
+   "area": "bm8",
+   "rasio": 1.006
+  },
+  {
+   "key": "f_suka8",
+   "label": "Kesukaan — polaroid kanan",
+   "area": "bm8",
+   "rasio": 1.072
+  },
+  {
+   "key": "f_cermin",
+   "label": "Foto di cermin surat",
+   "area": "bm9",
+   "rasio": 0.698
+  }
+ ],
+ "texts": [
+  {
+   "key": "cover_masthead",
+   "label": "Judul besar sampul",
+   "default": "BIRTHDAY"
+  },
+  {
+   "key": "cover_magazine",
+   "label": "Tulisan di bawah judul",
+   "default": "MAGAZINE"
+  },
+  {
+   "key": "cover_kicker",
+   "label": "Judul kecil sampul",
+   "default": "THE IT GIRL\nFILES;\nBIRTHDAY\nEDITION"
+  },
+  {
+   "key": "cover_age",
+   "label": "Umur",
+   "default": "22"
+  },
+  {
+   "key": "cover_edition",
+   "label": "Edisi di sampul",
+   "default": "BIRTHDAY\nEDITION"
+  },
+  {
+   "key": "cover_hbd",
+   "label": "Ucapan di sampul",
+   "default": "HAPPY BIRTHDAY."
+  },
+  {
+   "key": "cover_name",
+   "label": "Nama di sampul",
+   "default": "KEELYA\nALBEY"
+  },
+  {
+   "key": "cover_tag",
+   "label": "Kalimat sampul",
+   "default": "SHE GLOW, SHE LEADS,\nSHE INSPIRES."
+  },
+  {
+   "key": "editor_title",
+   "label": "Judul Editor's Notes",
+   "default": "The Editors"
+  },
+  {
+   "key": "editor_title2",
+   "label": "Judul Editor's Notes — kata kedua",
+   "default": "Notes"
+  },
+  {
+   "key": "editor_note",
+   "label": "Catatan editor",
+   "default": "Today is not only about celebrating a birthday, but also about celebrating the person you have become through every challenge, every achievement, every lesson, and every little moment in between. Looking back, this year has been filled with growth, laughter, unexpected adventures, and countless memories that have shaped your story."
+  },
+  {
+   "key": "girl_body",
+   "label": "Cerita Who's That Girl",
+   "default": "She’s the reason this special edition exists—a girl filled with kindness, laughter, and unforgettable memories. Today, we’re celebrating her story, her journey, and everything that makes her unique. From the little moments that often go unnoticed to the milestones that deserve to be remembered forever, every chapter of her life tells a story worth sharing."
+  },
+  {
+   "key": "j1_title",
+   "label": "Perjalanan 1 — judul",
+   "default": "SUNSET CHATS"
+  },
+  {
+   "key": "j4_title",
+   "label": "Perjalanan 4 — judul",
+   "default": "FESTIVAL FUN"
+  },
+  {
+   "key": "j2_title",
+   "label": "Perjalanan 2 — judul",
+   "default": "ROOFTOP BARS"
+  },
+  {
+   "key": "j3_title",
+   "label": "Perjalanan 3 — judul",
+   "default": "ARTS GALLERIES"
+  },
+  {
+   "key": "j1_body",
+   "label": "Perjalanan 1 — cerita",
+   "default": "Golden skies, meaningful conversations, and the kind of friendship that makes every sunset feel a little more beautiful."
+  },
+  {
+   "key": "j2_body",
+   "label": "Perjalanan 2 — cerita",
+   "default": "Good drinks, city lights, and rooftop nights that feel like they could last forever."
+  },
+  {
+   "key": "j3_body",
+   "label": "Perjalanan 3 — cerita",
+   "default": "Wandering through art galleries, finding beauty in every corner and inspiration in every brushstroke."
+  },
+  {
+   "key": "j4_body",
+   "label": "Perjalanan 4 — cerita",
+   "default": "Bright lights, loud music, good vibes, and unforgettable memories—festival days are always the best days."
+  },
+  {
+   "key": "m1_cap",
+   "label": "Momen 1 — keterangan",
+   "default": "Laughing at nothing"
+  },
+  {
+   "key": "m2_cap",
+   "label": "Momen 2 — keterangan",
+   "default": "Always hungry"
+  },
+  {
+   "key": "m4_cap",
+   "label": "Momen 4 — keterangan",
+   "default": "Human sunshine"
+  },
+  {
+   "key": "m3_cap",
+   "label": "Momen 3 — keterangan",
+   "default": "Walking pinterest board"
+  },
+  {
+   "key": "m5_cap",
+   "label": "Momen 5 — keterangan",
+   "default": "Delulu but happy"
+  },
+  {
+   "key": "m6_cap",
+   "label": "Momen 6 — keterangan",
+   "default": "The memory keeper"
+  },
+  {
+   "key": "playlist_name",
+   "label": "Nama di judul playlist",
+   "default": "Keelya’s"
+  },
+  {
+   "key": "playlist_word",
+   "label": "Judul playlist — kata kedua",
+   "default": "Playlist"
+  },
+  {
+   "key": "s1_title",
+   "label": "Lagu 1 — judul",
+   "default": "Daisies"
+  },
+  {
+   "key": "s1_artist",
+   "label": "Lagu 1 — penyanyi",
+   "default": "Justin Bieber"
+  },
+  {
+   "key": "s2_title",
+   "label": "Lagu 2 — judul",
+   "default": "Lemonade"
+  },
+  {
+   "key": "s2_artist",
+   "label": "Lagu 2 — penyanyi",
+   "default": "Jeremy Passion"
+  },
+  {
+   "key": "s3_title",
+   "label": "Lagu 3 — judul",
+   "default": "Damned"
+  },
+  {
+   "key": "s3_artist",
+   "label": "Lagu 3 — penyanyi",
+   "default": "Miguel"
+  },
+  {
+   "key": "l1_title",
+   "label": "Kesukaan 1 — judul",
+   "default": "COFFEE"
+  },
+  {
+   "key": "l1_body",
+   "label": "Kesukaan 1 — cerita",
+   "default": "Her daily ritual, her comfort, her little moment of peace in a busy world."
+  },
+  {
+   "key": "l2_title",
+   "label": "Kesukaan 2 — judul",
+   "default": "BOOKSTORE"
+  },
+  {
+   "key": "l2_body",
+   "label": "Kesukaan 2 — cerita",
+   "default": "She always leaves with more stories than she came for."
+  },
+  {
+   "key": "l3_title",
+   "label": "Kesukaan 3 — judul",
+   "default": "MUSIC"
+  },
+  {
+   "key": "l3_body",
+   "label": "Kesukaan 3 — cerita",
+   "default": "Every favorite song holds a memory."
+  },
+  {
+   "key": "l4_title",
+   "label": "Kesukaan 4 — judul",
+   "default": "PHOTOS"
+  },
+  {
+   "key": "l4_body",
+   "label": "Kesukaan 4 — cerita",
+   "default": "Capturing moments she never wants to forget."
+  },
+  {
+   "key": "l5_title",
+   "label": "Kesukaan 5 — judul",
+   "default": "FLOWERS"
+  },
+  {
+   "key": "l5_body",
+   "label": "Kesukaan 5 — cerita",
+   "default": "Tiny reminders that beautiful things grow slowly."
+  },
+  {
+   "key": "l6_title",
+   "label": "Kesukaan 6 — judul",
+   "default": "SUNSET"
+  },
+  {
+   "key": "l6_body",
+   "label": "Kesukaan 6 — cerita",
+   "default": "She could watch the sky change colors forever."
+  },
+  {
+   "key": "l7_title",
+   "label": "Kesukaan 7 — judul",
+   "default": "MOVIES"
+  },
+  {
+   "key": "l7_body",
+   "label": "Kesukaan 7 — cerita",
+   "default": "Escaping reality and feeling everything a little deeper."
+  },
+  {
+   "key": "l8_title",
+   "label": "Kesukaan 8 — judul",
+   "default": "SWEETS"
+  },
+  {
+   "key": "l8_body",
+   "label": "Kesukaan 8 — cerita",
+   "default": "Because life is always better with a little sugar."
+  },
+  {
+   "key": "l9_title",
+   "label": "Kesukaan 9 — judul",
+   "default": "FRIENDS"
+  },
+  {
+   "key": "l9_body",
+   "label": "Kesukaan 9 — cerita",
+   "default": "Her safe place, her laugh, her chosen family."
+  },
+  {
+   "key": "l10_title",
+   "label": "Kesukaan 10 — judul",
+   "default": "JEWELRY"
+  },
+  {
+   "key": "l10_body",
+   "label": "Kesukaan 10 — cerita",
+   "default": "Small details that make everything feel complete."
+  },
+  {
+   "key": "letter_title",
+   "label": "Judul surat",
+   "default": "A Letter to Keelya"
+  },
+  {
+   "key": "letter_body",
+   "label": "Isi surat",
+   "default": "Dear Friends,\n\nIf there’s one thing I’ll always be grateful for, it’s having people like you in my life. Thank you for the laughter, the endless conversations, the spontaneous adventures, and all the memories we’ve created together. Some of my favorite moments wouldn’t be the same without you.\n\nThank you for being there during both the good days and the difficult ones. For listening when I needed someone to talk to, celebrating my achievements as if they were your own, and reminding me that I’m never alone. Your kindness, support, and friendship have meant more to me than words can fully express.\n\nLife changes, people grow, and paths may lead us in different directions, but I hope we always carry these memories with us. No matter where we are or how much time passes, I’ll always look back on our friendship with a smile.\n\nThank you for being part of my story. I truly appreciate every moment, every laugh, and every memory we’ve shared. Here’s to all the memories behind us and all the ones still waiting to be made."
+  },
+  {
+   "key": "letter_close",
+   "label": "Salam penutup",
+   "default": "With love, always."
+  }
+ ]
+}

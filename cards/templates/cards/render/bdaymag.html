@@ -1,0 +1,607 @@
+{% load static card_extras %}<!DOCTYPE html>
+<html lang="id" data-stage="majalah">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk {{ card.recipient_name|default:"kamu" }} ♥</title>
+<meta name="robots" content="noindex, nofollow">
+{% include "cards/_card_head.html" %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+{% comment %}
+  BIRTHDAY MAGAZINE — BERKAS INI KELUARAN tools/buat_html_bdaymag.py.
+  Jangan disunting langsung: sunting tools/bdaymag/kerangka.html (rangka ini)
+  atau tools/bdaymag/spek.py (teks & foto mana yang bisa disunting), lalu
+  jalankan skripnya. Kotak-kotak di bawah diturunkan dari koordinat desain
+  Canva yang SAMA dengan pelat gambarnya (tools/buat_pelat_bdaymag.py), dan
+  keduanya harus tetap berpasangan.
+
+  Font. Desainnya memakai lima font yang memang font Google — Montserrat,
+  Poppins, Be Vietnam, Pinyon Script, Playfair Display — jadi teks itu
+  hurufnya SAMA PERSIS dengan Canva. Tiga sisanya font berbayar yang
+  lisensinya cuma berlaku di dalam Canva, dan diganti:
+    TheSeasons-Bd       -> Bellefair     (teks sampul; padanan terukur, lihat spek.py)
+    ITC Edwardian Script-> Pinyon Script (nama di judul playlist)
+    Amsterdam-Four      -> Allura        (tanda tangan surat)
+  Judul rubrik yang memakai font berbayar lain (CONTENTS, WHO'S THAT GIRL?,
+  Her iconic moments, angka Things She Loves) TIDAK ditulis ulang — mereka
+  dibiarkan menyatu dengan pelat, jadi tetap huruf Canva aslinya.
+{% endcomment %}
+<link href="https://fonts.googleapis.com/css2?family=Bellefair&family=Poppins:wght@400;700&family=Montserrat:wght@400;700&family=Be+Vietnam+Pro:ital,wght@0,400;1,400&family=Playfair+Display:wght@400;700&family=Pinyon+Script&family=Allura&family=Cinzel&family=Indie+Flower&display=swap" rel="stylesheet">
+{% if fonts_url %}<link href="{{ fonts_url }}" rel="stylesheet">{% endif %}
+<link rel="stylesheet" href="{% static_v 'css/render/bdaymag.css' %}">
+{% include "cards/_stage_head.html" %}
+{% if editing %}
+<link rel="stylesheet" href="{% static_v 'css/editing.css' %}">
+<script defer src="{% static_v 'js/card-frame.js' %}"></script>
+{% endif %}
+</head>
+<body{% if editing %} class="is-editing"{% endif %}>
+
+{% comment %}
+  Tiap <section class="scene"> = satu HAMPARAN (kiri + kanan), sama seperti
+  Majalah Cinta, dan kontrak editornya sama: id hamparan dipakai sebagai
+  "area" bingkai foto di seed_templates.py, hamparan yang dibaca ber-.active,
+  dan window.show(id) ada di bdaymag.js.
+
+  Isi satu halaman bertumpuk dalam urutan tetap:
+    .bingkai .gbr   foto pembeli       (z 1) — DI BELAKANG pelat
+    .pelat          karya Canva        (z 2) — berlubang di tempat foto
+    .bingkai .ketuk sasaran klik foto  (z 3) — hanya saat menyunting
+    .di-atas .gbr   foto polaroid h.8  (z 3) — lihat buat_pelat_bdaymag.py
+    .kotak-tx       teks sunting       (z 4)
+  .bingkai sendiri SENGAJA tidak diputar dan tidak ber-z-index: kalau ia
+  membuat konteks tumpukan, .gbr dan .ketuk terkunci di sisi pelat yang
+  sama dan salah satunya pasti salah. Yang diputar anak-anaknya.
+{% endcomment %}
+<div id="card-viewport"><div id="card-stage">
+<div class="majalah" id="majalah">
+
+  <!-- ═══════════ HAMPARAN 1 ═══════════ -->
+  <section class="scene active" id="bm1">
+    <div class="hal kiri meja" aria-hidden="true"></div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_sampul" %}
+    <div class="slot" style="--x:0.277%;--y:0%;--w:102.441%;--h:105.027%">
+      <div class="bingkai gelap{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_sampul" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s1n.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:2.176%;--y:1.189%;--w:96.446%;--h:14.984%;--d-s:68.15px;--d-l:1.4;--d-m:1.217;--d-k:0.049em;--d-a:center;--d-w:400;--d-c:#ffffff"><p class="tx f-seasons"{% el card editing "cover_masthead" %}>{% t card "cover_masthead" %}</p></div>
+    <div class="kotak-tx" style="--x:66.819%;--y:12.825%;--w:27.253%;--h:3.348%;--d-s:15.73px;--d-l:1.4;--d-m:1.18;--d-k:0.11em;--d-a:center;--d-w:400;--d-c:#ffffff"><p class="tx f-magazine"{% el card editing "cover_magazine" %}>{% t card "cover_magazine" %}</p></div>
+    <div class="kotak-tx" style="--x:4.103%;--y:24.923%;--w:26.012%;--h:18.094%;--d-s:18.35px;--d-l:1.4;--d-m:1.217;--d-k:0em;--d-a:left;--d-w:400;--d-c:#ffffff"><p class="tx f-seasons"{% el card editing "cover_kicker" %}>{% t card "cover_kicker" %}</p></div>
+    <div class="kotak-tx" style="--x:84.67%;--y:40.783%;--w:13.289%;--h:10.834%;--d-s:49.15px;--d-l:1.4;--d-m:1.217;--d-k:0em;--d-a:center;--d-w:400;--d-c:#ffffff"><p class="tx f-seasons"{% el card editing "cover_age" %}>{% t card "cover_age" %}</p></div>
+    <div class="kotak-tx" style="--x:71.983%;--y:49.979%;--w:24.783%;--h:9.866%;--d-s:20.97px;--d-l:1.4;--d-m:1.217;--d-k:0em;--d-a:right;--d-w:400;--d-c:#ffffff"><p class="tx f-seasons"{% el card editing "cover_edition" %}>{% t card "cover_edition" %}</p></div>
+    <div class="kotak-tx" style="--x:63.472%;--y:59.845%;--w:33.947%;--h:3.467%;--d-s:15.73px;--d-l:1.4;--d-m:1.217;--d-k:0em;--d-a:center;--d-w:400;--d-c:#ffffff"><p class="tx f-seasons"{% el card editing "cover_hbd" %}>{% t card "cover_hbd" %}</p></div>
+    <div class="kotak-tx" style="--x:4.103%;--y:65.821%;--w:38.726%;--h:15.157%;--d-s:38.43px;--d-l:0.95;--d-m:1.217;--d-k:0.085em;--d-a:left;--d-w:400;--d-c:#ffffff"><p class="tx f-seasons"{% el card editing "cover_name" %}>{% t card "cover_name" %}</p></div>
+    <div class="kotak-tx" style="--x:3.652%;--y:80.978%;--w:41.692%;--h:6.447%;--d-s:13.76px;--d-l:1.4;--d-m:1.217;--d-k:0.051em;--d-a:left;--d-w:400;--d-c:#ffffff"><p class="tx f-seasons"{% el card editing "cover_tag" %}>{% t card "cover_tag" %}</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 2 ═══════════ -->
+  <section class="scene" id="bm2">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_isi1" %}
+    <div class="slot" style="--x:-0%;--y:0%;--w:53.101%;--h:30.402%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_isi1" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_isi2" %}
+    <div class="slot" style="--x:50.583%;--y:0%;--w:50.492%;--h:30.402%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_isi2" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s2k.webp' %}')"></div>
+    </div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_isi3" %}
+    <div class="slot" style="--x:0.025%;--y:0%;--w:54.06%;--h:30.402%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_isi3" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_isi4" %}
+    <div class="slot" style="--x:49.628%;--y:-0%;--w:60.862%;--h:30.402%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_isi4" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s2n.webp' %}')"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 3 ═══════════ -->
+  <section class="scene" id="bm3">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_editor" %}
+    <div class="slot" style="--x:0%;--y:-1.624%;--w:100.529%;--h:41.507%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_editor" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s3k.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:10.72%;--y:42.451%;--w:49.323%;--h:7.527%;--d-s:34.73px;--d-l:1.4;--d-m:1.217;--d-k:0.021em;--d-a:center;--d-w:700;--d-c:#000000"><p class="tx f-tangan"{% el card editing "editor_title" %}>{% t card "editor_title" %}</p></div>
+    <div class="kotak-tx" style="--x:63.252%;--y:42.451%;--w:29.316%;--h:7.468%;--d-s:34.73px;--d-l:1.4;--d-m:1.187;--d-k:0em;--d-a:center;--d-w:700;--d-c:#000000"><p class="tx f-tangan"{% el card editing "editor_title2" %}>{% t card "editor_title2" %}</p></div>
+    <div class="kotak-tx" style="--x:9.38%;--y:55.34%;--w:78.283%;--h:26.585%;--d-s:13.39px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:justify;--d-w:400;--d-c:#000000;--d-i:italic"><p class="tx f-vietnam"{% el card editing "editor_note" %}>{% t card "editor_note" %}</p></div>
+    </div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_cheers" %}
+    <div class="slot" style="--x:13.408%;--y:21.226%;--w:70.223%;--h:33.724%;--r:-5.92deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_cheers" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s3n.webp' %}')"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 4 ═══════════ -->
+  <section class="scene" id="bm4">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_girl" %}
+    <div class="slot" style="--x:72.683%;--y:-3.051%;--w:54.232%;--h:105.687%;--r:-5.77deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s4k.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:3.123%;--y:46.5%;--w:66.927%;--h:34.225%;--d-s:13.9px;--d-l:1.4;--d-m:1.17;--d-k:0em;--d-a:justify;--d-w:400;--d-c:#000000"><p class="tx f-poppins"{% el card editing "girl_body" %}>{% t card "girl_body" %}</p></div>
+    </div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_girl1" %}
+    <div class="slot" style="--x:42.722%;--y:1.45%;--w:42.16%;--h:38.292%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl1" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_girl2" %}
+    <div class="slot" style="--x:42.409%;--y:41.258%;--w:55.122%;--h:26.247%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl2" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_girl3" %}
+    <div class="slot" style="--x:42.893%;--y:68.517%;--w:45.898%;--h:30.293%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl3" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_girl4" %}
+    <div class="slot" style="--x:5.653%;--y:12.379%;--w:32.741%;--h:20.428%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl4" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_girl5" %}
+    <div class="slot" style="--x:5.653%;--y:34.354%;--w:32.741%;--h:20.428%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl5" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_girl6" %}
+    <div class="slot" style="--x:5.653%;--y:56.329%;--w:32.741%;--h:20.428%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl6" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_girl7" %}
+    <div class="slot" style="--x:5.653%;--y:78.303%;--w:32.741%;--h:20.428%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_girl7" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s4n.webp' %}')"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 5 ═══════════ -->
+  <section class="scene" id="bm5">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_j1" %}
+    <div class="slot" style="--x:10.71%;--y:36.712%;--w:30.956%;--h:23.514%;--r:5.97deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_j1" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_j2" %}
+    <div class="slot" style="--x:34.554%;--y:80.278%;--w:20.938%;--h:15.82%;--r:-6.09deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_j2" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_j3" %}
+    <div class="slot" style="--x:68.385%;--y:6.291%;--w:24.059%;--h:15.82%;--r:2.34deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_j3" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s5k.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:1.962%;--y:63.544%;--w:28.695%;--h:3.194%;--d-s:15.07px;--d-l:1.4;--d-m:1.17;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-poppins"{% el card editing "j1_title" %}>{% t card "j1_title" %}</p></div>
+    <div class="kotak-tx" style="--x:2.205%;--y:67.208%;--w:47.271%;--h:10.299%;--d-s:10.68px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:justify;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "j1_body" %}>{% t card "j1_body" %}</p></div>
+    </div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_j4" %}
+    <div class="slot" style="--x:15.038%;--y:6.002%;--w:21.876%;--h:15.82%;--r:15.08deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_j4" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_j6" %}
+    <div class="slot" style="--x:29.64%;--y:74.172%;--w:27.991%;--h:21.993%;--r:-12.26deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_j6" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_j5" %}
+    <div class="slot" style="--x:64.746%;--y:45.855%;--w:24.123%;--h:15.46%;--r:1.88deg">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_j5" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s5n.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:65.714%;--y:80.844%;--w:23.029%;--h:2.889%;--d-s:13.67px;--d-l:1.4;--d-m:1.17;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-poppins"{% el card editing "j4_title" %}>{% t card "j4_title" %}</p></div>
+    <div class="kotak-tx" style="--x:24.071%;--y:39.314%;--w:30.772%;--h:3.348%;--d-s:15.73px;--d-l:1.4;--d-m:1.17;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-poppins"{% el card editing "j2_title" %}>{% t card "j2_title" %}</p></div>
+    <div class="kotak-tx" style="--x:52.114%;--y:5.814%;--w:29.974%;--h:3.194%;--d-s:15.07px;--d-l:1.4;--d-m:1.17;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-poppins"{% el card editing "j3_title" %}>{% t card "j3_title" %}</p></div>
+    <div class="kotak-tx" style="--x:24.19%;--y:42.929%;--w:34.022%;--h:9.261%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:justify;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "j2_body" %}>{% t card "j2_body" %}</p></div>
+    <div class="kotak-tx" style="--x:52.691%;--y:9.282%;--w:39.239%;--h:9.261%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:justify;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "j3_body" %}>{% t card "j3_body" %}</p></div>
+    <div class="kotak-tx" style="--x:65.962%;--y:84.485%;--w:32.349%;--h:11.244%;--d-s:9.17px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:justify;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "j4_body" %}>{% t card "j4_body" %}</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 6 ═══════════ -->
+  <section class="scene" id="bm6">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_m1" %}
+    <div class="slot" style="--x:15.872%;--y:25.552%;--w:27.306%;--h:19.744%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_m1" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_m3" %}
+    <div class="slot" style="--x:15.872%;--y:50.726%;--w:27.306%;--h:19.744%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_m3" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_m5" %}
+    <div class="slot" style="--x:15.872%;--y:75.883%;--w:27.306%;--h:19.744%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_m5" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_m2" %}
+    <div class="slot" style="--x:60.68%;--y:25.608%;--w:27.306%;--h:19.744%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_m2" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_m4" %}
+    <div class="slot" style="--x:60.68%;--y:50.726%;--w:27.306%;--h:19.744%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_m4" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_m6" %}
+    <div class="slot" style="--x:60.68%;--y:75.844%;--w:27.306%;--h:19.744%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_m6" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s6k.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:0.767%;--y:46.1%;--w:57.516%;--h:2.048%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "m1_cap" %}>{% t card "m1_cap" %}</p></div>
+    <div class="kotak-tx" style="--x:64.653%;--y:46.044%;--w:19.359%;--h:2.048%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "m2_cap" %}>{% t card "m2_cap" %}</p></div>
+    <div class="kotak-tx" style="--x:63.023%;--y:71.218%;--w:22.618%;--h:2.048%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "m4_cap" %}>{% t card "m4_cap" %}</p></div>
+    <div class="kotak-tx" style="--x:14.952%;--y:71.218%;--w:29.147%;--h:2.048%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "m3_cap" %}>{% t card "m3_cap" %}</p></div>
+    <div class="kotak-tx" style="--x:18.069%;--y:96.329%;--w:22.912%;--h:2.048%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "m5_cap" %}>{% t card "m5_cap" %}</p></div>
+    <div class="kotak-tx" style="--x:61.014%;--y:96.329%;--w:26.638%;--h:2.048%;--d-s:9.83px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "m6_cap" %}>{% t card "m6_cap" %}</p></div>
+    </div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_love1" %}
+    <div class="slot" style="--x:0.081%;--y:-0.53%;--w:102.134%;--h:50.782%">
+      <div class="bingkai gelap{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_love1" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_love2" %}
+    <div class="slot" style="--x:0.081%;--y:49.638%;--w:102.134%;--h:50.411%">
+      <div class="bingkai gelap{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_love2" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s6n.webp' %}')"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 7 ═══════════ -->
+  <section class="scene" id="bm7">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_lagu" %}
+    <div class="slot" style="--x:21.239%;--y:23.049%;--w:57.082%;--h:42.955%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_lagu" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s7k.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:7.063%;--y:7.8%;--w:36.84%;--h:10.223%;--d-s:47.18px;--d-l:1.4;--d-m:1.196;--d-k:0em;--d-a:center;--d-w:700;--d-c:#000000"><p class="tx f-tangan"{% el card editing "playlist_name" %}>{% t card "playlist_name" %}</p></div>
+    <div class="kotak-tx" style="--x:45.45%;--y:7.8%;--w:38.678%;--h:10.223%;--d-s:47.18px;--d-l:1.4;--d-m:1.217;--d-k:0em;--d-a:center;--d-w:700;--d-c:#000000"><p class="tx f-tangan"{% el card editing "playlist_word" %}>{% t card "playlist_word" %}</p></div>
+    </div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_lagu_latar" %}
+    <div class="slot" style="--x:0.069%;--y:-0.069%;--w:114.513%;--h:103.492%">
+      <div class="bingkai gelap latar{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_lagu_latar" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_lagu1" %}
+    <div class="slot" style="--x:16.68%;--y:3.696%;--w:35.183%;--h:24.201%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_lagu1" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_lagu2" %}
+    <div class="slot" style="--x:17.249%;--y:37.878%;--w:35.183%;--h:24.201%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_lagu2" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_lagu3" %}
+    <div class="slot" style="--x:16.68%;--y:71.005%;--w:35.183%;--h:24.201%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_lagu3" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s7n.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:53.17%;--y:5.453%;--w:15.679%;--h:3.348%;--d-s:15.73px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:700;--d-c:#ffffff"><p class="tx f-montserrat"{% el card editing "s1_title" %}>{% t card "s1_title" %}</p></div>
+    <div class="kotak-tx" style="--x:53.572%;--y:8.801%;--w:13.814%;--h:1.674%;--d-s:7.86px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#ffffff"><p class="tx f-montserrat"{% el card editing "s1_artist" %}>{% t card "s1_artist" %}</p></div>
+    <div class="kotak-tx" style="--x:53.388%;--y:39.801%;--w:23.388%;--h:3.348%;--d-s:15.73px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:700;--d-c:#ffffff"><p class="tx f-montserrat"{% el card editing "s2_title" %}>{% t card "s2_title" %}</p></div>
+    <div class="kotak-tx" style="--x:53.523%;--y:43.149%;--w:16.349%;--h:1.674%;--d-s:7.86px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#ffffff"><p class="tx f-montserrat"{% el card editing "s2_artist" %}>{% t card "s2_artist" %}</p></div>
+    <div class="kotak-tx" style="--x:53.057%;--y:72.206%;--w:21.525%;--h:3.348%;--d-s:15.73px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:700;--d-c:#ffffff"><p class="tx f-montserrat"{% el card editing "s3_title" %}>{% t card "s3_title" %}</p></div>
+    <div class="kotak-tx" style="--x:53.9%;--y:75.554%;--w:7.248%;--h:1.674%;--d-s:7.86px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#ffffff"><p class="tx f-montserrat"{% el card editing "s3_artist" %}>{% t card "s3_artist" %}</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 8 ═══════════ -->
+  <section class="scene" id="bm8">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_suka1" %}
+    <div class="slot" style="--x:49.432%;--y:23.565%;--w:22.36%;--h:19.075%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka1" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka2" %}
+    <div class="slot" style="--x:6.335%;--y:44.255%;--w:37.365%;--h:16.974%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka2" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka3" %}
+    <div class="slot" style="--x:60.736%;--y:62.766%;--w:32.156%;--h:16.974%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka3" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka4" %}
+    <div class="slot" style="--x:18.812%;--y:77.677%;--w:22.36%;--h:18.141%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka4" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s8k.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:11.273%;--y:26.815%;--w:16.559%;--h:3.129%;--d-s:14.42px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l1_title" %}>{% t card "l1_title" %}</p></div>
+    <div class="kotak-tx" style="--x:11.506%;--y:29.804%;--w:35.112%;--h:6.613%;--d-s:9.17px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:justify;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l1_body" %}>{% t card "l1_body" %}</p></div>
+    <div class="kotak-tx" style="--x:72.397%;--y:34.354%;--w:21.667%;--h:2.665%;--d-s:12.45px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l2_title" %}>{% t card "l2_title" %}</p></div>
+    <div class="kotak-tx" style="--x:72.814%;--y:36.749%;--w:26.946%;--h:6.613%;--d-s:9.17px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l2_body" %}>{% t card "l2_body" %}</p></div>
+    <div class="kotak-tx" style="--x:62.494%;--y:50.381%;--w:13.003%;--h:3.129%;--d-s:14.42px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l3_title" %}>{% t card "l3_title" %}</p></div>
+    <div class="kotak-tx" style="--x:62.744%;--y:53.261%;--w:30.752%;--h:4.536%;--d-s:10.01px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l3_body" %}>{% t card "l3_body" %}</p></div>
+    <div class="kotak-tx" style="--x:18.768%;--y:66.964%;--w:15.261%;--h:2.82%;--d-s:13.11px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l4_title" %}>{% t card "l4_title" %}</p></div>
+    <div class="kotak-tx" style="--x:19.062%;--y:69.784%;--w:35.235%;--h:4.298%;--d-s:9.17px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l4_body" %}>{% t card "l4_body" %}</p></div>
+    <div class="kotak-tx" style="--x:67.406%;--y:85.26%;--w:18.816%;--h:2.974%;--d-s:13.76px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l5_title" %}>{% t card "l5_title" %}</p></div>
+    <div class="kotak-tx" style="--x:67.768%;--y:88.234%;--w:30.406%;--h:6.613%;--d-s:9.17px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l5_body" %}>{% t card "l5_body" %}</p></div>
+    </div>
+    <div class="hal kanan">
+    {% with photo=frame_photos|get:"f_suka5" %}
+    <div class="slot" style="--x:45.999%;--y:3.083%;--w:51.689%;--h:14.407%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka5" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka9" %}
+    <div class="slot" style="--x:69.314%;--y:36.895%;--w:27.924%;--h:14.407%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka9" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka12" %}
+    <div class="slot" style="--x:67.067%;--y:70.377%;--w:27.924%;--h:25.61%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka12" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka11" %}
+    <div class="slot" style="--x:7.62%;--y:64.102%;--w:25.549%;--h:23.432%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka11" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka10" %}
+    <div class="slot" style="--x:40.243%;--y:55.248%;--w:19.64%;--h:15.935%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka10" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka6" %}
+    <div class="slot" style="--x:5.514%;--y:26.146%;--w:20.808%;--h:15.68%;--r:-3.66deg">
+      <div class="bingkai di-atas{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka6" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka7" %}
+    <div class="slot" style="--x:25.97%;--y:26.138%;--w:30.193%;--h:21.197%;--r:16.05deg">
+      <div class="bingkai di-atas{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka7" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    {% with photo=frame_photos|get:"f_suka8" %}
+    <div class="slot" style="--x:47.609%;--y:38.562%;--w:15.312%;--h:10.096%;--r:-12.35deg">
+      <div class="bingkai di-atas{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_suka8" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s8n.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:14.943%;--y:11.229%;--w:14.961%;--h:2.974%;--d-s:13.76px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l6_title" %}>{% t card "l6_title" %}</p></div>
+    <div class="kotak-tx" style="--x:15.23%;--y:14.203%;--w:28.407%;--h:6.857%;--d-s:9.83px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l6_body" %}>{% t card "l6_body" %}</p></div>
+    <div class="kotak-tx" style="--x:71.559%;--y:25.706%;--w:14.828%;--h:2.974%;--d-s:13.76px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l7_title" %}>{% t card "l7_title" %}</p></div>
+    <div class="kotak-tx" style="--x:72.09%;--y:28.379%;--w:28.023%;--h:6.613%;--d-s:9.17px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l7_body" %}>{% t card "l7_body" %}</p></div>
+    <div class="kotak-tx" style="--x:12.856%;--y:53.261%;--w:15.507%;--h:2.974%;--d-s:13.76px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l8_title" %}>{% t card "l8_title" %}</p></div>
+    <div class="kotak-tx" style="--x:13.154%;--y:56.001%;--w:24.064%;--h:6.613%;--d-s:9.17px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l8_body" %}>{% t card "l8_body" %}</p></div>
+    <div class="kotak-tx" style="--x:72.409%;--y:59.308%;--w:17.606%;--h:3.129%;--d-s:14.42px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l9_title" %}>{% t card "l9_title" %}</p></div>
+    <div class="kotak-tx" style="--x:72.747%;--y:61.872%;--w:26.999%;--h:6.613%;--d-s:9.17px;--d-l:1.4;--d-m:1.179;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-vietnam"{% el card editing "l9_body" %}>{% t card "l9_body" %}</p></div>
+    <div class="kotak-tx" style="--x:28.986%;--y:88.234%;--w:18.686%;--h:3.129%;--d-s:14.42px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l10_title" %}>{% t card "l10_title" %}</p></div>
+    <div class="kotak-tx" style="--x:29.346%;--y:91.663%;--w:27.705%;--h:6.613%;--d-s:9.17px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:left;--d-w:400;--d-c:#000000"><p class="tx f-montserrat"{% el card editing "l10_body" %}>{% t card "l10_body" %}</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HAMPARAN 9 ═══════════ -->
+  <section class="scene" id="bm9">
+    <div class="hal kiri">
+    {% with photo=frame_photos|get:"f_cermin" %}
+    <div class="slot" style="--x:19.589%;--y:20.279%;--w:60.464%;--h:61.239%">
+      <div class="bingkai{% if editing and not photo %} is-empty{% endif %}" {% frame card editing "f_cermin" %}>
+        <span class="gbr">{% if photo %}<img src="{{ photo.image.url }}" alt="">{% endif %}</span>
+        {% if editing %}<span class="ketuk"></span>{% endif %}
+      </div>
+    </div>
+    {% endwith %}
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s9k.webp' %}')"></div>
+    </div>
+    <div class="hal kanan">
+    <div class="pelat" style="--pelat:url('{% static_v 'img/bdaymag/s9n.webp' %}')"></div>
+    <div class="kotak-tx" style="--x:14.955%;--y:9.996%;--w:70.282%;--h:6.94%;--d-s:32.11px;--d-l:1.4;--d-m:1.185;--d-k:0.011em;--d-a:center;--d-w:700;--d-c:#000000"><p class="tx f-tangan"{% el card editing "letter_title" %}>{% t card "letter_title" %}</p></div>
+    <div class="kotak-tx" style="--x:14.101%;--y:20.279%;--w:71.803%;--h:65.121%;--d-s:10.44px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-tangan"{% el card editing "letter_body" %}>{% t card "letter_body" %}</p></div>
+    <div class="kotak-tx" style="--x:71.607%;--y:90.388%;--w:8.701%;--h:2.891%;--d-s:13.6px;--d-l:1.4;--d-m:1.173;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-tangan"{% el card editing "sender" %}{% if editing %} data-placeholder="Namamu"{% endif %}>{{ card.sender_name|default:"Alea" }}</p></div>
+    <div class="kotak-tx" style="--x:65.613%;--y:86.264%;--w:20.689%;--h:2.511%;--d-s:11.8px;--d-l:1.4;--d-m:1.175;--d-k:0em;--d-a:center;--d-w:400;--d-c:#000000"><p class="tx f-tangan"{% el card editing "letter_close" %}>{% t card "letter_close" %}</p></div>
+    </div>
+  </section>
+
+  <!-- Punggung majalah: bayangan lipatan di tengah, di ATAS kedua halaman. -->
+  <div class="punggung" aria-hidden="true"></div>
+</div>
+</div></div>
+
+{% comment %}
+  Navigasi di LUAR #card-viewport supaya ukurannya normal di layar besar.
+  Tingginya harus sepadan dengan SISA_NAV (54px) di card-stage.js.
+{% endcomment %}
+<nav class="nav" id="nav">
+  <button type="button" class="nav-tbl" data-arah="mundur" aria-label="Halaman sebelumnya">‹</button>
+  <span class="nav-hitung" id="nav-hitung">1 / 9</span>
+  <button type="button" class="nav-tbl" data-arah="maju" aria-label="Halaman berikutnya">›</button>
+</nav>
+
+<div class="putar-hp" id="putar-hp" hidden>
+  <span aria-hidden="true">⟳</span>
+  <p>Majalah ini terbuka lebar — putar HP-mu ke samping supaya terbaca.</p>
+</div>
+
+<script src="{% static_v 'js/render/bdaymag.js' %}"></script>
+{% include "cards/_bgm.html" %}
+{% include "cards/_fullscreen.html" %}
+{% include "cards/_preview_bar.html" %}
+</body>
+</html>

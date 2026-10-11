@@ -1146,6 +1146,14 @@ img { max-width: 100%; display: block; }
 .ed-stage.is-buku iframe {
   width: 390px; aspect-ratio: 390 / 640;
 }
+/* Kartu MAJALAH (Majalah Cinta): hamparan terbuka 2 x A4. Sama seperti
+   kartu buku, tingginya diberi ruang lebih dari proporsi murni — di situ
+   bilah balik halaman duduk. */
+.ed-stage.is-majalah { align-items: center; }
+.ed-stage.is-majalah iframe {
+  width: 780px; aspect-ratio: 780 / 640;
+}
+
 @media (max-width: 900px) {
   .ed { grid-template-columns: 1fr; height: auto; }
   .ed-panel { border-right: 0; border-bottom: 1px solid var(--line); }

@@ -1,0 +1,403 @@
+/* BIRTHDAY MAGAZINE — majalah ulang tahun TERBUKA dari desain Canva.
+   ────────────────────────────────────────────────────────────────────────
+   Pasangan: cards/templates/cards/render/bdaymag.html (KELUARAN
+   tools/buat_html_bdaymag.py), static/js/render/bdaymag.js.
+   Mode kanvas: data-stage="majalah" (dua halaman A4 berdampingan, 780x551,6).
+
+   Gabungan dua renderer yang sudah ada:
+   - RANGKA & BALIK HAMPARAN dari Majalah Cinta (majalah.css/.js): satu
+     hamparan dua halaman, satu lembar yang berputar di punggung.
+   - PELAT dari Valentine Story: tiap halaman adalah gambar karya Canva yang
+     berlubang di tempat foto, dengan teks sunting ditulis ulang di atasnya
+     pada koordinat desain. Koordinat itu karena itu TIDAK boleh digeser di
+     sini — pelatnya tidak ikut bergeser. */
+
+:root {
+  /* WAJIB sama dengan W0_MAJALAH/H0_MAJALAH di static/js/card-stage.js. */
+  --w0: 780px;
+  --h0: 551.6px;
+  --kertas: #ffffff;
+}
+
+/* Ukuran font dasar DIKUNCI — alasannya sama dengan majalah.css: setelan
+   ukuran teks browser penerima tidak boleh menggeser pemenggalan baris di
+   halaman yang tingginya tetap. */
+html { font-size: 16px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: #17120f;            /* meja tempat majalahnya terbuka */
+  font-family: 'Montserrat', sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ═══════════════ RANGKA HAMPARAN (dari majalah.css) ═══════════════ */
+
+.majalah {
+  position: absolute;
+  inset: 0;
+  perspective: 2000px;
+  perspective-origin: 50% 50%;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .55);
+}
+
+/* Hamparan tidak aktif disembunyikan dengan visibility, bukan display:none —
+   editor perlu mengukur elemen di hamparan mana pun (lihat majalah.css). */
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.scene.active {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2;
+}
+/* Tetangga hamparan aktif ikut DIGAMBAR (tertutup hamparan aktif yang
+   buram), bukan disembunyikan. Tanpa ini browser baru men-decode dan
+   menggambar hamparan tujuan tepat saat ia jadi aktif — sekejap setelah
+   lembar klon dibuang — dan pembaca melihat kedipan halaman setengah jadi
+   ("halaman sebelumnya muncul sebentar"). */
+.scene.dekat:not(.active) {
+  visibility: visible;
+  opacity: 1;
+  z-index: 1;
+}
+/* Geser mendatar = membalik halaman; geser tegak tetap menggulir. */
+.majalah { touch-action: pan-y; }
+
+.hal {
+  position: relative;
+  width: 390px;
+  height: 551.6px;
+  flex: none;
+  overflow: hidden;
+  background: var(--kertas);
+}
+
+.hal.kiri::after,
+.hal.kanan::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  z-index: 6;
+}
+.hal.kiri::after { right: 0; background: linear-gradient(90deg, transparent, rgba(0, 0, 0, .09)); }
+.hal.kanan::after { left: 0; background: linear-gradient(-90deg, transparent, rgba(0, 0, 0, .09)); }
+
+.punggung {
+  position: absolute;
+  left: 389px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: rgba(0, 0, 0, .18);
+  z-index: 7;
+  pointer-events: none;
+}
+
+/* Sisi kiri sampul: majalah yang baru dibuka cuma memperlihatkan sampulnya. */
+.hal.meja {
+  background: #241b16;
+  background-image: repeating-linear-gradient(88deg, rgba(255, 255, 255, .02) 0 2px, transparent 2px 7px);
+  box-shadow: inset -30px 0 40px rgba(0, 0, 0, .5);
+}
+.hal.meja::after { display: none; }
+
+/* ═══════════════ PELAT ═══════════════ */
+
+/* Gambar halaman dari Canva. pointer-events:none: pelatnya menutupi foto,
+   dan klik harus menembus ke .ketuk/teks atau ke pembalik halaman. */
+.pelat {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-image: var(--pelat);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+/* Pelat hanya di-decode untuk hamparan yang sedang dibaca dan tetangganya.
+   Delapan belas pelat 1190x1684 yang ter-decode bersamaan = ~140 MB, dan
+   itulah yang menutup paksa tab di HP kelas bawah pada Valentine Story.
+   Klon untuk lembar yang berputar tidak berada di dalam .scene, jadi aturan
+   ini tidak mengenai mereka — dan hamparannya memang tetangga yang .dekat. */
+.scene:not(.dekat) .pelat { background-image: none; }
+
+/* ═══════════════ FOTO ═══════════════ */
+
+/* .slot = kotak foto sebelum diputar; .bingkai mengisinya penuh dan
+   membawa data-frame + gaya pilihan pembeli. Keduanya TIDAK diputar dan
+   TIDAK ber-z-index (lihat komentar di bdaymag.html): anak-anaknya yang
+   diputar, masing-masing, supaya .gbr bisa di bawah pelat dan .ketuk di
+   atasnya.
+
+   Selektor TIGA bagian (.majalah .slot > .bingkai) disengaja: editing.css memasang
+   `[data-frame].is-empty { position: relative }`, dan kalau itu menang,
+   semua bingkai kosong jatuh ke aliran halaman dan bertumpuk ke bawah —
+   bingkai pertama kebetulan tetap di tempat, sisanya keluar halaman dan
+   tidak bisa diklik. Dua kelas saja SERI dengan aturan itu (0,2,0), dan
+   editing.css dimuat sesudah berkas ini jadi ia yang menang — terukur:
+   bingkai tetap di tempatnya tapi tingginya nol. */
+.slot {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+}
+.majalah .slot > .bingkai {
+  position: absolute;
+  inset: 0;
+  /* Sorotan & arsiran editing.css untuk [data-frame] tidak berguna di sini:
+     bingkainya di bawah pelat. Penggantinya ada di .ketuk. */
+  outline: none;
+  background: none;
+}
+.majalah .slot > [data-frame].is-empty::after { display: none; }
+
+/* Bingkai yang di desainnya DITIMPA tulisan putih (sampul, "Love you",
+   latar playlist): selama kosong latarnya gelap, supaya tulisannya tetap
+   terbaca di editor sebelum fotonya diunggah. */
+.bingkai.gelap .gbr { background: #3b3236; }
+.bingkai .gbr,
+.bingkai .ketuk {
+  position: absolute;
+  transform: rotate(var(--r, 0deg));
+}
+/* Foto digambar sedikit melewati kotaknya (--tembus): tepi lubang pelat
+   ber-antialias, dan tanpa ini segaris tipis latar halaman mengintip di
+   pinggir foto — cacat yang sama dengan "garis putih" Valentine Story.
+   Aman karena fotonya DI BELAKANG pelat: kelebihannya tertutup pelat. */
+.bingkai .gbr {
+  --tembus: 1px;
+  inset: calc(var(--tembus) * -1);
+  z-index: 1;
+  overflow: hidden;
+  background: #efebe6;
+}
+.bingkai .ketuk { inset: 0; z-index: 3; }
+.bingkai img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* Var dari cards/styles.py:element_css() — jangan diganti sendirian. */
+  object-fit: var(--fit, cover);
+  object-position: var(--ox, 50%) var(--oy, 50%);
+  transform: scale(var(--zoom, 1));
+  transform-origin: var(--ox, 50%) var(--oy, 50%);
+}
+/* Tiga polaroid bertumpuk di hamparan 8: langit pengisinya terbakar di
+   dalam gambar polaroidnya, jadi fotonya harus menimpa dari ATAS pelat. */
+.bingkai.di-atas .gbr { --tembus: 0px; z-index: 3; }
+
+/* Bingkai LATAR sehalaman (playlist, 11 Okt 2026). Dua permintaan pemilik
+   situs:
+   1. Fotonya diredupkan supaya kartu lagu, sampul lagu, dan tulisan di atas
+      pelat tetap jelas di atas foto apa pun yang diunggah pembeli.
+   2. Penanda "+ foto" dan arsirannya TIDAK menimpa elemen lain. .ketuk
+      biasa duduk di ATAS pelat (z 3) — untuk bingkai sehalaman itu berarti
+      arsiran merah dan labelnya menutupi ketiga kartu lagu. Di sini ia
+      diturunkan ke BAWAH pelat: arsirannya hanya kelihatan lewat lubang
+      latar, dan klik tetap sampai karena pelat pointer-events:none. Labelnya
+      dipindah ke celah kosong di atas kartu lagu pertama. */
+.bingkai.latar img { filter: brightness(.58) saturate(.9); }
+.bingkai.latar .ketuk { z-index: 1; }
+.is-editing .bingkai.latar[data-frame].is-empty .ketuk::before {
+  content: "+ foto latar";
+  position: absolute;
+  /* Celah antara kartu lagu 1 dan 2 (pelat s7n: 29,7%-36,6% tinggi). */
+  top: 33.2%;
+  left: 40%;
+  transform: translate(-50%, -50%);
+}
+
+.is-editing .bingkai .ketuk { cursor: pointer; }
+.is-editing [data-frame].is-selected .ketuk { outline: 2px solid #c2185b; outline-offset: -2px; }
+.is-editing [data-frame].is-empty .ketuk {
+  outline: 1.5px dashed rgba(194, 24, 91, .6);
+  outline-offset: -3px;
+  background: repeating-linear-gradient(45deg, rgba(194, 24, 91, .06) 0 6px, transparent 6px 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.is-editing [data-frame].is-empty .ketuk::before {
+  content: "+ foto";
+  font: 600 9px/1 'Montserrat', sans-serif;
+  color: #c2185b;
+  background: rgba(255, 255, 255, .85);
+  padding: 3px 6px;
+  border-radius: 8px;
+}
+
+/* ═══════════════ TEKS ═══════════════ */
+
+/* Kotak teks = kotak teks Canva. Gaya bawaan desainnya dibawa sebagai var
+   --d-* di kotaknya (ditulis generator), dan .tx memakainya sebagai NILAI
+   CADANGAN untuk var pilihan pembeli (--f, --fs, --c, --al, --fw, --fi,
+   --ls, --lh dari cards/styles.py). Jangan tulis nilai polos di sini — kalau
+   tidak, kontrol gaya di editor tidak berefek. */
+.kotak-tx {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  z-index: 4;
+}
+.tx {
+  font-family: var(--f, var(--d-f));
+  /* --muat: pengecil otomatis dari bdaymag.js, 1 selama teksnya muat. */
+  font-size: calc(var(--d-s) * var(--fs, 1) * var(--muat, 1));
+  line-height: var(--lh, var(--d-l));
+  letter-spacing: var(--ls, var(--d-k));
+  text-align: var(--al, var(--d-a));
+  font-weight: var(--fw, var(--d-w));
+  font-style: var(--fi, var(--d-i, normal));
+  color: var(--c, var(--d-c));
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  /* Baris pertama setinggi --d-m (ukuran Canva), bukan setinggi line-height
+     penuh — lihat TINGGI_BARIS_PERTAMA di tools/buat_html_bdaymag.py. Margin
+     negatif ini yang membuat baris pertama duduk di tempat yang sama dengan
+     desainnya dan blok teksnya setinggi kotak Canva. */
+  margin: calc(var(--d-s) * var(--fs, 1) * var(--muat, 1) * (var(--d-m) - var(--lh, var(--d-l))) / 2) 0;
+}
+.f-seasons    { --d-f: 'Bellefair', Georgia, serif; }
+.f-poppins    { --d-f: 'Poppins', sans-serif; }
+.f-montserrat { --d-f: 'Montserrat', sans-serif; }
+.f-vietnam    { --d-f: 'Be Vietnam Pro', sans-serif; }
+.f-playfair   { --d-f: 'Playfair Display', serif; }
+.f-edwardian  { --d-f: 'Pinyon Script', cursive; }
+.f-pinyon     { --d-f: 'Pinyon Script', cursive; }
+.f-ttd        { --d-f: 'Allura', cursive; }
+.f-magazine   { --d-f: 'Cinzel', serif; }
+.f-tangan     { --d-f: 'Indie Flower', cursive; }
+
+.is-editing .tx { cursor: text; }
+.is-editing .tx.is-selected { outline: 1.5px solid #c2185b; outline-offset: 2px; }
+
+/* ═══════════════ LEMBAR YANG DIBALIK (dari majalah.css) ═══════════════ */
+
+#lembar {
+  position: absolute;
+  top: 0;
+  left: 390px;
+  width: 390px;
+  height: 551.6px;
+  z-index: 20;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  will-change: transform;
+  pointer-events: none;
+}
+#lembar .sisi {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--kertas);
+}
+#lembar .balik { transform: rotateY(180deg); }
+/* Bayangan lembar & halaman di bawahnya: elemen sungguhan yang hanya
+   diubah OPACITY-nya (dikerjakan compositor), bukan warna latar per bingkai
+   — repaint satu halaman penuh tiap bingkai itulah yang membuat putaran
+   lama terasa tersendat. */
+.bayang {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  background: #180e0a;
+  opacity: 0;
+  will-change: opacity;
+}
+
+#dasar {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ═══════════════ NAVIGASI (dari majalah.css) ═══════════════ */
+
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 54px;             /* WAJIB sama dengan SISA_NAV di card-stage.js */
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: linear-gradient(180deg, transparent, rgba(10, 6, 4, .75));
+}
+.nav-tbl {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 50%;
+  background: rgba(20, 12, 9, .5);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .18s, opacity .18s;
+}
+.nav-tbl:hover { background: rgba(194, 24, 91, .75); }
+.nav-tbl[disabled] { opacity: .28; cursor: default; }
+.nav-hitung {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: .22em;
+  color: rgba(255, 255, 255, .8);
+  min-width: 54px;
+  text-align: center;
+}
+body:has(.preview-bar) .nav { bottom: 62px; }
+.is-editing .nav { bottom: 8px; }
+
+.putar-hp {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 66px;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(20, 12, 9, .88);
+  color: #fff;
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+  animation: munculHint .4s ease both;
+}
+.putar-hp[hidden] { display: none; }
+.putar-hp span { font-size: 18px; }
+.putar-hp p { margin: 0; }
+
+@keyframes munculHint {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .putar-hp { animation: none; }
+}

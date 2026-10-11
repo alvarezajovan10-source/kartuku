@@ -86,3 +86,27 @@
    Tinggi pembungkus disetel JS, karena transform tidak memengaruhi tinggi
    layout — tanpa itu halaman akan punya ruang kosong atau terpotong. */
 [data-stage="flow"] #card-viewport { height: var(--wrap-h, auto); }
+
+/* Mode "majalah": majalah TERBUKA — dua halaman A4 tegak berdampingan
+   (Majalah Cinta). Bedanya dengan "buku" cuma satu: yang terlihat sekaligus
+   adalah satu HAMPARAN (kiri + kanan), bukan satu halaman. Karena itu kanvas
+   kanonisnya dua kali lebih lebar (780 = 2 x 390) sementara tingginya sama.
+
+   Sisanya mengikuti "buku" persis: harus muat utuh, dipusatkan vertikal,
+   transform-origin di tengah, stage tidak memotong (lembar yang sedang
+   dibalik berayun melewati punggung majalah), dan padding-bottom WAJIB sama
+   dengan SISA_NAV di card-stage.js. */
+[data-stage="majalah"] #card-viewport {
+  position: fixed;
+  inset: 0;
+  align-items: center;
+  padding-bottom: 54px;
+  box-sizing: border-box;
+}
+[data-stage="majalah"] #card-stage {
+  width: var(--w0, 780px);
+  height: var(--h0, 551.6px);
+  align-self: center;
+  transform-origin: center center;
+  overflow: visible;
+}

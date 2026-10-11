@@ -32,6 +32,15 @@ window.cardEditor = function () {
     hal10: "Hal 10 · Things I Love About You",
     hal11: "Hal 11 · Letter For You",
     hal12: "Hal 12 · Hati renda",
+    // Birthday Magazine. Satu id = satu hamparan.
+    // Nomornya mengikuti DAFTAR ISI yang tercetak di desainnya (Editor's
+    // Note 04, Who's That Girl 06, ...), jadi tab ini dan halaman kedua
+    // kartunya menyebut angka yang sama.
+    bm1: "Sampul", bm2: "Hal 2-3 · Daftar isi",
+    bm3: "Hal 4-5 · Editor's Notes", bm4: "Hal 6-7 · Who's That Girl",
+    bm5: "Hal 8-9 · Our Journey", bm6: "Hal 10-11 · Iconic Moments",
+    bm7: "Hal 12-13 · Playlist", bm8: "Hal 14-15 · Things She Loves",
+    bm9: "Hal 16-17 · Surat",
     // Sweetflix. SATU profil, dengan beranda dan layar cerita sendiri.
     buka: "Layar Pembuka", profil: "Pilih Profil",
     home_a: "Beranda", detail_a: "Cerita",
@@ -216,6 +225,12 @@ window.cardEditor = function () {
           // (390x844) halamannya cuma mengisi dua pertiga tinggi, dan sisanya
           // pita gelap kosong — pembeli mengira kartunya belum jadi.
           wadah.classList.toggle("is-buku", bentuk === "buku");
+          // Kartu majalah TERBUKA: dua halaman berdampingan. Alasannya sama
+          // dengan kartu mendatar — di kotak berproporsi HP, hamparan selebar
+          // 780px diperas jadi sekitar 0,5x, dan teks badan 10,5px turun ke
+          // bawah 6px: pembeli tidak bisa membaca kalimat yang sedang mereka
+          // tulis sendiri.
+          wadah.classList.toggle("is-majalah", bentuk === "majalah");
         });
       }
 
@@ -250,6 +265,12 @@ window.cardEditor = function () {
         if (data.type === "settext" && typeof data.key === "string") {
           self.texts[data.key] = String(data.value == null ? "" : data.value);
           self.queueSave();
+        }
+        /* Kartu yang dibalik pembaca sendiri (panah/geser di dalam pratinjau)
+           memberi tahu halamannya, supaya pratinjau yang dimuat ulang sesudah
+           simpan foto/teks kembali ke halaman itu, bukan ke sampul. */
+        if (data.type === "halaman" && typeof data.scene === "string") {
+          self.currentScene = data.scene;
         }
         if (data.type === "select") {
           self.sel = data.key;

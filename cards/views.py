@@ -1213,5 +1213,5 @@ def qr_png(request, card_id):
     img.save(buffer, "PNG")
     response = HttpResponse(buffer.getvalue(), content_type="image/png")
     if request.GET.get("download"):
-        response["Content-Disposition"] = 'attachment; filename="qr-kartuku.png"'
+        response["Content-Disposition"] = 'attachment; filename="qr-yourdigitalcard.png"'
     return response

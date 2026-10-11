@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load static card_extras %}
 
-{% block title %}{{ template.name }} · Kartuku{% endblock %}
+{% block title %}{{ template.name }} · yourdigitalcard{% endblock %}
 {% block description %}{{ template.name }}: kartu ucapan digital {{ kategori|lower }}, Rp{{ price|floatformat:0 }} sekali bayar. Isi foto dan pesanmu, lalu bagikan linknya.{% endblock %}
-{% block og_title %}{{ template.name }} · Kartuku{% endblock %}
+{% block og_title %}{{ template.name }} · yourdigitalcard{% endblock %}
 {% block og_image %}{% if thumb %}{{ request.scheme }}://{{ request.get_host }}{% static thumb %}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block body %}
@@ -128,7 +128,7 @@
     <p class="lst-judul">{{ template.name }}: kartu {{ kategori|lower }} digital, isi sendiri foto dan pesanmu</p>
 
     <p class="lst-toko">
-      <strong>Kartuku</strong>
+      <strong>yourdigitalcard</strong>
       <svg class="lst-cek" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 1.8 3-.3 1 2.8 2.6 1.5-1 2.8 1 2.8-2.6 1.5-1 2.8-3-.3L12 22l-2.4-1.8-3 .3-1-2.8L3 16.2l1-2.8-1-2.8 2.6-1.5 1-2.8 3 .3z" fill="currentColor"/><path d="M8.5 12.2l2.3 2.3 4.7-4.7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
     </p>
 
@@ -143,7 +143,7 @@
         <p>
           <strong>{{ lencana_teks }}.</strong>
           {% if lencana_kode == 'bestseller' %}
-            Template yang paling banyak dipakai pembeli Kartuku.
+            Template yang paling banyak dipakai pembeli yourdigitalcard.
           {% else %}
             Template favorit yang paling sering dibagikan ulang penerimanya.
           {% endif %}

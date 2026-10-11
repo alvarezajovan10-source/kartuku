@@ -220,7 +220,9 @@ img { max-width: 100%; display: block; }
   font-family: var(--sans);
   font-size: 1.45rem;
   font-weight: 700;
-  letter-spacing: .14em;
+  /* "yourdigitalcard" (huruf kecil, = nama domainnya) hampir dua kali
+     sepanjang "KARTUKU" yang lama, jadi tidak direnggangkan lagi. */
+  letter-spacing: -.01em;
 }
 /* Slogan, bukan label kategori. Kapital-kecil yang direnggangkan terbaca
    sebagai keterangan; yang dimau di sini sebuah pernyataan, jadi huruf
@@ -775,7 +777,7 @@ img { max-width: 100%; display: block; }
   justify-content: space-between;
   align-items: center;
 }
-.footer-brand { font-family: var(--sans); font-size: 1.3rem; letter-spacing: .14em; }
+.footer-brand { font-family: var(--sans); font-size: 1.3rem; letter-spacing: -.01em; }
 .site-footer p { margin: 6px 0 0; font-size: .86rem; color: #b6a49b; max-width: 380px; }
 .footer-note { text-align: right; }
 
@@ -1260,7 +1262,7 @@ input:focus, textarea:focus { outline: 2px solid var(--rose-soft); outline-offse
      ukuran sebelumnya merek memakan 188px dari 390px dan kolom carinya
      tinggal 118px — sempit sampai kata "template" pun terpotong. */
   .brand-mark { width: 26px; height: 26px; }
-  .brand-text strong { font-size: .84rem; letter-spacing: .05em; }
+  .brand-text strong { font-size: .84rem; letter-spacing: -.01em; }
   .brand { gap: 8px; }
   .cari { padding: 3px 3px 3px 14px; }
   .cari input { font-size: 14px; padding: 6px 0; }

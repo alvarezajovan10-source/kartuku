@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Kartuku · Worth More Than a Text.{% endblock %}</title>
+  <title>{% block title %}yourdigitalcard · Worth More Than a Text.{% endblock %}</title>
   {% comment %}
     Sengaja tidak menyebut metode bayar: ini teks yang muncul di hasil Google,
     dan metodenya bisa berganti (Lynk.id sekarang, QRIS kalau Midtrans dinyalakan).
@@ -21,10 +21,10 @@
     akan ketemu.
   {% endcomment %}
   {% block social %}
-  <meta property="og:site_name" content="Kartuku">
+  <meta property="og:site_name" content="yourdigitalcard">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="id_ID">
-  <meta property="og:title" content="{% block og_title %}Kartuku · Worth More Than a Text.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}yourdigitalcard · Worth More Than a Text.{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Kartu ucapan digital dengan foto, pesan, dan lagu. Rp15.000 sekali bayar, langsung dapat link untuk dibagikan.{% endblock %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-default.jpg' %}{% endblock %}">
@@ -68,7 +68,7 @@
         <path d="M20 22c-1.6-1.8-4.4-1.4-5.2.8-.7 1.9.9 3.7 2.6 5 .9.7 1.9 1.4 2.6 2 .7-.6 1.7-1.3 2.6-2 1.7-1.3 3.3-3.1 2.6-5-.8-2.2-3.6-2.6-5.2-.8z" fill="#d98a86"/>
       </svg>
       <span class="brand-text">
-        <strong>KARTUKU</strong>
+        <strong>yourdigitalcard</strong>
         <em>Worth More Than a Text.</em>
       </span>
     </a>
@@ -123,7 +123,7 @@
 <footer class="site-footer">
   <div class="footer-inner">
     <div>
-      <strong class="footer-brand">KARTUKU</strong>
+      <strong class="footer-brand">yourdigitalcard</strong>
       <p>Worth More Than a Text.</p>
     </div>
     <p class="footer-note">

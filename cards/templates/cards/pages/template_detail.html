@@ -101,6 +101,19 @@
       {% endif %}
     </div>
 
+    {# ══════════ Kenalan sama karakternya (Game 8-Bit) ══════════ #}
+    {% comment %}
+      config "contoh_pasangan": animasi pasangan piksel interaktif dari
+      cards/_couple.html — dua tokoh kartunya sendiri, bisa diketuk.
+    {% endcomment %}
+    {% if contoh_pasangan %}
+    <section class="lst-ulasan lst-pasangan">
+      <h2>Kenalan sama karakternya</h2>
+      <p class="lst-pasangan-ajak">Ketuk si cowok atau si cewek, terus tekan tombol hati.</p>
+      {% include "cards/_couple.html" %}
+    </section>
+    {% endif %}
+
     {# ══════════ Ulasan ══════════ #}
     <section class="lst-ulasan">
       <h2>Ulasan untuk template ini</h2>

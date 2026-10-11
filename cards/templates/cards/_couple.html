@@ -1,0 +1,26 @@
+{% load static card_extras %}
+{% comment %}
+  Animasi pasangan piksel interaktif. Berdiri sendiri: sertakan partial ini di
+  halaman mana pun — CSS & JS-nya dimuat dari sini, tidak menyentuh gaya lain.
+  Aset dari tools/buat_couple_8bit.py. CSS/JS lewat static_v (penanda
+  versi): perantara Rumahweb menyimpan /static/ 7 hari per alamat lengkap.
+{% endcomment %}
+<link rel="stylesheet" href="{% static_v 'css/couple.css' %}">
+<div class="pasangan" data-pasangan>
+  <div class="pasangan-panggung">
+    <button type="button" class="tokoh-px cowok" aria-label="Sapa si cowok">
+      <span class="gelembung" aria-hidden="true"></span>
+      <span class="spr" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="tokoh-px cewek" aria-label="Sapa si cewek">
+      <span class="gelembung" aria-hidden="true"></span>
+      <span class="spr" aria-hidden="true"></span>
+    </button>
+    <div class="peluk-px" aria-hidden="true"></div>
+    <div class="hati-lapis" aria-hidden="true"></div>
+  </div>
+  <button type="button" class="tombol-hati" aria-label="Peluk">
+    <img src="{% static_v 'img/couple/hati.png' %}" alt="" width="35" height="36">
+  </button>
+</div>
+<script src="{% static_v 'js/couple.js' %}" defer></script>

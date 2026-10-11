@@ -88,6 +88,8 @@ SEEDS = [
             # Satu-satunya renderer MENDATAR 16:9 (data-stage="lebar"),
             # mengikuti desain Canva aslinya yang 1376x768.
             "renderer": "game8bit",
+            # Halaman produk memajang animasi pasangan piksel (cards/_couple.html).
+            "contoh_pasangan": True,
             "frames": [
                 # Desain aslinya tidak punya slot foto sama sekali; keempat
                 # ubin POWER UPS dijadikan kenangan. Keterangan di balik ubin

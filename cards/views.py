@@ -368,6 +368,7 @@ def template_detail(request, template_slug):
             "potongan": potongan,
             "galeri": _galeri(template.slug),
             "galeri_saja": bool(config.get("galeri_saja")) and bool(_galeri(template.slug)),
+            "contoh_pasangan": bool(config.get("contoh_pasangan")),
             "lencana_kode": lencana_kode,
             "lencana_teks": lencana_teks,
             "lain": lain,

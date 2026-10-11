@@ -1,0 +1,141 @@
+/* Animasi pasangan piksel — pasangan dengan cards/_couple.html & js/couple.js.
+ *
+ * Gambar di url() diberi ?v=: naikkan tiap aset dibuat ulang (perantara
+ * Rumahweb menyimpan /static/ 7 hari per alamat lengkap).
+ *
+ * --s = skala tampil. 1 di layar lebar, 2/3 di HP: pada layar HP 3x (iPhone)
+ * itu tepat 2 piksel layar per piksel sprite, jadi image-rendering:pixelated
+ * tetap tajam. Skala lain yang tidak bulat membuat garis luarnya putus-putus. */
+.pasangan {
+  --s: 1;
+  --kaki: 8px;
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+@media (max-width: 600px) { .pasangan { --s: .6667; } }
+
+.pasangan-panggung {
+  position: relative;
+  height: calc(280px * var(--s) + var(--kaki));
+  /* Tidak dipotong: hati yang naik dan gelembung bicara melewati tepi atas. */
+  overflow: visible;
+}
+.pasangan-panggung::after {          /* garis tanah tipis */
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: calc(var(--kaki) - 2px);
+  height: 2px; background: rgba(201, 115, 110, .25);
+}
+
+.tokoh-px {
+  position: absolute; left: 0; bottom: var(--kaki);
+  padding: 0; border: 0; background: none; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transform: translateX(var(--x, 0px));
+  will-change: transform;
+}
+.tokoh-px.cowok { --cw: 112px; --cols: 6; width: calc(112px * var(--s)); height: calc(240px * var(--s)); }
+.tokoh-px.cewek { --cw: 128px; --cols: 5; width: calc(128px * var(--s)); height: calc(240px * var(--s)); }
+.tokoh-px:focus-visible { outline: 2px dashed #c9736e; outline-offset: 2px; }
+
+.tokoh-px .spr, .peluk-px {
+  position: absolute; inset: 0; display: block;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.tokoh-px.cowok .spr {
+  background-image: url("../img/couple/cowok.png?v=1");
+  background-size: calc(672px * var(--s)) calc(720px * var(--s));
+}
+.tokoh-px.cewek .spr {
+  background-image: url("../img/couple/cewek.png?v=1");
+  background-size: calc(640px * var(--s)) calc(720px * var(--s));
+}
+/* Baris lembar: 0 diam, 1 jalan, 2 reaksi. Diam = satu frame + napas 1 px. */
+.tokoh-px .spr { background-position: 0 0; animation: napas 2.4s steps(2) infinite; }
+.tokoh-px[data-anim="jalan"] .spr {
+  background-position-y: calc(-240px * var(--s));
+  animation: langkah var(--dur, .7s) steps(var(--n)) infinite;
+}
+.tokoh-px.cowok[data-anim="jalan"] .spr { --n: 6; --dur: .72s; }
+.tokoh-px.cewek[data-anim="jalan"] .spr { --n: 5; --dur: .62s; }
+.tokoh-px[data-anim="reaksi"] .spr {
+  background-position: 0 calc(-480px * var(--s));
+  animation: none;
+}
+@keyframes langkah {
+  from { background-position-x: 0; }
+  to   { background-position-x: calc(var(--cw) * var(--n) * var(--s) * -1); }
+}
+@keyframes napas {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(-1px * var(--s) * 2)); }
+}
+
+.gelembung {
+  position: absolute; left: 50%; bottom: 100%;
+  width: calc(75px * var(--s)); height: calc(63px * var(--s));
+  margin-bottom: calc(-26px * var(--s));
+  background: no-repeat center / contain;
+  image-rendering: pixelated;
+  transform: translateX(-10%) scale(.4); transform-origin: 0 100%;
+  opacity: 0; pointer-events: none;
+  transition: transform .18s steps(3), opacity .12s;
+  z-index: 3;
+}
+.tokoh-px.cowok .gelembung { background-image: url("../img/couple/gelembung-titik.png?v=1"); }
+.tokoh-px.cewek .gelembung { background-image: url("../img/couple/gelembung-hati.png?v=1"); left: 0; transform-origin: 100% 100%; transform: translateX(-70%) scale(.4); }
+.tokoh-px.bicara .gelembung { opacity: 1; transform: translateX(-10%) scale(1); }
+.tokoh-px.cewek.bicara .gelembung { transform: translateX(-70%) scale(1); }
+
+.peluk-px {
+  inset: auto; left: 0; bottom: var(--kaki);
+  width: calc(208px * var(--s)); height: calc(272px * var(--s));
+  background-image: url("../img/couple/peluk.png?v=1");
+  background-size: calc(624px * var(--s)) calc(272px * var(--s));
+  transform: translateX(var(--x, 0px));
+  display: none;
+}
+.pasangan.memeluk .peluk-px { display: block; animation: peluk 1.5s steps(2) forwards; }
+.pasangan.memeluk .tokoh-px { visibility: hidden; }
+/* Tiga pose pelukan dari lembar sumber, diputar sekali lalu berhenti di yang
+   terakhir. steps(2) dari 0 ke -2 sel = tepat tiga gambar. */
+@keyframes peluk {
+  from { background-position-x: 0; }
+  to   { background-position-x: calc(-416px * var(--s)); }
+}
+
+.hati-lapis { position: absolute; inset: 0; pointer-events: none; }
+.hati-lapis img {
+  position: absolute; bottom: 0; width: calc(35px * var(--s)); height: auto;
+  image-rendering: pixelated;
+  animation: hati-naik var(--t, 1.8s) steps(18) forwards;
+}
+@keyframes hati-naik {
+  0%   { transform: translate(0, 0) scale(.6); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translate(var(--dx, 0px), calc(-150px * var(--s))) scale(1); opacity: 0; }
+}
+
+.tombol-hati {
+  display: block; margin: 10px auto 0; padding: 10px 14px;
+  border: 2px solid #c9736e; border-radius: 4px; background: #fff5f6;
+  box-shadow: 0 3px 0 #c9736e; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.tombol-hati img { display: block; width: 35px; height: 36px; image-rendering: pixelated; }
+.tombol-hati:active { transform: translateY(3px); box-shadow: none; }
+.tombol-hati[disabled] { opacity: .5; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tokoh-px .spr, .tokoh-px[data-anim="jalan"] .spr { animation: none; }
+  .pasangan.memeluk .peluk-px { animation: none; background-position-x: calc(-416px * var(--s)); }
+  .hati-lapis img { display: none; }
+}
+
+/* Di halaman produk (template_detail, config "contoh_pasangan"). */
+.lst-pasangan { text-align: center; }
+.lst-pasangan .lst-pasangan-ajak { margin: -8px 0 56px; font-size: .9rem; color: var(--muted, #8a7f7c); }

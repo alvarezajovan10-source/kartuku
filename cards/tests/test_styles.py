@@ -278,8 +278,15 @@ class FreeTextTests(TestCase):
         self.assertNotContains(response, "<script>alert(1)</script>")
 
     def test_very_long_text_trimmed(self):
-        self.post(json.dumps({"cover_title": "x" * 5000}))
-        self.assertLessEqual(len(GiftCard.objects.get().texts["cover_title"]), 300)
+        from cards.forms import MAX_TEXT_LENGTH
+        self.post(json.dumps({"cover_title": "x" * 50000}))
+        self.assertLessEqual(len(GiftCard.objects.get().texts["cover_title"]), MAX_TEXT_LENGTH)
+
+    def test_surat_panjang_tidak_terpotong(self):
+        # Surat ~1.500 karakter (bawaan Birthday Magazine ~1.200) harus utuh.
+        surat = ("Happy birthday! " * 95).strip()
+        self.post(json.dumps({"cover_title": surat}))
+        self.assertEqual(GiftCard.objects.get().texts["cover_title"], surat)
 
 
 class PhotoLimitTests(TestCase):

@@ -187,3 +187,15 @@ class HalamanProdukTests(TestCase):
         self.assertNotContains(r, "data-catatan-hidup")
         self.assertContains(r, '<span class="lst-kini">1</span> / 9')
         self.assertContains(r, 'class="lst-slide is-on" data-i="0"')
+
+
+class FotoGagalDimuatTests(TestCase):
+    """14 Okt 2026: hosting perantara menolak sebagian dari puluhan gambar
+    kartu (507). Kepala kartu wajib membawa skrip coba-ulang."""
+
+    def test_kepala_kartu_membawa_coba_ulang_gambar(self):
+        kepala = (AKAR / "cards" / "templates" / "cards" / "_card_head.html").read_text(encoding="utf-8")
+        self.assertIn('window.addEventListener("error"', kepala)
+        # load milik elemen tidak sampai ke window — harus di document.
+        self.assertIn('document.addEventListener("load"', kepala)
+        self.assertIn('--pelat', kepala)

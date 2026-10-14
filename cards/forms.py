@@ -7,8 +7,12 @@ from .models import GiftCard
 from .styles import sanitize_style
 from .utils import check_youtube_embeddable, fetch_track_meta, parse_music_link
 
-MAX_TEXT_KEYS = 60
-MAX_TEXT_LENGTH = 300
+# Batas pengaman, bukan batas desain — teksnya dipotong DIAM-DIAM di server.
+# Dulu 300 karakter: surat bawaan Birthday Magazine saja ~1.200 karakter, jadi
+# surat pembeli terpotong di tengah kalimat begitu disimpan (14 Okt 2026).
+# Panjang yang pas untuk tiap kotak diurus --muat di renderer, bukan di sini.
+MAX_TEXT_KEYS = 80
+MAX_TEXT_LENGTH = 3000
 
 
 class GiftCardForm(forms.ModelForm):

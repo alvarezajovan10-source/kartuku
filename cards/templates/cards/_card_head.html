@@ -27,3 +27,72 @@
 <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
 <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
 <meta name="theme-color" content="#c9736e">
+{% comment %}
+  Coba ulang gambar yang gagal dimuat (14 Okt 2026). Hosting perantara
+  (Rumahweb) membatasi proses bersamaan dan menolak sisanya dengan 507, jadi
+  kartu berfoto banyak yang dibuka pertama kali kehilangan sebagian fotonya —
+  tampil "?" sampai halamannya dibalik bolak-balik. Di sini tiap <img> yang
+  gagal dicoba lagi dengan jeda yang makin panjang (ditambah acak supaya tidak
+  menyerbu bersamaan), dan pelat halaman (--pelat di CSS, yang tidak punya
+  event error) dimuat ulang lewat Image(). Inline & sinkron di <head> supaya
+  sudah terpasang sebelum <img> pertama gagal.
+{% endcomment %}
+<script>
+(function () {
+  var MAKS = 7;
+  function nanti(n) { return 500 * Math.pow(1.6, n) + Math.random() * 1200; }
+  function ulang(url, n) {
+    var u = url.replace(/([?&])ulang=\d+(&|$)/, "$1").replace(/[?&]$/, "");
+    return u + (u.indexOf("?") < 0 ? "?" : "&") + "ulang=" + n;
+  }
+  window.addEventListener("error", function (e) {
+    var img = e.target;
+    if (!img || img.tagName !== "IMG") return;
+    var src = img.getAttribute("src") || "";
+    if (!/\/(media|static)\//.test(src)) return;
+    var n = +(img.getAttribute("data-ulang") || 0);
+    img.style.visibility = "hidden";          // jangan pamerkan ikon gambar rusak
+    if (n >= MAKS) return;
+    img.setAttribute("data-ulang", n + 1);
+    setTimeout(function () { img.src = ulang(src, n + 1); }, nanti(n));
+  }, true);
+  // Di document, bukan window: event "load" milik elemen tidak pernah sampai ke
+  // window (beda dengan "error"), dan foto yang berhasil dimuat ulang akan
+  // tetap tersembunyi selamanya.
+  document.addEventListener("load", function (e) {
+    var img = e.target;
+    if (img && img.tagName === "IMG" && img.hasAttribute("data-ulang")) img.style.visibility = "";
+  }, true);
+
+  function pelat() {
+    var antre = [].slice.call(document.querySelectorAll('[style*="--pelat"]'));
+    var jalan = 0;
+    function berikut() {
+      while (jalan < 4 && antre.length) muat(antre.shift(), 0);
+    }
+    function muat(el, n) {
+      var m = /url\(['"]?([^'")]+)['"]?\)/.exec(el.style.getPropertyValue("--pelat"));
+      if (!m) { berikut(); return; }
+      var asli = m[1].replace(/#.*$/, "");
+      var url = n ? ulang(asli, n) : asli;
+      var gb = new Image();
+      jalan++;
+      gb.onload = function () {
+        jalan--;
+        // Fragmen baru = gambar CSS dipasang ulang dari cache yang kini berhasil.
+        el.style.setProperty("--pelat", "url('" + url + "#ok')");
+        berikut();
+      };
+      gb.onerror = function () {
+        jalan--;
+        if (n < MAKS) setTimeout(function () { muat(el, n + 1); }, nanti(n));
+        berikut();
+      };
+      gb.src = url;
+    }
+    berikut();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", pelat);
+  else pelat();
+})();
+</script>

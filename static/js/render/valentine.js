@@ -1061,6 +1061,11 @@
      karena jangkarnya dihitung dalam em (lihat .tx di valentine.css), jadi
      teks yang mengecil tumbuh ke bawah, bukan melayang. */
   var MUAT_MIN = 0.5;   // di bawah ini hurufnya tidak terbaca lagi
+  // Surat yang mengalir bebas (data-maks) berhenti mengecil lebih awal; kalau
+  // masih kepanjangan, ia DIGULIR di tempatnya, bukan dipotong halaman. Batas
+  // teks naik ke 3.000 karakter (14 Okt 2026) — dikecilkan terus, surat
+  // sepanjang itu keluar dari halaman dan sisanya hilang.
+  var MUAT_MIN_SURAT = 0.65;
 
   function jatah(el) {
     // data-baris = berapa baris yang disediakan desainnya untuk teks ini.
@@ -1077,21 +1082,36 @@
 
   function muatkan(el) {
     if (!el.dataset.baris && !el.dataset.maks) return;
+    var surat = !!el.dataset.maks;
+    var min = surat ? MUAT_MIN_SURAT : MUAT_MIN;
+    el.classList.remove("gulir", "di-ujung");
+    el.style.maxHeight = "";
     el.style.setProperty("--muat", 1);
     var batas = jatah(el);
     var m = 1;
     // offsetHeight mengabaikan transform panggung, jadi angkanya px tata
     // letak yang sama di layar mana pun.
     for (var putaran = 0; putaran < 10 && el.offsetHeight > batas + 0.5; putaran++) {
-      if (m <= MUAT_MIN) break;
+      if (m <= min) break;
       // Tinggi kira-kira sebanding kuadrat ukuran huruf (barisnya berkurang
       // DAN tiap baris memendek), jadi akar rasionya tebakan awal yang
       // bagus; dibatasi supaya tidak melompat terlalu jauh sekali langkah.
       var langkah = Math.max(0.85, Math.sqrt(batas / el.offsetHeight));
-      m = Math.max(MUAT_MIN, m * langkah);
+      m = Math.max(min, m * langkah);
       el.style.setProperty("--muat", m.toFixed(4));
     }
+    if (surat && el.offsetHeight > batas + 0.5) {
+      el.style.maxHeight = batas + "px";
+      el.classList.add("gulir");
+    }
   }
+
+  // Pudar bawah surat yang digulir hilang begitu sampai di ujungnya.
+  document.addEventListener("scroll", function (e) {
+    var el = e.target;
+    if (!el.classList || !el.classList.contains("gulir")) return;
+    el.classList.toggle("di-ujung", el.scrollTop + el.clientHeight >= el.scrollHeight - 2);
+  }, true);
 
   var semuaTeks = [].slice.call(document.querySelectorAll(".tx"));
   function muatkanSemua() { semuaTeks.forEach(muatkan); }
@@ -1302,7 +1322,9 @@
      kalau jari kebetulan mendarat di situ, kartu terasa mati. Yang
      dikecualikan cuma tombol — menyeret dari atas tombol navigasi atau
      tombol musik jelas bukan maksudnya membalik halaman. */
-  var BUKAN_SERETAN = ".nav, #bgmFab, #fsFab, .preview-bar, a, button";
+  // .gulir: surat panjang yang sedang digulir (lihat muatkan) — jari yang
+  // menggulirnya tidak boleh ikut menarik lembar atau tersapu jadi pindah halaman.
+  var BUKAN_SERETAN = ".nav, #bgmFab, #fsFab, .preview-bar, a, button, .gulir";
 
   /* Mode "partikel": tidak ada lembar yang bisa ditarik, jadi seluruh
      mesin seret di bawah dilewati. Yang tersisa cuma SAPUAN — geser

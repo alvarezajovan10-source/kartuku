@@ -149,14 +149,19 @@ FONT_ELEMEN = {
 
 # Penyesuaian kotak per elemen akibat font pengganti.
 #   "huruf": pengali ukuran huruf;  "bawah": batas bawah kotak (persen tinggi
-#   halaman). Isi surat: kotak Canva-nya memanjang sampai 88,8% — MENIMPA
+#   halaman) — kotaknya juga jadi "ketat": tanpa kelonggaran 4% pengecil
+#   otomatis, karena tepat di bawahnya ada teks lain. Isi surat: kotak Canva-nya memanjang sampai 88,8% — MENIMPA
 #   "With love, always." (86,3%) dan tanda tangan. Tak terlihat selama hurufnya
 #   Pinyon yang ramping; Indie Flower jauh lebih lebar dan barisnya turun ke
 #   salam penutup. Kotak dihentikan di 85,4% dan huruf x0,92 supaya surat
 #   bawaan muat tanpa dikecilkan; surat pembeli yang lebih panjang dikecilkan
 #   --muat di dalam kotak itu, jadi tidak pernah menabrak penutupnya.
 SESUAI_ELEMEN = {
-    "LBWHsxl0HqGW1T2F": {"huruf": 0.92, "bawah": 85.4},
+    #   "gulir": huruf hanya boleh mengecil sampai 80%; kalau masih kepanjangan,
+    #   kotaknya bisa digulir. Surat pembeli boleh sampai 3.000 karakter
+    #   (MAX_TEXT_LENGTH) — dikecilkan terus sampai muat, hurufnya jatuh ke
+    #   ~7 px dan tidak terbaca di HP (14 Okt 2026).
+    "LBWHsxl0HqGW1T2F": {"huruf": 0.92, "bawah": 85.4, "gulir": True},
     # "Notes" (hal 4): kotak Canva selebar tinta huruf skrip yang ramping;
     # dalam Indie Flower kata itu dikecilkan ke 0,89 dan jadi lebih kecil
     # daripada "The Editors" di sebelahnya. Dilebarkan ke kanan (ruang kosong).

@@ -199,3 +199,25 @@ class FotoGagalDimuatTests(TestCase):
         # load milik elemen tidak sampai ke window — harus di document.
         self.assertIn('document.addEventListener("load"', kepala)
         self.assertIn('--pelat', kepala)
+
+
+class SuratPanjangTests(TestCase):
+    """14 Okt 2026: surat sampai 3.000 karakter tampil utuh — dikecilkan
+    sampai batas terbaca, lalu digulir di tempatnya, tidak pernah dipotong."""
+
+    def test_kotak_surat_majalah_ketat_dan_boleh_gulir(self):
+        html = HTML.read_text(encoding="utf-8")
+        self.assertRegex(html, r'class="kotak-tx ketat boleh-gulir"[^>]*><p class="tx f-tangan"\{% el card editing "letter_body"')
+        js = JS.read_text(encoding="utf-8")
+        self.assertIn("MUAT_MIN_GULIR = 0.8", js)
+        self.assertIn('kotak.classList.add("gulir")', js)
+        self.assertIn(".kotak-tx.gulir", CSS.read_text(encoding="utf-8"))
+
+    def test_surat_valentine_digulir_bukan_dipotong(self):
+        js = (AKAR / "static" / "js" / "render" / "valentine.js").read_text(encoding="utf-8")
+        self.assertIn("MUAT_MIN_SURAT", js)
+        self.assertIn('el.classList.add("gulir")', js)
+        # Jari yang menggulir surat tidak boleh ikut menarik lembar.
+        self.assertRegex(js, r'BUKAN_SERETAN = "[^"]*\.gulir')
+        css = (AKAR / "static" / "css" / "render" / "valentine.css").read_text(encoding="utf-8")
+        self.assertIn(".tx.gulir", css)

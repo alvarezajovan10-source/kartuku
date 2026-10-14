@@ -238,7 +238,9 @@ def html_teks(e, kunci, bawaan_baru, m_font, pengirim=False):
                '{{% endif %}}>{{{{ card.sender_name|default:"{b}" }}}}</p>').format(k=kelas, b=bawaan)
     else:
         isi = f'<p class="tx f-{kelas}"{{% el card editing "{kunci}" %}}>{{% t card "{kunci}" %}}</p>'
-    return sisi, bawaan, f'    <div class="kotak-tx" style="{gaya}">{isi}</div>'
+    kelas_kotak = ("kotak-tx" + (" ketat" if "bawah" in sesuai else "")
+                   + (" boleh-gulir" if sesuai.get("gulir") else ""))
+    return sisi, bawaan, f'    <div class="{kelas_kotak}" style="{gaya}">{isi}</div>'
 
 
 def main():

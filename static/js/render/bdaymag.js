@@ -321,6 +321,7 @@
     var t = null;
     majalah.addEventListener("pointerdown", function (e) {
       if (sibuk || (e.pointerType === "mouse" && e.button !== 0)) return;
+      if (e.target.closest && e.target.closest(".gulir")) return;   // menggulir surat
       t = { id: e.pointerId, x0: e.clientX, y0: e.clientY, ctx: null, jalan: [] };
     });
     majalah.addEventListener("pointermove", function (e) {
@@ -377,6 +378,7 @@
    * bawah jari pembeli yang sedang memilih teks membuat editor terasa rusak. */
   if (!mengedit) {
     majalah.addEventListener("click", function (e) {
+      if (e.target.closest && e.target.closest(".gulir")) return;   // sedang membaca surat
       var kotak = majalah.getBoundingClientRect();
       if (e.clientX > kotak.left + kotak.width / 2) maju(); else mundur();
     });
@@ -424,17 +426,35 @@
   var LONGGAR = 1.04;
   var MUAT_MIN = 0.4;
 
+  // Kotak "boleh-gulir" (isi surat): huruf berhenti mengecil di sini, sisanya
+  // digulir. Di bawah ~80% huruf surat tidak terbaca lagi di HP.
+  var MUAT_MIN_GULIR = 0.8;
+
   function terlalu(tx, kotak) {
     var tepi = parseFloat(getComputedStyle(tx).marginTop) || 0;
-    return tx.offsetHeight + 2 * tepi > kotak.clientHeight * LONGGAR + 1
+    // Kotak "ketat" tidak diberi kelonggaran: tepat di bawahnya ada teks lain
+    // (isi surat -> salam penutup), dan 4% lebih sudah menabraknya.
+    var longgar = kotak.classList.contains("ketat") ? 1 : LONGGAR;
+    var tinggi = kotak.clientHeight
+      - (parseFloat(getComputedStyle(kotak).paddingBottom) || 0);
+    return tx.offsetHeight + 2 * tepi > tinggi * longgar + 1
       || tx.scrollWidth > kotak.clientWidth + 2;
   }
 
   function muatkan(tx) {
     var kotak = tx.parentNode;
+    var bolehGulir = kotak.classList.contains("boleh-gulir");
+    var min = bolehGulir ? MUAT_MIN_GULIR : MUAT_MIN;
+    kotak.classList.remove("gulir", "di-ujung");
     tx.style.setProperty("--muat", "1");
     if (!terlalu(tx, kotak)) return;
-    var bawah = MUAT_MIN, atas = 1;
+    tx.style.setProperty("--muat", min.toFixed(3));
+    if (terlalu(tx, kotak)) {
+      // Tidak muat bahkan di ukuran terkecil: digulir, tidak dipotong.
+      if (bolehGulir) kotak.classList.add("gulir");
+      return;
+    }
+    var bawah = min, atas = 1;
     for (var i = 0; i < 7; i++) {
       var tengah = (bawah + atas) / 2;
       tx.style.setProperty("--muat", tengah.toFixed(3));
@@ -442,6 +462,13 @@
     }
     tx.style.setProperty("--muat", bawah.toFixed(3));
   }
+
+  // Pudar bawah hilang begitu surat digulir sampai habis.
+  majalah.addEventListener("scroll", function (e) {
+    var k = e.target;
+    if (!k.classList || !k.classList.contains("gulir")) return;
+    k.classList.toggle("di-ujung", k.scrollTop + k.clientHeight >= k.scrollHeight - 2);
+  }, true);
 
   function muatkanSemua() {
     [].forEach.call(majalah.querySelectorAll(".kotak-tx > .tx"), muatkan);

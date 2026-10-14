@@ -253,6 +253,24 @@ body {
   height: var(--h);
   z-index: 4;
 }
+/* Surat yang lebih panjang dari kotaknya walau hurufnya sudah 80%: kotaknya
+   digulir, bukan dipotong (bdaymag.js memasang .gulir). Bagian bawah memudar
+   sebagai tanda masih ada lanjutannya. */
+.kotak-tx.gulir {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: auto;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, .25) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+  padding-bottom: 18px;
+  box-sizing: border-box;
+}
+.kotak-tx.gulir.di-ujung { -webkit-mask-image: none; mask-image: none; }
 .tx {
   font-family: var(--f, var(--d-f));
   /* --muat: pengecil otomatis dari bdaymag.js, 1 selama teksnya muat. */

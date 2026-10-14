@@ -670,6 +670,22 @@ img { -webkit-user-drag: none; user-drag: none; }
    pias: kiri 15,5% (dari 12,732%) dan lebar 61% (dari 66,479%) — titik
    tengahnya tetap 46,0%, sama dengan titik tengah kotak polosnya, jadi
    suratnya tidak melenceng ke satu sisi. */
+/* Surat lebih panjang dari jatahnya walau hurufnya sudah 65%: digulir di
+   tempatnya, tidak dipotong (valentine.js memasang .gulir + max-height). */
+.tx.gulir {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: auto;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .45) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.6em), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.6em), transparent);
+}
+.tx.gulir.di-ujung { -webkit-mask-image: none; mask-image: none; }
+
 .t-pesan {
   left: 15.500%;
   top: 34.900%;
